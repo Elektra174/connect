@@ -91,10 +91,6 @@ const rotateGoogleKey = () => {
     logger.info(`🔄 Переключено на ключ Google #${currentKeyIndex + 1}`);
 };
 
-const cerebras = new OpenAI({
-    apiKey: process.env.CEREBRAS_API_KEY,
-    baseURL: "https://api.cerebras.ai/v1"
-});
 
 // Инициализация Supabase (RAG)
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
@@ -210,33 +206,20 @@ async function generateSpeech(text, gender = 'female') {
     } catch (e) { logger.error("TTS fail:", e.message); return null; }
 }
 
-async function callAI(prompt, system, modelType = 'llama') {
-    if (modelType === 'gemma') {
-        const maxRetries = googleApiKeys.length;
-        for (let attempt = 0; attempt < maxRetries; attempt++) {
-            try {
-                const genAI = getCurrentGoogleGenAI();
-                const model = genAI.getGenerativeModel({ model: "gemma-3-27b-it" });
-                const result = await model.generateContent([system, prompt]);
-                return result.response.text();
-            } catch (e) {
-                if (e.message.includes('429')) {
-                    rotateGoogleKey();
-                    continue;
-                }
-                adminLog(`❌ AI Fail (Gemma): ${e.message}`);
-                return "Простите, я немного задумался.";
-            }
-        }
-    } else {
+async function callAI(prompt, system) {
+    const maxRetries = googleApiKeys.length;
+    for (let attempt = 0; attempt < maxRetries; attempt++) {
         try {
-            const completion = await cerebras.chat.completions.create({
-                messages: [{ role: "system", content: system }, { role: "user", content: prompt }],
-                model: "llama3.3-70b"
-            });
-            return completion.choices[0].message.content;
+            const genAI = getCurrentGoogleGenAI();
+            const model = genAI.getGenerativeModel({ model: "gemma-3-27b-it" });
+            const result = await model.generateContent([system, prompt]);
+            return result.response.text();
         } catch (e) {
-            adminLog(`❌ AI Fail (Llama): ${e.message}`);
+            if (e.message.includes('429')) {
+                rotateGoogleKey();
+                continue;
+            }
+            adminLog(`❌ AI Fail (Gemma): ${e.message}`);
             return "Простите, я немного задумался.";
         }
     }
@@ -287,7 +270,7 @@ app.post('/api/chat', chatLimiter, async (req, res) => {
         
         if (action === 'get_hint') {
             const sys = PromptManager.generateSupervisorPrompt(modalityId, history, knowledge);
-            const response = await callAI(`Дай методический совет: ${message}`, sys, 'gemma');
+            const response = await callAI(`Дай методический совет: ${message}`, sys);
             return res.json({ hint: response });
         }
 
@@ -301,7 +284,7 @@ app.post('/api/chat', chatLimiter, async (req, res) => {
             ? PromptManager.generateAiTherapistPrompt(flow) 
             : PromptManager.generateClientPrompt(modalityId, 2, clientProfile, knowledge); 
 
-        const response = await callAI(message, sys, 'llama');
+        const response = await callAI(message, sys);
         const voice = await generateSpeech(response, role === 'client' ? 'female' : clientProfile.gender);
 
         res.json({ content: response, voice });
@@ -322,7 +305,7 @@ app.post('/api/finish', async (req, res) => {
             ? PromptManager.generateClientSummaryPrompt(historyText)
             : PromptManager.generateDeepAnalysisPrompt(modalityId, historyText);
 
-        const analysisRaw = await callAI("Сделай аудит", sys, 'gemma');
+        const analysisRaw = await callAI("Сделай аудит", sys);
         const analysis = JSON.parse(analysisRaw.replace(/```json|```/g, '').trim());
 
         let certificateUrl = null;
@@ -425,15 +408,12 @@ app.get('*', (req, res) => {
     if (req.url.includes('.')) {
         return res.status(404).send('Not found');
     }
-    const indexInPublic = path.join(publicBuildPath, 'index.html');
-    const indexInDist = path.join(distPath, 'index.html');
+    const indexPath = path.join(distPath, 'index.html');
 
-    if (fs.existsSync(indexInPublic)) {
-        res.sendFile(indexInPublic);
-    } else if (fs.existsSync(indexInDist)) {
-        res.sendFile(indexInDist);
+    if (fs.existsSync(indexPath)) {
+        res.sendFile(indexPath);
     } else {
-        res.status(500).send("Build error: index.html not found. Check dist/public folder.");
+        res.status(500).send("Build error: index.html not found. Check dist folder.");
     }
 });
 
