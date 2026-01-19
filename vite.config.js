@@ -8,13 +8,15 @@ export default defineConfig({
   build: {
     outDir: 'dist', // Сборка в /dist
     emptyOutDir: true,
+    assetsDir: 'assets', // Папка для ассетов
     rollupOptions: {
       input: {
-        main: './public/index.html',
+        main: './index.html',
       },
     },
   },
   server: {
     port: 5173,
   },
+  base: '/', // Базовый путь для продакшена
 });
