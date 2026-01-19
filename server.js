@@ -1,18 +1,19 @@
 /**
- * SERVER.JS - v20.5 (BUSINESS PLATINUM ENGINE)
+ * SERVER.JS - v20.8.1 (BUSINESS PLATINUM ENGINE)
  * ========================================================
  * 🧠 AI HYBRID: Llama 3.3 (Speed) + Gemma 3 (Analysis)
  * 🤝 B2B & B2C: Тренажер для профи + ИИ-терапия для клиентов.
  * 💰 ТАРИФЫ: Лист ожидания + Транзакции бриллиантов.
  * 🛡️ SECURITY: Rate Limiting + Joi Validation + Winston Logs.
  * 📂 RAG: Поиск по 300+ модулям в Supabase Vector.
- * 🛡️ ADMIN: Сквозной логгер (ID 7830322013).
+ * 🛠️ RENDER FIX: Синхронизация путей (dist/public) и MIME-типов.
  */
 
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const path = require('path');
+const fs = require('fs');
 const admin = require('firebase-admin');
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 const { createClient } = require('@supabase/supabase-js');
@@ -26,11 +27,8 @@ const Joi = require('joi');
 require('dotenv').config();
 
 const app = express();
-app.use(cors());
-app.use(bodyParser.json({ limit: '50mb' }));
-app.use(express.static(path.join(__dirname, 'dist')));
 
-// --- 📝 ЛОГИРОВАНИЕ (Winston) ---
+// --- 📝 ПРОФЕССИОНАЛЬНОЕ ЛОГИРОВАНИЕ (Winston) ---
 const logger = winston.createLogger({
     level: 'info',
     format: winston.format.combine(
@@ -52,13 +50,25 @@ const logger = winston.createLogger({
 // --- 🛡️ ЗАЩИТА (Rate Limiting) ---
 const chatLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 минут
-    max: 50, // 50 запросов
+    max: 100, // Увеличено до 100 для активных тестов
     message: { error: "Слишком много запросов. Повторите через 15 минут." }
 });
 
+// --- 📂 ОБСЛУЖИВАНИЕ СТАТИКИ (КРИТИЧЕСКИЙ ФИКС ДЛЯ RENDER) ---
+app.use(cors());
+app.use(bodyParser.json({ limit: '50mb' }));
+
+const distPath = path.join(__dirname, 'dist');
+const publicBuildPath = path.join(distPath, 'public');
+
+// Явное указание путей для ассетов и статики
+app.use('/assets', express.static(path.join(distPath, 'assets')));
+app.use(express.static(distPath));
+app.use(express.static(publicBuildPath));
+
 // --- ⚙️ КОНФИГУРАЦИЯ ---
 const APP_ID = process.env.APP_ID || 'connectum-platinum';
-const ADMIN_ID = '7830322013';
+const ADMIN_ID = process.env.ADMIN_ID || '7830322013';
 
 // Инициализация ИИ (Ротация ключей Google)
 const googleApiKeys = process.env.GOOGLE_API_KEYS ? process.env.GOOGLE_API_KEYS.split(',') : [];
@@ -100,17 +110,14 @@ if (process.env.FIREBASE_SERVICE_ACCOUNT) {
         }
     } catch (e) {
         logger.error("Firebase init error:", e.message);
-        console.log("⚠️ Firebase disabled - running in demo mode");
     }
-} else {
-    console.log("⚠️ FIREBASE_SERVICE_ACCOUNT not set - running in demo mode");
 }
 
 // Инициализация Bot
 const bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN);
 const PromptManager = require('./prompt_manager');
 
-// --- 👥 ПОЛНАЯ БАЗА КЛИЕНТОВ (SYNC v20.5) ---
+// --- 👥 ПОЛНАЯ БАЗА КЛИЕНТОВ (SYNC v20.8) ---
 const CLIENT_DATABASE = {
     c1: { id: "c1", name: "Виктория", age: 34, profession: "Маркетолог", gender: "female", bio: "Парализующий саботаж при записи видео. Страх проявления зашкаливает. В теле — зажим в горле." },
     c2: { id: "c2", name: "Артем", age: 28, profession: "IT-разработчик", gender: "male", bio: "Боюсь закончить масштабный заказ. Кажется, что результат будет бездарным. Тяжесть в плечах." },
@@ -147,7 +154,7 @@ const CLIENT_DATABASE = {
 // --- 🛠 ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ---
 
 async function adminLog(msg) {
-    try { await bot.sendMessage(ADMIN_ID, `📡 **Connectum Log**\n${msg}`, { parse_mode: 'Markdown' }); } catch (e) { logger.error("AdminLog fail:", e.message); }
+    try { await bot.sendMessage(ADMIN_ID, `📡 **Connectum v20.8 Log**\n${msg}`, { parse_mode: 'Markdown' }); } catch (e) { logger.error("AdminLog fail:", e.message); }
 }
 
 async function getEmbedding(text) {
@@ -231,6 +238,7 @@ async function callAI(prompt, system, modelType = 'llama') {
 // --- 💎 ЭКОНОМИКА СЕССИЙ ---
 
 async function useSessionLimit(userId) {
+    if (!db) return true; // Демо-режим
     const limitRef = db.collection('artifacts').doc(APP_ID).collection('users').doc(userId).collection('limits').doc('stats');
     try {
         return await db.runTransaction(async (t) => {
@@ -246,9 +254,6 @@ async function useSessionLimit(userId) {
 
 // --- 🌐 API ЭНДПОИНТЫ ---
 
-/**
- * ГЛАВНЫЙ ЧАТ
- */
 app.post('/api/chat', chatLimiter, async (req, res) => {
     const schema = Joi.object({
         userId: Joi.string().required(),
@@ -276,7 +281,6 @@ app.post('/api/chat', chatLimiter, async (req, res) => {
             return res.json({ hint: response });
         }
 
-        // Проверка баланса при первом сообщении
         if (history.length === 0) {
             const ok = await useSessionLimit(userId);
             if (!ok) return res.status(403).json({ content: "Недостаточно 💎. Обновите тариф." });
@@ -287,19 +291,15 @@ app.post('/api/chat', chatLimiter, async (req, res) => {
             : PromptManager.generateClientPrompt(modalityId, 2, clientProfile, knowledge); 
 
         const response = await callAI(message, sys, 'llama');
-        const speakerGender = role === 'client' ? 'female' : clientProfile.gender;
-        const voice = await generateSpeech(response, speakerGender);
+        const voice = await generateSpeech(response, role === 'client' ? 'female' : clientProfile.gender);
 
         res.json({ content: response, voice });
     } catch (e) { 
         logger.error("Chat API Error:", e.message);
-        res.status(500).json({ content: "Ошибка связи с ИИ." }); 
+        res.status(500).json({ error: "Ошибка связи с ИИ." }); 
     }
 });
 
-/**
- * ФИНАЛИЗАЦИЯ (АУДИТ)
- */
 app.post('/api/finish', async (req, res) => {
     const { userId, history, modalityId, role } = req.body;
     try {
@@ -312,7 +312,7 @@ app.post('/api/finish', async (req, res) => {
         const analysis = JSON.parse(analysisRaw.replace(/```json|```/g, '').trim());
 
         let certificateUrl = null;
-        if (role === 'psychologist') {
+        if (role === 'psychologist' && db) {
             const doc = new PDFDocument({ size: 'A4', margin: 50 });
             const filename = `certificates/${userId}_${Date.now()}.pdf`;
             const file = bucket.file(filename);
@@ -331,19 +331,19 @@ app.post('/api/finish', async (req, res) => {
             certificateUrl = `https://storage.googleapis.com/${bucket.name}/${filename}`;
         }
 
-        await db.collection('artifacts').doc(APP_ID).collection('users').doc(userId).collection('sessions').add({
-            modalityId, role, analysis, certificateUrl, timestamp: admin.firestore.FieldValue.serverTimestamp()
-        });
+        if (db) {
+            await db.collection('artifacts').doc(APP_ID).collection('users').doc(userId).collection('sessions').add({
+                modalityId, role, analysis, certificateUrl, timestamp: admin.firestore.FieldValue.serverTimestamp()
+            });
+        }
 
         res.json({ analytics: analysis, certificateUrl });
     } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-/**
- * АГРЕГАТОР
- */
 app.get('/api/aggregator', async (req, res) => {
     try {
+        if (!db) return res.json([]);
         const snap = await db.collection('artifacts').doc(APP_ID).collection('public').doc('data').collection('psychologists').get();
         let list = snap.docs.map(d => d.data());
         list.sort((a, b) => (a.isVip ? -1 : 1) || (a.isPremium ? -1 : 1) || (b.skillRating - a.skillRating));
@@ -351,12 +351,10 @@ app.get('/api/aggregator', async (req, res) => {
     } catch (e) { res.status(500).send("Aggregator Error"); }
 });
 
-/**
- * ПРОФИЛЬ
- */
 app.post('/api/profile', async (req, res) => {
     const { userId, profile } = req.body;
     try {
+        if (!db) return res.json({ status: 'demo' });
         const commission = profile.isPremium ? 0.2 : 0.4;
         const data = { ...profile, commission, updatedAt: admin.firestore.FieldValue.serverTimestamp() };
         
@@ -369,12 +367,10 @@ app.post('/api/profile', async (req, res) => {
     } catch (e) { res.status(500).send("Profile Error"); }
 });
 
-/**
- * WAITLIST (ЗАЯВКИ НА ОПЛАТУ)
- */
 app.post('/api/waitlist', async (req, res) => {
     const { userId, role, tariff, amount } = req.body;
     try {
+        if (!db) return res.json({ status: 'demo' });
         const entry = { userId, role, tariff, amount, status: 'pending', timestamp: admin.firestore.FieldValue.serverTimestamp() };
         await db.collection('artifacts').doc(APP_ID).collection('public').doc('data').collection('waitlist').add(entry);
         await adminLog(`💰 Новая заявка на тариф: ${tariff} (${amount}₽). Юзер: ${userId}`);
@@ -382,12 +378,10 @@ app.post('/api/waitlist', async (req, res) => {
     } catch (e) { res.status(500).send("Waitlist Error"); }
 });
 
-/**
- * ЗАГРУЗКА ВИДЕО
- */
 app.post('/api/upload-video', async (req, res) => {
     const { userId, videoBase64 } = req.body;
     try {
+        if (!db) return res.json({ url: '#' });
         const fileName = `videos/${userId}/intro.webm`;
         const file = bucket.file(fileName);
         await file.save(Buffer.from(videoBase64.split(',')[1], 'base64'), {
@@ -400,18 +394,25 @@ app.post('/api/upload-video', async (req, res) => {
     } catch (e) { res.status(500).send("Upload Error"); }
 });
 
-// Отдача статических файлов из dist
-app.use(express.static(path.join(__dirname, 'dist')));
-
-// Главный маршрут - отдает index.html
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'dist', 'index.html'));
-});
-
-// Все остальные маршруты - SPA
+// SPA Fallback: Защита ассетов и принудительная отдача index.html
 app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, 'dist', 'index.html'));
+    if (req.url.includes('.')) {
+        return res.status(404).send('Not found');
+    }
+    const indexInPublic = path.join(publicBuildPath, 'index.html');
+    const indexInDist = path.join(distPath, 'index.html');
+
+    if (fs.existsSync(indexInPublic)) {
+        res.sendFile(indexInPublic);
+    } else if (fs.existsSync(indexInDist)) {
+        res.sendFile(indexInDist);
+    } else {
+        res.status(500).send("Build error: index.html not found.");
+    }
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => logger.info(`🚀 Connectum Engine v20.5 Platinum Sync Online on port ${PORT}`));
+app.listen(PORT, () => {
+    logger.info(`🚀 Connectum Engine v20.8.1 Platinum Online on port ${PORT}`);
+    adminLog("🚀 Сервер успешно обновлен до v20.8.1 (Path-Safe)!");
+});
