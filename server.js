@@ -1,5 +1,5 @@
 /**
- * SERVER.JS - v20.8.2 (BUSINESS PLATINUM ENGINE)
+ * SERVER.JS - v20.8.3 (BUSINESS PLATINUM ENGINE)
  * ========================================================
  * 🧠 AI HYBRID: Llama 3.3 (Speed) + Gemma 3 (Analysis)
  * 🤝 B2B & B2C: Тренажер для профи + ИИ-терапия для клиентов.
@@ -7,7 +7,7 @@
  * 🛡️ SECURITY: Rate Limiting + Joi Validation + Winston Logs.
  * 📂 RAG: Поиск по 300+ модулям в Supabase Vector.
  * 🛠️ RENDER PATH SYNC: Исправлены пути под структуру dist/public и MIME-типы.
- * 👥 DATABASE: 30 детализированных досье клиентов (Age, Status, Family, Job).
+ * 👥 DATABASE: 30 максимально детализированных досье клиентов.
  */
 
 const express = require('express');
@@ -55,14 +55,14 @@ const chatLimiter = rateLimit({
     message: { error: "Слишком много запросов. Повторите через 15 минут." }
 });
 
-// --- 📂 ОБСЛУЖИВАНИЕ СТАТИКИ (ФИКС ДЛЯ RENDER) ---
+// --- 📂 ОБСЛУЖИВАНИЕ СТАТИКИ (ФИКС ДЛЯ RENDER v20.8.3) ---
 app.use(cors());
 app.use(bodyParser.json({ limit: '50mb' }));
 
 const distPath = path.join(__dirname, 'dist');
 const publicBuildPath = path.join(distPath, 'public');
 
-// Приоритет ассетам с правильным MIME-типом
+// Принудительная установка MIME-типов для ассетов, чтобы избежать блокировки браузером
 app.use('/assets', express.static(path.join(distPath, 'assets'), {
     setHeaders: (res, path) => {
         if (path.endsWith('.js')) res.setHeader('Content-Type', 'application/javascript');
@@ -77,6 +77,7 @@ app.use(express.static(publicBuildPath));
 const APP_ID = process.env.APP_ID || 'connectum-platinum';
 const ADMIN_ID = process.env.ADMIN_ID || '7830322013';
 
+// Инициализация ИИ (Ротация ключей Google)
 const googleApiKeys = process.env.GOOGLE_API_KEYS ? process.env.GOOGLE_API_KEYS.split(',') : [];
 let currentKeyIndex = 0;
 
@@ -95,8 +96,10 @@ const cerebras = new OpenAI({
     baseURL: "https://api.cerebras.ai/v1"
 });
 
+// Инициализация Supabase (RAG)
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
 
+// Инициализация Firebase
 let db = null;
 let bucket = null;
 
@@ -117,10 +120,11 @@ if (process.env.FIREBASE_SERVICE_ACCOUNT) {
     }
 }
 
+// Инициализация Bot
 const bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN);
 const PromptManager = require('./prompt_manager');
 
-// --- 👥 ПОЛНАЯ БАЗА КЛИЕНТОВ (30 ДЕТАЛИЗИРОВАННЫХ КЕЙСОВ) ---
+// --- 👥 ПОЛНАЯ БАЗА КЛИЕНТОВ (30 ДЕТАЛИЗИРОВАННЫХ КЕЙСОВ v20.8.3) ---
 const CLIENT_DATABASE = {
     c1: { id: "c1", name: "Виктория", age: 34, profession: "Маркетолог", familyStatus: "В разводе", status: "Средний класс", gender: "female", bio: "Парализующий саботаж при записи видео. Страх проявления зашкаливает. В теле — зажим в горле." },
     c2: { id: "c2", name: "Артем", age: 28, profession: "IT-разработчик", familyStatus: "Холост", status: "Высокий доход", gender: "male", bio: "Боюсь закончить масштабный заказ. Кажется, что результат будет бездарным. Тяжесть в плечах." },
@@ -157,7 +161,7 @@ const CLIENT_DATABASE = {
 // --- 🛠 ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ---
 
 async function adminLog(msg) {
-    try { await bot.sendMessage(ADMIN_ID, `📡 **Connectum v20.8.2 Log**\n${msg}`, { parse_mode: 'Markdown' }); } catch (e) { logger.error("AdminLog fail:", e.message); }
+    try { await bot.sendMessage(ADMIN_ID, `📡 **Connectum v20.8.3 Log**\n${msg}`, { parse_mode: 'Markdown' }); } catch (e) { logger.error("AdminLog fail:", e.message); }
 }
 
 async function getEmbedding(text) {
@@ -257,6 +261,9 @@ async function useSessionLimit(userId) {
 
 // --- 🌐 API ЭНДПОИНТЫ ---
 
+/**
+ * ГЛАВНЫЙ ЧАТ
+ */
 app.post('/api/chat', chatLimiter, async (req, res) => {
     const schema = Joi.object({
         userId: Joi.string().required(),
@@ -284,9 +291,10 @@ app.post('/api/chat', chatLimiter, async (req, res) => {
             return res.json({ hint: response });
         }
 
+        // Проверка баланса только для психолога при старте
         if (history.length === 0 && role === 'psychologist') {
             const ok = await useSessionLimit(userId);
-            if (!ok) return res.status(403).json({ content: "Недостаточно 💎. Обновите тариф." });
+            if (!ok) return res.status(403).json({ error: "Недостаточно 💎. Обновите тариф." });
         }
 
         const sys = role === 'client' 
@@ -303,6 +311,9 @@ app.post('/api/chat', chatLimiter, async (req, res) => {
     }
 });
 
+/**
+ * ФИНАЛИЗАЦИЯ (АУДИТ)
+ */
 app.post('/api/finish', async (req, res) => {
     const { userId, history, modalityId, role } = req.body;
     try {
@@ -344,6 +355,9 @@ app.post('/api/finish', async (req, res) => {
     } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
+/**
+ * АГРЕГАТОР
+ */
 app.get('/api/aggregator', async (req, res) => {
     try {
         if (!db) return res.json([]);
@@ -354,6 +368,9 @@ app.get('/api/aggregator', async (req, res) => {
     } catch (e) { res.status(500).send("Aggregator Error"); }
 });
 
+/**
+ * ПРОФИЛЬ
+ */
 app.post('/api/profile', async (req, res) => {
     const { userId, profile } = req.body;
     try {
@@ -370,6 +387,9 @@ app.post('/api/profile', async (req, res) => {
     } catch (e) { res.status(500).send("Profile Error"); }
 });
 
+/**
+ * WAITLIST (ЗАЯВКИ НА ОПЛАТУ)
+ */
 app.post('/api/waitlist', async (req, res) => {
     const { userId, role, tariff, amount } = req.body;
     try {
@@ -381,6 +401,9 @@ app.post('/api/waitlist', async (req, res) => {
     } catch (e) { res.status(500).send("Waitlist Error"); }
 });
 
+/**
+ * ЗАГРУЗКА ВИДЕО
+ */
 app.post('/api/upload-video', async (req, res) => {
     const { userId, videoBase64 } = req.body;
     try {
@@ -397,14 +420,11 @@ app.post('/api/upload-video', async (req, res) => {
     } catch (e) { res.status(500).send("Upload Error"); }
 });
 
-// SPA Fallback: Важно защитить ассеты и найти собранный index.html
+// SPA Fallback: Защита ассетов и принудительная отдача index.html
 app.get('*', (req, res) => {
-    // Предотвращаем MIME Error: если просят файл (с точкой), но мы здесь — значит его нет. 
-    // Возвращаем 404, а не index.html.
     if (req.url.includes('.')) {
         return res.status(404).send('Not found');
     }
-
     const indexInPublic = path.join(publicBuildPath, 'index.html');
     const indexInDist = path.join(distPath, 'index.html');
 
@@ -419,6 +439,6 @@ app.get('*', (req, res) => {
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-    logger.info(`🚀 Connectum v20.8.2 Path-Safe Online on port ${PORT}`);
-    adminLog("🚀 Сервер успешно обновлен до v20.8.2 (Full Detailed Sync)!");
+    logger.info(`🚀 Connectum v20.8.3 Online on port ${PORT}`);
+    adminLog("🚀 Сервер успешно обновлен до v20.8.3 (Full Detailed Sync)!");
 });
