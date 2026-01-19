@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="ru" style="background-color: #020617;">
+<head>
+  <meta charset="UTF-8" />
+  <!-- Оптимизация для Telegram Mini App и мобильных устройств -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="description" content="Connectum — Эволюция психологической практики" />
+  <title>Connectum | Эволюция Психологии</title>
+
+  <!-- Подключение шрифта Manrope (Standard for Premium UI) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- SDK Telegram Web App -->
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+  <!-- Tailwind CSS для обработки стилей из App.jsx -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    /* Глобальные настройки для предотвращения мерцания интерфейса */
+    :root {
+      --bg-deep: #020617;
+      --accent: #6366f1;
+    }
+   
+    html, body {
+      margin: 0;
+      padding: 0;
+      background-color: var(--bg-deep);
+      font-family: 'Manrope', sans-serif;
+      height: 100dvh;
+      width: 100%;
+      overflow: hidden; /* Запрещаем системный скролл всей страницы */
+      color: #f8fafc;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    #root {
+      height: 100%;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Анимированный лоадер до загрузки React-бандла */
+    .initial-loader {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100dvh;
+      background-color: var(--bg-deep);
+      z-index: 9999;
+    }
+
+    .loader-spinner {
+      width: 50px;
+      height: 50px;
+      border: 3px solid rgba(99, 102, 241, 0.1);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 1s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    }
+
+    .loader-text {
+      margin-top: 24px;
+      font-size: 10px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.4em;
+      color: #475569;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes pulse { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
+
+    /* Кастомный скроллбар для внутренних блоков */
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  </style>
+</head>
+<body>
+ 
+  <div id="root">
+    <!-- Этот контент будет заменен React-приложением после загрузки -->
+    <div class="initial-loader">
+      <div class="loader-spinner"></div>
+      <p class="loader-text">Connectum Intelligence</p>
+    </div>
+  </div>
+
+  <!-- Точка входа для сборщика (Vite) или сервера -->
+  <script type="module" src="/src/main.jsx"></script>
+</body>
+</html>
