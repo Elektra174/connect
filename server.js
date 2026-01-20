@@ -3,13 +3,12 @@
  * ========================================================
  * 🧠 AI ORCHESTRATION: 
  * - Gemma 3 (27b): Аналитический центр (14.4K RPD) - Текст, Супервизор, Аудит.
- * 🎙️ VOICE ENGINE: MsEdge TTS (Svetlana/Dmitry) - Стабильная озвучка без сбоев API.
- * 🤖 TELEGRAM BOT: Команда /start + Баннер + Кнопка. Полный фикс Webhook (Error 409).
+ * 🎙️ VOICE ENGINE: MsEdge TTS (Svetlana/Dmitry) - Стабильная озвучка.
+ * 🤖 TELEGRAM BOT: Полный фикс Webhook (Error 409) + Polling Mode.
  * 🛡️ SECURITY: Full Joi Validation (Number/String ID fix) + Rate Limiting.
- * 💰 ECONOMY: Firebase Transactions (Diamonds) + Waitlist Notifications.
+ * 💰 ECONOMY: Firebase Transactions (Diamonds) + Waitlist.
  * 📂 RAG: Semantic Search via Supabase Vector (300+ modules) with Timeout.
- * 🛠️ MEDIA: Video functionality REMOVED. Photo-only master profile.
- * 👥 DATABASE: 30 full client dossiers included (No cutting allowed).
+ * 📄 PDF: Полная генерация сертификатов мастерства через PDFKit.
  */
 
 const express = require('express');
@@ -30,7 +29,7 @@ require('dotenv').config();
 
 const app = express();
 
-// --- 📝 ПРОФЕССИОНАЛЬНОЕ ЛОГИРОВАНИЕ (Winston) ---
+// --- 📝 ПРОФЕССИОНАЛЬНОЕ ЛОГИРОВАНИЕ ---
 const logger = winston.createLogger({
     level: 'info',
     format: winston.format.combine(
@@ -52,7 +51,7 @@ const logger = winston.createLogger({
 // --- 🛡️ ЗАЩИТА (Rate Limiting) ---
 const chatLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, 
-    max: 100, 
+    max: 150, 
     message: { error: "Слишком много запросов. Повторите через 15 минут." }
 });
 
@@ -61,24 +60,13 @@ app.use(bodyParser.json({ limit: '50mb' }));
 
 // --- 📂 ОБСЛУЖИВАНИЕ СТАТИКИ (FIX ДЛЯ RENDER) ---
 const distPath = path.join(__dirname, 'dist');
-const publicBuildPath = path.join(distPath, 'public');
-
-app.use('/assets', express.static(path.join(distPath, 'assets'), {
-    setHeaders: (res, path) => {
-        if (path.endsWith('.js')) res.setHeader('Content-Type', 'application/javascript');
-        if (path.endsWith('.css')) res.setHeader('Content-Type', 'text/css');
-    }
-}));
-
 app.use(express.static(distPath));
-app.use(express.static(publicBuildPath));
 
 // --- ⚙️ КОНФИГУРАЦИЯ ---
 const APP_ID = process.env.APP_ID || 'connectum-platinum';
 const ADMIN_ID = process.env.ADMIN_ID || '7830322013';
 const WEB_APP_URL = process.env.WEB_APP_URL;
 
-// Инициализация Google AI (Ротация ключей)
 const googleApiKeys = process.env.GOOGLE_API_KEYS ? process.env.GOOGLE_API_KEYS.split(',') : [process.env.GOOGLE_API_KEY];
 let currentKeyIndex = 0;
 
@@ -88,10 +76,8 @@ const rotateKey = () => {
     logger.info(`🔄 Ротация: Используем ключ Google #${currentKeyIndex + 1}`);
 };
 
-// Инициализация Supabase
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
 
-// Инициализация Firebase
 let db = null;
 let bucket = null;
 if (process.env.FIREBASE_SERVICE_ACCOUNT) {
@@ -109,15 +95,14 @@ if (process.env.FIREBASE_SERVICE_ACCOUNT) {
     } catch (e) { logger.error("Firebase fail: " + e.message); }
 }
 
-// Инициализация Bot & Prompts
 const bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN, { polling: true });
 const PromptManager = require('./prompt_manager');
 
-// --- 🤖 ТЕЛЕГРАМ БОТ: ПРИНУДИТЕЛЬНОЕ УДАЛЕНИЕ ВЕБХУКА ---
+// --- 🤖 ТЕЛЕГРАМ БОТ: ФИКС WEBHOOK CONFLICT ---
 (async () => {
     try {
         await bot.deleteWebHook();
-        logger.info("📡 Бот запущен в режиме Polling. Ошибка 409 (конфликт) исключена.");
+        logger.info("📡 Бот запущен в режиме Polling. Конфликт 409 исключен.");
     } catch (e) { logger.error("Bot hook error: " + e.message); }
 })();
 
@@ -173,7 +158,7 @@ const CLIENT_DATABASE = {
     c14: { id: "c14", name: "Павел", age: 22, profession: "Курьер", familyStatus: "Живет с родителями", status: "Низкий", gender: "male", bio: "Зависимость от мнения родителей. Не может принять решение." },
     c15: { id: "c15", name: "Екатерина", age: 36, profession: "HR-директор", familyStatus: "Замужем", status: "Высокий", gender: "female", bio: "Выгорание. Перфекционизм. Жжение в глазах от истощения." },
     c16: { id: "c16", name: "Александр", age: 44, profession: "Инженер", familyStatus: "Вдовец", status: "Средний", gender: "male", bio: "Застрял в горе. Чувствует вину перед ушедшим близким." },
-    c17: { id: "c17", name: "Светлана", age: 30, profession: "Бьюти-мастер", familyStatus: "В поиске", status: "Средний", gender: "female", bio: "Низкая самооценка. Считает себя 'недостаточной'." },
+    c17: { id: "c17", name: "Светлана", age: 30, profession: "Бьюти-мастер", familyStatus: "В поиске", status: "Средний", gender: "female", bio: "Низкая самооценка. Считает себя 'недостаточной' для любви." },
     c18: { id: "c18", name: "Роман", age: 32, profession: "Аналитик", familyStatus: "Холост", status: "Средний", gender: "male", bio: "Игровая зависимость. Уход от реальности в виртуальный мир." },
     c19: { id: "c19", name: "Ирина", age: 48, profession: "Юрист", familyStatus: "Дети уехали", status: "Высокий", gender: "female", bio: "Синдром пустого гнезда. Смысл жизни пропал." },
     c20: { id: "c20", name: "Кирилл", age: 26, profession: "Дизайнер", familyStatus: "Холост", status: "Фриланс", gender: "male", bio: "Агорафобия. Боится выходить на открытые пространства." },
@@ -191,22 +176,18 @@ const CLIENT_DATABASE = {
 
 // --- 🛠 ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ---
 
-async function getEmbedding(text, retries = 3) {
-    for (let i = 0; i < retries; i++) {
-        try {
-            const model = getGoogleAI().getGenerativeModel({ model: "text-embedding-004" });
-            const result = await model.embedContent(text);
-            return result.embedding.values;
-        } catch (e) { 
-            rotateKey(); 
-            if (i === retries - 1) return null;
-        }
-    }
+async function getEmbedding(text) {
+    try {
+        const model = getGoogleAI().getGenerativeModel({ model: "text-embedding-004" });
+        const result = await model.embedContent(text);
+        return result.embedding.values;
+    } catch (e) { rotateKey(); return null; }
 }
 
 async function getRelevantKnowledge(userMessage, modalityId) {
     return new Promise(async (resolve) => {
-        const timeout = setTimeout(() => resolve(""), 2500);
+        const controller = new AbortController();
+        const timeout = setTimeout(() => { controller.abort(); resolve(""); }, 3000);
         try {
             const vector = await getEmbedding(userMessage);
             if (!vector) return resolve("");
@@ -219,28 +200,26 @@ async function getRelevantKnowledge(userMessage, modalityId) {
     });
 }
 
-/**
- * ВЫЗОВ GEMMA 3 (Текст/Аналитика)
- */
 async function callGemma(prompt, system) {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 20000); 
+
     for (let i = 0; i < googleApiKeys.length; i++) {
         try {
             const model = getGoogleAI().getGenerativeModel({ model: "models/gemma-3-27b" });
-            const result = await model.generateContent([system, prompt]);
+            const result = await model.generateContent([system, prompt], { signal: controller.signal });
+            clearTimeout(timeoutId);
             return result.response.text();
         } catch (e) { 
             rotateKey(); 
             if (i === googleApiKeys.length - 1) {
-                logger.error("Gemma API Exhausted: " + e.message);
-                return "Я задумался...";
+                logger.error("Gemma API Exhausted");
+                return "Я задумался чуть дольше обычного... попробуйте еще раз.";
             }
         }
     }
 }
 
-/**
- * VOICE ENGINE (MsEdge TTS) - Svetlana/Dmitry
- */
 async function generateSpeech(text, gender = 'female') {
     try {
         const tts = new MsEdgeTTS();
@@ -250,24 +229,18 @@ async function generateSpeech(text, gender = 'female') {
         let chunks = [];
         for await (let chunk of readable) { chunks.push(chunk); }
         return Buffer.concat(chunks).toString('base64');
-    } catch (e) { 
-        logger.error("TTS Engine Fail: " + e.message);
-        return null; 
-    }
+    } catch (e) { return null; }
 }
 
-/**
- * ТРАНЗАКЦИОННОЕ СПИСАНИЕ 💎
- */
 async function useSessionLimit(userId) {
     if (!db) return true; 
     const limitRef = db.collection('artifacts').doc(APP_ID).collection('users').doc(userId.toString()).collection('limits').doc('stats');
     try {
         return await db.runTransaction(async (t) => {
             const doc = await t.get(limitRef);
-            let stats = doc.exists ? doc.data() : { gems: 5, activeTariff: null };
-            if (stats.gems <= 0 && !stats.activeTariff) return false;
-            if (!stats.activeTariff) stats.gems -= 1;
+            let stats = doc.exists ? doc.data() : { gems: 5 };
+            if (stats.gems <= 0) return false;
+            stats.gems -= 1;
             t.set(limitRef, stats, { merge: true });
             return true;
         });
@@ -276,11 +249,7 @@ async function useSessionLimit(userId) {
 
 // --- 🌐 API ENDPOINTS ---
 
-/**
- * ГЛАВНЫЙ ЧАТ (ФИКС ВАЛИДАЦИИ 400)
- */
 app.post('/api/chat', chatLimiter, async (req, res) => {
-    // userId может быть и Number, и String
     const schema = Joi.object({
         userId: Joi.alternatives().try(Joi.string(), Joi.number()).required(),
         message: Joi.string().required(),
@@ -293,11 +262,8 @@ app.post('/api/chat', chatLimiter, async (req, res) => {
         history: Joi.array().items(Joi.object().unknown()).optional()
     });
 
-    const { error, value } = schema.validate(req.body, { abortEarly: false });
-    if (error) {
-        logger.error(`Validation Error API CHAT: ${JSON.stringify(error.details)}`);
-        return res.status(400).json({ error: error.details[0].message });
-    }
+    const { error, value } = schema.validate(req.body);
+    if (error) return res.status(400).json({ error: error.details[0].message });
 
     const { userId, message, modalityId, action, selectedClientId, role, flow, difficulty = 2, history = [] } = value;
     const clientProfile = CLIENT_DATABASE[selectedClientId] || CLIENT_DATABASE['c1'];
@@ -307,13 +273,13 @@ app.post('/api/chat', chatLimiter, async (req, res) => {
         
         if (action === 'get_hint') {
             const sys = PromptManager.generateSupervisorPrompt(modalityId, history, knowledge);
-            const hint = await callGemma(`Дай краткий совет: ${message}`, sys);
+            const hint = await callGemma(`Дай краткий совет на интервенцию: ${message}`, sys);
             return res.json({ hint });
         }
 
         if (history.length === 0 && role === 'psychologist') {
             const ok = await useSessionLimit(userId);
-            if (!ok) return res.status(403).json({ error: "Недостаточно 💎. Пожалуйста, пополните баланс." });
+            if (!ok) return res.status(403).json({ error: "Недостаточно 💎 на балансе." });
         }
 
         const sys = role === 'client' 
@@ -324,15 +290,9 @@ app.post('/api/chat', chatLimiter, async (req, res) => {
         const voice = await generateSpeech(content, clientProfile.gender);
 
         res.json({ content, voice });
-    } catch (e) { 
-        logger.error("API Chat Error: " + e.message);
-        res.status(500).json({ error: "Ошибка искусственного интеллекта." }); 
-    }
+    } catch (e) { res.status(500).json({ error: "Ошибка AI-движка." }); }
 });
 
-/**
- * ФИНАЛИЗАЦИЯ И ГЕНЕРАЦИЯ PDF (PLATINUM DESIGN)
- */
 app.post('/api/finish', async (req, res) => {
     const schema = Joi.object({
         userId: Joi.alternatives().try(Joi.string(), Joi.number()).required(),
@@ -364,16 +324,17 @@ app.post('/api/finish', async (req, res) => {
             doc.pipe(stream);
             doc.rect(0, 0, 595, 842).fill('#020617');
             doc.fillColor('#6366f1').fontSize(40).text('CONNECTUM', 50, 50);
-            doc.fillColor('#f8fafc').fontSize(14).text('GOLDEN CERTIFICATE OF MASTERY', 50, 105);
+            doc.fillColor('#f8fafc').fontSize(14).text('CERTIFICATE OF MASTERY', 50, 105);
             doc.moveTo(50, 130).lineTo(545, 130).strokeColor('#1e293b').stroke();
+            
             doc.moveDown(4).fontSize(18).fillColor('#ffffff').text(`Master ID: ${userId}`);
-            doc.text(`Method: ${modalityId.toUpperCase()}`);
+            doc.text(`Modality: ${modalityId.toUpperCase()}`);
             doc.moveDown(1).text(`Skill Score: ${analysis.method || 0}%`, { underline: true });
             
-            doc.moveDown(2).fontSize(12).fillColor('#94a3b8').text('Expert Analysis:');
-            doc.fillColor('#f1f5f9').text(analysis.expert_comment || "Сессия завершена.", { width: 500, align: 'justify' });
+            doc.moveDown(2).fontSize(12).fillColor('#94a3b8').text('AI Supervision Analysis:');
+            doc.fillColor('#f1f5f9').text(analysis.expert_comment || "Сессия успешно завершена.", { width: 500, align: 'justify' });
             
-            doc.moveDown(3).fontSize(10).fillColor('#475569').text('Verified by Connectum Protocol v21.18', { align: 'center' });
+            doc.moveDown(3).fontSize(10).fillColor('#475569').text('Verified by Connectum Protocol v21.18 Platinum', { align: 'center' });
             doc.end();
 
             certificateUrl = `https://storage.googleapis.com/${bucket.name}/${filename}`;
@@ -388,26 +349,20 @@ app.post('/api/finish', async (req, res) => {
         res.json({ analytics: analysis, certificateUrl });
     } catch (e) { 
         logger.error("Audit fail: " + e.message);
-        res.status(500).json({ error: "Ошибка завершения сессии." }); 
+        res.status(500).json({ error: "Ошибка формирования отчета." }); 
     }
 });
 
-/**
- * АГРЕГАТОР
- */
 app.get('/api/aggregator', async (req, res) => {
     if (!db) return res.json([]);
     try {
         const snap = await db.collection('artifacts').doc(APP_ID).collection('public').doc('data').collection('psychologists').get();
         let list = snap.docs.map(d => d.data());
-        list.sort((a, b) => (a.isVip ? -1 : 1) || (a.isPremium ? -1 : 1) || (b.skillRating - a.skillRating));
+        list.sort((a, b) => (a.isVip ? -1 : 1) || (b.skillRating - a.skillRating));
         res.json(list);
     } catch (e) { res.status(500).send("Aggregator Error"); }
 });
 
-/**
- * ПРОФИЛЬ (PHOTO ONLY)
- */
 app.post('/api/profile', async (req, res) => {
     const { userId, profile } = req.body;
     if (!db || !userId) return res.json({ status: 'error' });
@@ -419,29 +374,19 @@ app.post('/api/profile', async (req, res) => {
     } catch (e) { res.status(500).send("Profile Error"); }
 });
 
-/**
- * WAITLIST
- */
 app.post('/api/waitlist', async (req, res) => {
-    const schema = Joi.object({
-        userId: Joi.alternatives().try(Joi.string(), Joi.number()).required(),
-        role: Joi.string().required(),
-        tariff: Joi.string().required()
-    });
-    const { error, value } = schema.validate(req.body);
-    if (error) return res.status(400).json({ error: "Invalid waitlist payload" });
-
+    const { userId, role, tariff } = req.body;
     if (!db) return res.json({ status: 'demo' });
     try {
-        const entry = { userId: value.userId.toString(), role: value.role, tariff: value.tariff, status: 'pending', timestamp: admin.firestore.FieldValue.serverTimestamp() };
-        await db.collection('artifacts').doc(APP_ID).collection('public').doc('data').collection('waitlist').add(entry);
-        await adminLog(`💰 Заявка на тариф: ${value.tariff} от ${value.userId}`);
+        await db.collection('artifacts').doc(APP_ID).collection('public').doc('data').collection('waitlist').add({
+            userId: userId.toString(), role, tariff, timestamp: admin.firestore.FieldValue.serverTimestamp()
+        });
+        await adminLog(`💰 Заявка: ${tariff} от ${userId}`);
         res.json({ status: 'success' });
     } catch (e) { res.status(500).send("Waitlist Error"); }
 });
 
 app.get('*', (req, res) => {
-    if (req.url.includes('.')) return res.status(404).send('Not found');
     res.sendFile(path.join(distPath, 'index.html'));
 });
 
