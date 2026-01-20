@@ -1,7 +1,7 @@
 {
   "name": "connectum-pro-platinum",
-  "version": "21.25.0",
-  "description": "Connectum Pro Platinum Evolution: Ультимативная экосистема на базе YandexGPT Pro и SpeechKit с автоматической инициализацией базы знаний при деплое",
+  "version": "21.26.0",
+  "description": "Connectum Pro Platinum Evolution: Ультимативная экосистема на базе Yandex Assistant API и SpeechKit с автоматической установкой всех зависимостей",
   "main": "server.js",
   "type": "commonjs",
   "scripts": {
@@ -24,6 +24,7 @@
     "marked": "^11.1.1",
     "node-cache": "^5.1.2",
     "node-telegram-bot-api": "^0.66.0",
+    "openai": "^4.28.0",
     "pdfkit": "^0.14.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
@@ -45,11 +46,11 @@
   "keywords": [
     "connectum",
     "yandex-gpt-pro",
+    "yandex-assistant",
     "speechkit",
     "psychology-ai",
     "platinum-evolution",
-    "telegram-mini-app",
-    "render-auto-seed"
+    "telegram-mini-app"
   ],
   "author": "Connectum Master Team",
   "license": "MIT"
