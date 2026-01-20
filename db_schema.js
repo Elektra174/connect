@@ -1,8 +1,8 @@
 /**
- * DB_SCHEMA.JS - Актуальная архитектура Firestore v20.3 Platinum.
+ * DB_SCHEMA.JS - Архитектура Firestore v21.25 Platinum Evolution.
  * =========================================================================
- * ⚖️ СИНХРОНИЗИРОВАНО С App.jsx и server.js v20.3.
- * 🏗 ПРАВИЛО №1 (СТРОГИЕ ПУТИ): 
+ * ⚖️ ПОЛНАЯ СИНХРОНИЗАЦИЯ: App.jsx, server.js и YandexGPT Pro.
+ * 🏗️ ПРАВИЛО №1 (СТРОГИЕ ПУТИ): 
  * - Публичные: /artifacts/{appId}/public/data/{collectionName}/{docId}
  * - Приватные: /artifacts/{appId}/users/{userId}/{collectionName}/{docId}
  */
@@ -10,27 +10,44 @@
 const appId = "connectum-platinum";
 
 // =========================================================================
-// I. ПУБЛИЧНЫЙ СЛОЙ (MARKETPLACE / ВИТРИНА)
+// I. ПУБЛИЧНЫЙ СЛОЙ (GLOBAL DATA & ANALYTICS)
 // =========================================================================
 
 /**
  * КОЛЛЕКЦИЯ: psychologists
  * Путь: /artifacts/{appId}/public/data/psychologists/{userId}
- * Назначение: Витрина специалистов для клиентов.
+ * Назначение: Глобальная витрина специалистов.
  */
 const psychologistPublicSchema = {
     userId: "string",           // Telegram UID
-    name: "string",             // ФИО специалиста
-    experience: "number",       // Стаж (лет)
-    price: "number",            // Цена за сессию (₽)
-    methods: "string",          // Описание подходов (полные названия из modalities.js)
-    skillRating: "number",      // Итоговый балл (0-100) из ИИ-аудитов
-    photoUrl: "string | null",  // Ссылка на фото (Firebase Storage)
-    videoUrl: "string | null",  // Ссылка на видео-визитку (.webm)
-    isPremium: "boolean",       // Статус PRO (2990₽)
-    isVip: "boolean",           // VIP-размещение в ТОП выдачи
-    verified: "boolean",        // Подтверждение дипломов администрацией
-    updatedAt: "timestamp"      // Время последнего обновления
+    name: "string",             // Публичное имя
+    experience: "number",       // Стаж
+    price: "number",            // Стоимость сессии
+    methods: "string",          // Перечень модальностей
+    about: "string",            // "О себе" для клиентов
+    skillRating: "number",      // Индекс мастерства (расчет ИИ)
+    photoUrl: "string | null",  // Ссылка на аватар
+    isPremium: "boolean",       // Доступ к PRO
+    isVip: "boolean",           // Приоритет в выдаче
+    updatedAt: "timestamp"      // Время последней активности
+};
+
+/**
+ * КОЛЛЕКЦИЯ: training_logs (Logging 2.0)
+ * Путь: /artifacts/{appId}/public/data/training_logs/{logId}
+ * Назначение: Сбор данных для самообучения ИИ.
+ */
+const trainingLogsSchema = {
+    userId: "string",           // Кто тренировался
+    role: "psychologist | client",
+    modalityId: "string",       // Метод
+    userMessage: "string",      // Реплика пользователя
+    aiResponse: "string",       // Ответ ИИ
+    supervisorHint: "string",   // Данный совет (если был)
+    metadata: {
+        difficulty: "number",
+        timestamp: "timestamp"
+    }
 };
 
 /**
@@ -39,10 +56,9 @@ const psychologistPublicSchema = {
  */
 const waitlistSchema = {
     userId: "string",
-    role: "psychologist" | "client",
-    tariff: "psych_test_drive" | "psych_pro" | "client_premium",
-    amount: "number",
-    status: "pending" | "paid",
+    role: "string",
+    tariff: "string",
+    status: "pending | processed",
     timestamp: "serverTimestamp"
 };
 
@@ -53,41 +69,64 @@ const waitlistSchema = {
 /**
  * КОЛЛЕКЦИЯ: profile
  * Путь: /artifacts/{appId}/users/{userId}/profile/data
- * Назначение: Личная анкета и бизнес-настройки.
+ * Назначение: Расширенные настройки мастера.
  */
 const userProfileSchema = {
     name: "string",
     experience: "number",
     price: "number",
-    methods: "string",
+    about: "string",            // Философия и опыт
+    methods: "string",          // Методы работы
     photoUrl: "string | null",
-    videoUrl: "string | null",
-    commission: 0.2 | 0.4,      // PRO (20%), Basic (40%)
-    isPremium: "boolean",
-    gems: "number",             // Баланс сессий
+    diamonds: "number",         // Текущий баланс бриллиантов
     updatedAt: "timestamp"
+};
+
+/**
+ * КОЛЛЕКЦИЯ: progress
+ * Путь: /artifacts/{appId}/users/{userId}/profile/progress
+ * Назначение: Фильтрация для бесконечного цикла.
+ */
+const userProgressSchema = {
+    passedClients: ["string"],  // Массив ID (c1, c2, ai_xxx), которые больше не показываются
+    totalSessions: "number",
+    masteryLevel: "number"
+};
+
+/**
+ * КОЛЛЕКЦИЯ: custom_clients
+ * Путь: /artifacts/{appId}/users/{userId}/custom_clients/{clientId}
+ * Назначение: Уникальные клиенты, сгенерированные YandexGPT специально для юзера.
+ */
+const customClientSchema = {
+    id: "string",               // Генерируется Firestore
+    name: "string",
+    age: "number",
+    profession: "string",
+    gender: "male | female",
+    avatar: "string (emoji)",
+    bio: "string",              // Психологический портрет + зажимы
+    isAi: true,                 // Пометка, что это не статический кейс
+    createdAt: "timestamp"
 };
 
 /**
  * КОЛЛЕКЦИЯ: sessions
  * Путь: /artifacts/{appId}/users/{userId}/sessions/{sessionId}
- * Назначение: Логи диалогов и аналитика трансформации.
+ * Назначение: История сессий и PDF сертификаты.
  */
 const sessionSchema = {
-    modalityId: "string",       // mpt, cbt, gestalt и т.д.
-    role: "psychologist" | "client",
-    transcript: [               // Полный лог для последующего обучения
-        { role: "user" | "ai" | "hint", content: "string", timestamp: "number" }
-    ],
-    analysis: {                 // Результат обработки Gemma 3
-        method: "number",       // 0-100 (для психолога)
-        empathy: "number",      // 0-100 (для психолога)
-        expert_comment: "string",
-        insight: "string",      // Главный инсайт (для клиента)
-        body_focus: "string",   // Фокус на ощущениях (для клиента)
-        action_step: "string"   // Шаг в реальности
+    modalityId: "string",
+    selectedClientId: "string",
+    transcript: "array",        // История чата
+    analysis: {
+        method: "number",
+        empathy: "number",
+        boundaries: "number",
+        ethics: "number",
+        expert_comment: "string"
     },
-    certificateUrl: "string",   // Ссылка на PDF для PRO-мастеров
+    certificateUrl: "string",   // Путь к PDF в Storage
     timestamp: "serverTimestamp"
 };
 
@@ -96,11 +135,17 @@ const sessionSchema = {
  * Путь: /artifacts/{appId}/users/{userId}/limits/stats
  */
 const limitsSchema = {
-    gems: "number",             // Доступные тренировки
-    activeTariff: "string",     // Текущий уровень доступа
-    expiresAt: "timestamp"      // Дата окончания подписки
+    diamonds: "number",         // Актуальный баланс для транзакций
+    activeTariff: "string",
+    lastRefill: "timestamp"
 };
 
 if (typeof module !== 'undefined') {
-    module.exports = { appId, psychologistPublicSchema, userProfileSchema, sessionSchema };
+    module.exports = { 
+        appId, 
+        psychologistPublicSchema, 
+        userProfileSchema, 
+        customClientSchema,
+        trainingLogsSchema 
+    };
 }
