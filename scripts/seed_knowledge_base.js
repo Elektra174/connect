@@ -7,7 +7,10 @@
  * =========================================================================
  */
 
-require('dotenv').config();
+const path = require('path');
+// Явно указываем путь к .env, если скрипт запускается из папки scripts
+require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
+
 const { createClient } = require('@supabase/supabase-js');
 const axios = require('axios');
 const winston = require('winston');
@@ -18,20 +21,37 @@ const logger = winston.createLogger({
     transports: [
         new winston.transports.File({ filename: 'logs/seed_platinum.log' }),
         new winston.transports.Console({
-            format: winston.format.combine(winston.format.colorize(), winston.format.simple())
+            format: winston.format.combine(
+                winston.format.colorize(),
+                winston.format.simple()
+            )
         })
     ],
 });
 
+// Гибкая настройка ключей (проверяем оба варианта именования из вашего .env)
 const YANDEX_API_KEY = process.env.YANDEX_API_KEY;
-const FOLDER_ID = process.env.YANDEX_FOLDER_ID;
+const FOLDER_ID = process.env.FOLDER_ID || process.env.YANDEX_FOLDER_ID;
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_KEY = process.env.SUPABASE_KEY;
 
-if (!YANDEX_API_KEY || !FOLDER_ID || !SUPABASE_URL || !SUPABASE_KEY) {
-    console.error("❌ Ошибка: Проверьте ключи YANDEX и SUPABASE в .env");
-    process.exit(1);
-}
+// Детальная проверка
+const checkEnv = () => {
+    const missing = [];
+    if (!YANDEX_API_KEY) missing.push("YANDEX_API_KEY");
+    if (!FOLDER_ID) missing.push("FOLDER_ID (или YANDEX_FOLDER_ID)");
+    if (!SUPABASE_URL) missing.push("SUPABASE_URL");
+    if (!SUPABASE_KEY) missing.push("SUPABASE_KEY");
+
+    if (missing.length > 0) {
+        console.error("❌ Ошибка конфигурации! Не найдены следующие ключи в .env:");
+        missing.forEach(k => console.error(`   - ${k}`));
+        console.log("\n💡 Проверьте, что файл .env находится в корневой папке проекта.");
+        process.exit(1);
+    }
+};
+
+checkEnv();
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
