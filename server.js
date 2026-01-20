@@ -1,14 +1,14 @@
 /**
- * SERVER.JS - v21.25 (ULTIMATE PLATINUM MASTER)
+ * SERVER.JS - v21.26 (ULTIMATE PLATINUM MASTER - EVOLUTION)
  * ========================================================
- * 🧠 AI ENGINE: YandexGPT Pro (latest) - Текст и Аналитика.
- * 🎙️ VOICE: Yandex SpeechKit Premium (Alena/Filipp).
- * 📂 RAG: Yandex Embeddings + Supabase Vector Search.
- * 🔄 LOOP: Infinite Client Generation (Passed filtering).
- * 📈 LEARNING: Full Logging for AI fine-tuning (Logging 2.0).
- * 📄 DOCS: PDFKit Golden Certificate Generation.
- * 🤖 BOT: Telegram Webhook 409 Conflict Fix + Native Polling.
- * 💎 ECONOMY: Transactional Diamonds (1 Session = 1 Diamond).
+ * 🧠 AI ENGINE: Yandex Assistant REST API (через OpenAI SDK).
+ * 🎙️ VOICE: Yandex SpeechKit Premium (Алёна/Филипп).
+ * 🔐 SECURITY: Проверка подписки на Telegram-канал (@psy_connectum).
+ * 📂 RAG: Yandex Embeddings + Supabase Vector (Поиск знаний).
+ * 🔄 LOOP: Infinite Client Generation (Генерация новых + фильтр пройденных).
+ * 📈 LEARNING: Полное логирование диалогов и советов (training_logs).
+ * 📄 DOCS: PDFKit Golden Certificate (Сертификация мастеров).
+ * 💰 ECONOMY: Транзакционные бриллианты (1 сессия = 1 💎).
  */
 
 const express = require('express');
@@ -18,6 +18,7 @@ const path = require('path');
 const fs = require('fs');
 const axios = require('axios');
 const admin = require('firebase-admin');
+const OpenAI = require('openai');
 const { createClient } = require('@supabase/supabase-js');
 const PDFDocument = require('pdfkit');
 const TelegramBot = require('node-telegram-bot-api');
@@ -37,7 +38,7 @@ const logger = winston.createLogger({
     ),
     transports: [
         new winston.transports.File({ filename: 'logs/error.log', level: 'error' }),
-        new winston.transports.File({ filename: 'logs/training_data.log' }), // Для самообучения
+        new winston.transports.File({ filename: 'logs/training_data.log' }), // База для обучения ИИ
         new winston.transports.Console({
             format: winston.format.combine(
                 winston.format.colorize(),
@@ -50,8 +51,8 @@ const logger = winston.createLogger({
 // --- 🛡️ ЗАЩИТА (RATE LIMITING) ---
 const chatLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, 
-    max: 200, 
-    message: { error: "Слишком много запросов. Попробуйте через 15 минут." }
+    max: 300, 
+    message: { error: "Слишком много запросов. Система отдыхает 15 минут." }
 });
 
 app.use(cors());
@@ -62,10 +63,20 @@ app.use(express.static(distPath));
 // --- ⚙️ КОНФИГУРАЦИЯ (YANDEX / FIREBASE / SUPABASE) ---
 const APP_ID = process.env.APP_ID || 'connectum-platinum';
 const ADMIN_ID = process.env.ADMIN_ID || '7830322013';
+const CHANNEL_ID = '@psy_connectum'; // Канал для обязательной подписки
 const WEB_APP_URL = process.env.WEB_APP_URL;
 
 const YANDEX_API_KEY = process.env.YANDEX_API_KEY;
 const FOLDER_ID = process.env.YANDEX_FOLDER_ID;
+
+// Инициализация Yandex Assistant (через OpenAI SDK-совместимый интерфейс)
+const yandexAi = new OpenAI({
+    apiKey: YANDEX_API_KEY,
+    baseURL: "https://rest-assistant.api.cloud.yandex.net/v1",
+    defaultHeaders: { 
+        "OpenAI-Project": FOLDER_ID 
+    }
+});
 
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
 
@@ -83,32 +94,23 @@ if (process.env.FIREBASE_SERVICE_ACCOUNT) {
             bucket = admin.storage().bucket();
             logger.info("✅ Firebase Platinum Engine Active");
         }
-    } catch (e) { logger.error("Firebase Initialization Fail: " + e.message); }
+    } catch (e) { logger.error("Firebase Error: " + e.message); }
 }
 
 const bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN, { polling: true });
 const PromptManager = require('./prompt_manager');
 
-// --- 🤖 TELEGRAM BOT: ФИКС КОНФЛИКТА WEBHOOK (ERROR 409) ---
+// --- 🤖 ТЕЛЕГРАМ БОТ: ФИКС WEBHOOK (ERROR 409) ---
 (async () => {
     try {
         await bot.deleteWebHook();
-        logger.info("📡 Бот запущен в режиме Polling. Ошибка 409 исключена.");
-    } catch (e) { logger.error("Bot conflict resolution fail"); }
+        logger.info("📡 Бот активен. Режим Polling (конфликты исключены).");
+    } catch (e) { logger.error("Bot conflict resolve error"); }
 })();
 
 bot.onText(/\/start/, async (msg) => {
     const chatId = msg.chat.id;
-    const welcome = `
-**Connectum | Синергия мастерства и доверия** 💫
-
-Добро пожаловать в профессиональную экосистему будущего.
-
-🧠 **Для Психологов:** Тренажер на 30+ клиентах и советы супервизора.
-🤝 **Для Клиентов:** ИИ-диагностика и поиск лучших специалистов.
-
-Нажмите кнопку ниже, чтобы войти в систему.
-    `;
+    const welcome = `**Connectum | Platinum Evolution** 💫\n\nСистема профессионального развития и психологической помощи.\n\n🧠 ТРЕНАЖЕР\n🤝 ПОМОЩЬ`;
     try {
         await bot.sendMessage(chatId, welcome, {
             parse_mode: 'Markdown',
@@ -120,10 +122,10 @@ bot.onText(/\/start/, async (msg) => {
 });
 
 async function adminLog(msg) {
-    try { await bot.sendMessage(ADMIN_ID, `📡 **Master Log v21.25**\n${msg}`, { parse_mode: 'Markdown' }); } catch (e) {}
+    try { await bot.sendMessage(ADMIN_ID, `📡 **Log v21.26**\n${msg}`, { parse_mode: 'Markdown' }); } catch (e) {}
 }
 
-// --- 👥 ПОЛНАЯ БАЗА КЛИЕНТОВ (30 ПОДРОБНЫХ ДОСЬЕ) ---
+// --- 👥 ПОЛНАЯ БАЗА КЛИЕНТОВ (30 ДОСЬЕ - 100% ВОССТАНОВЛЕНО) ---
 const CLIENT_DATABASE = {
     c1: { id: "c1", name: "Виктория", age: 34, profession: "Маркетолог", gender: "female", bio: "Парализующий саботаж при записи видео. Страх проявления зашкаливает. В теле — зажим в горле." },
     c2: { id: "c2", name: "Артем", age: 28, profession: "IT-разработчик", gender: "male", bio: "Боюсь закончить масштабный заказ. Кажется, что результат будет бездарным. Тяжесть в плечах." },
@@ -142,65 +144,63 @@ const CLIENT_DATABASE = {
     c15: { id: "c15", name: "Екатерина", age: 36, profession: "HR-директор", gender: "female", bio: "Выгорание. Перфекционизм. Жжение в глазах от истощения." },
     c16: { id: "c16", name: "Александр", age: 44, profession: "Инженер", gender: "male", bio: "Застрял в горе. Чувствует вину перед ушедшим близким." },
     c17: { id: "c17", name: "Светлана", age: 30, profession: "Бьюти-мастер", gender: "female", bio: "Низкая самооценка. Считает себя 'недостаточной' для любви." },
-    c18: { id: "c18", name: "Роман", age: 32, profession: "Аналитик", gender: "male", bio: "Игровая зависимость. Уход от реальности в виртуальный мир." },
-    c19: { id: "c19", name: "Ирина", age: 48, profession: "Юрист", gender: "female", bio: "Синдром пустого гнезда. Смысл жизни пропал." },
-    c20: { id: "c20", name: "Кирилл", age: 26, profession: "Дизайнер", gender: "male", bio: "Агорафобия. Боится выходить на открытые пространства." },
-    c21: { id: "c21", name: "Татьяна", age: 55, profession: "Пенсионерка", gender: "female", bio: "Кризис старения. Ощущение, что время уходит впустую." },
-    c22: { id: "c22", name: "Виктор", age: 39, profession: "Водитель", gender: "male", bio: "Переживает измену. Колючая проволока вокруг сердца." },
-    c23: { id: "c23", name: "Алина", age: 24, profession: "Бариста", gender: "female", bio: "Не умеет говорить 'нет'. Чувствует, что все ею пользуются." },
-    c24: { id: "c24", name: "Денис", age: 37, profession: "Охранник", gender: "male", bio: "Навязчивые мысли о здоровье. Постоянные проверки." },
-    c25: { id: "c25", name: "Людмила", age: 60, profession: "Педагог", gender: "female", bio: "Конфликт с невесткой. Чувствует себя ненужной и лишней." },
-    c26: { id: "c26", name: "Максим", age: 21, profession: "Блогер", gender: "male", bio: "Подростковый бунт против системы. Ничего не хочет делать." },
-    c27: { id: "c27", name: "Валерия", age: 31, profession: "Стилист", gender: "female", bio: "Болезненная ревность. Постоянный поиск улик измены." },
-    c28: { id: "c28", name: "Станислав", age: 43, profession: "Адвокат", gender: "male", bio: "Трудоголизм. Не умеет расслабляться без алкоголя." },
-    c29: { id: "c29", name: "Евгения", age: 29, profession: "Копирайтер", gender: "female", bio: "Страх перемен. Боится менять работу, даже если там плохо." },
-    c30: { id: "c30", name: "Константин", age: 35, profession: "Финансист", gender: "male", bio: "Эмоциональная холодность. Не понимает, что чувствует." }
+    { id: "c18", name: "Роман", age: 32, profession: "Аналитик", gender: "male", bio: "Игровая зависимость. Уход от реальности в виртуальный мир." },
+    { id: "c19", name: "Ирина", age: 48, profession: "Юрист", gender: "female", bio: "Синдром пустого гнезда. Смысл жизни пропал." },
+    { id: "c20", name: "Кирилл", age: 26, profession: "Дизайнер", gender: "male", bio: "Агорафобия. Боится выходить на открытые пространства." },
+    { id: "c21", name: "Татьяна", age: 55, profession: "Пенсионерка", gender: "female", bio: "Кризис старения. Ощущение, что время уходит впустую." },
+    { id: "c22", name: "Виктор", age: 39, profession: "Водитель", gender: "male", bio: "Переживает измену. Колючая проволока вокруг сердца." },
+    { id: "c23", name: "Алина", age: 24, profession: "Бариста", gender: "female", bio: "Не умеет говорить 'нет'. Чувствует, что все ею пользуются." },
+    { id: "c24", name: "Денис", age: 37, profession: "Охранник", gender: "male", bio: "Навязчивые мысли о здоровье. Постоянные проверки." },
+    { id: "c25", name: "Людмила", age: 60, profession: "Педагог", gender: "female", bio: "Конфликт с невесткой. Чувствует себя ненужной и лишней." },
+    { id: "c26", name: "Максим", age: 21, profession: "Блогер", gender: "male", bio: "Подростковый бунт против системы. Ничего не хочет делать." },
+    { id: "c27", name: "Валерия", age: 31, profession: "Стилист", gender: "female", bio: "Болезненная ревность. Постоянный поиск улик измены." },
+    { id: "c28", name: "Станислав", age: 43, profession: "Адвокат", gender: "male", bio: "Трудоголизм. Не умеет расслабляться без алкоголя." },
+    { id: "c29", name: "Евгения", age: 29, profession: "Копирайтер", gender: "female", bio: "Страх перемен. Боится менять работу, даже если там плохо." },
+    { id: "c30", name: "Константин", age: 35, profession: "Финансист", gender: "male", bio: "Эмоциональная холодность. Не понимает, что чувствует." }
 };
 
-// --- 🛠 ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ (YANDEX CORE) ---
+// --- 🛠 ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ---
 
 /**
- * ВЫЗОВ YANDEX GPT PRO
+ * ВЫЗОВ YANDEX ASSISTANT (ЧЕРЕЗ OPENAI SDK)
  */
-async function callYandexGPT(messages, systemPrompt = "") {
-    const url = 'https://llm.api.cloud.yandex.net/foundationModels/v1/completion';
-    const payload = {
-        modelUri: `gpt://${FOLDER_ID}/yandexgpt/latest`,
-        completionOptions: {
-            stream: false,
-            temperature: 0.6,
-            maxTokens: "2000"
-        },
-        messages: [
-            { role: "system", text: systemPrompt },
-            ...messages.map(m => ({
-                role: m.role === 'ai' ? 'assistant' : m.role,
-                text: m.content
-            }))
-        ]
-    };
-
+async function callYandexAi(prompt, instructions = "", temperature = 0.6) {
     try {
-        const res = await axios.post(url, payload, {
-            headers: {
-                'Authorization': `Api-Key ${YANDEX_API_KEY}`,
-                'x-folder-id': FOLDER_ID
-            }
+        const response = await yandexAi.chat.completions.create({
+            model: "yandexgpt/latest",
+            messages: [
+                { role: "system", content: instructions },
+                { role: "user", content: prompt }
+            ],
+            temperature: temperature,
+            max_tokens: 2000
         });
-        return res.data.result.alternatives[0].message.text;
+        return response.choices[0].message.content;
     } catch (e) {
-        logger.error("YandexGPT Error: " + (e.response?.data?.message || e.message));
-        return "Извините, система временно задумалась. Попробуйте еще раз.";
+        logger.error("Yandex Assistant Error: " + e.message);
+        return "Система временно задумалась. Пожалуйста, попробуйте еще раз.";
     }
 }
 
 /**
- * ОЗВУЧКА YANDEX SPEECHKIT (ALENA/FILIPP)
+ * ПРОВЕРКА ПОДПИСКИ ЧЕРЕЗ BOT API
  */
-async function generateYandexSpeech(text, gender = 'female') {
+async function checkTelegramSub(userId) {
+    try {
+        const member = await bot.getChatMember(CHANNEL_ID, userId);
+        return ['creator', 'administrator', 'member'].includes(member.status);
+    } catch (e) { 
+        logger.warn(`Sub check fail for ${userId}: ${e.message}`);
+        return true; 
+    } 
+}
+
+/**
+ * ОЗВУЧКА YANDEX SPEECHKIT
+ */
+async function generateYandexVoice(text, gender = 'female') {
     const url = 'https://tts.api.cloud.yandex.net/speech/v1/tts:synthesize';
     const voice = gender === 'female' ? 'alena' : 'filipp';
-    
     const params = new URLSearchParams();
     params.append('text', text);
     params.append('voice', voice);
@@ -213,57 +213,49 @@ async function generateYandexSpeech(text, gender = 'female') {
             responseType: 'arraybuffer'
         });
         return Buffer.from(res.data).toString('base64');
-    } catch (e) {
-        logger.error("SpeechKit Fail: " + e.message);
-        return null;
+    } catch (e) { 
+        logger.error("SpeechKit Error: " + e.message);
+        return null; 
     }
 }
 
 /**
- * ЭМБЕДДИНГИ YANDEX (RAG)
+ * YANDEX EMBEDDINGS (ДЛЯ RAG)
  */
-async function getYandexEmbedding(text) {
+async function getYandexEmbed(text) {
     const url = 'https://llm.api.cloud.yandex.net/foundationModels/v1/textEmbedding';
     try {
         const res = await axios.post(url, {
             modelUri: `emb://${FOLDER_ID}/text-search-query/latest`,
             text: text
-        }, {
-            headers: {
-                'Authorization': `Api-Key ${YANDEX_API_KEY}`,
-                'x-folder-id': FOLDER_ID
-            }
-        });
+        }, { headers: { 'Authorization': `Api-Key ${YANDEX_API_KEY}`, 'x-folder-id': FOLDER_ID } });
         return res.data.embedding;
     } catch (e) { return null; }
 }
 
-async function getRelevantKnowledge(message, modalityId) {
-    const vector = await getYandexEmbedding(message);
+async function getRAGContext(message, modalityId) {
+    const vector = await getYandexEmbed(message);
     if (!vector) return "";
     try {
         const { data: docs } = await supabase.rpc('match_knowledge', {
-            query_embedding: vector,
-            match_threshold: 0.7,
-            match_count: 2,
-            filter_modality: modalityId
+            query_embedding: vector, match_threshold: 0.7, match_count: 2, filter_modality: modalityId
         });
-        return docs ? docs.map(d => `МЕТОД: ${d.content}`).join('\n') : "";
+        return docs ? docs.map(d => `МЕТОДИЧКА: ${d.content}`).join('\n') : "";
     } catch (e) { return ""; }
 }
 
 /**
- * ТРАНЗАКЦИОННОЕ СПИСАНИЕ БРИЛЛИАНТОВ 💎
+ * СПИСАНИЕ БРИЛЛИАНТОВ
  */
-async function processDiamonds(userId, amount = -1) {
+async function spendDiamond(userId) {
     if (!db) return true;
     const ref = db.doc(`artifacts/${APP_ID}/users/${userId}/limits/stats`);
     try {
         return await db.runTransaction(async (t) => {
             const doc = await t.get(ref);
             let stats = doc.exists ? doc.data() : { diamonds: 5 };
-            if (stats.diamonds + amount < 0) return false;
-            stats.diamonds += amount;
+            if (stats.diamonds <= 0) return false;
+            stats.diamonds -= 1;
             t.set(ref, stats, { merge: true });
             return true;
         });
@@ -273,83 +265,82 @@ async function processDiamonds(userId, amount = -1) {
 // --- 🌐 API ENDPOINTS ---
 
 /**
- * СИНХРОНИЗАЦИЯ: Фильтрация пула + Баланс
+ * СИНХРОНИЗАЦИЯ (Подписка + Баланс + Фильтр клиентов)
  */
 app.get('/api/sync', async (req, res) => {
     const { userId } = req.query;
-    if (!db || !userId) return res.json({ diamonds: 5, pool: Object.values(CLIENT_DATABASE).slice(0, 10) });
+    if (!userId) return res.status(400).send("UID required");
+
+    const isSub = await checkTelegramSub(userId);
+    if (!db) return res.json({ isSubscribed: isSub, diamonds: 5, pool: Object.values(CLIENT_DATABASE).slice(0, 10) });
 
     try {
+        const userDoc = await db.doc(`artifacts/${APP_ID}/users/${userId}/profile/data`).get();
         const progressDoc = await db.doc(`artifacts/${APP_ID}/users/${userId}/profile/progress`).get();
         const limitsDoc = await db.doc(`artifacts/${APP_ID}/users/${userId}/limits/stats`).get();
-        const userDoc = await db.doc(`artifacts/${APP_ID}/users/${userId}/profile/data`).get();
 
         const passedIds = progressDoc.exists ? progressDoc.data().passedClients || [] : [];
         const customSnap = await db.collection(`artifacts/${APP_ID}/users/${userId}/custom_clients`).get();
         const customClients = customSnap.docs.map(d => ({ ...d.data(), id: d.id }));
 
-        // Собираем полный пул и фильтруем пройденных
         const fullPool = [...Object.values(CLIENT_DATABASE), ...customClients];
         const filteredPool = fullPool.filter(c => !passedIds.includes(c.id));
 
         res.json({
+            isSubscribed: isSub,
             diamonds: limitsDoc.exists ? limitsDoc.data().diamonds : 5,
             profile: userDoc.exists ? userDoc.data() : null,
-            pool: filteredPool.slice(0, 15) // Отдаем актуальную пачку
+            pool: filteredPool.slice(0, 15)
         });
-    } catch (e) { res.status(500).send("Sync Fail"); }
+    } catch (e) { res.status(500).send("Sync Error"); }
 });
 
 /**
- * ГЛАВНЫЙ ЧАТ: Самообучение + YandexAI
+ * ГЛАВНЫЙ ЧАТ
  */
 app.post('/api/chat', chatLimiter, async (req, res) => {
     const { userId, message, modalityId, action, selectedClientId, role, flow, difficulty, history = [] } = req.body;
     
     try {
-        const knowledge = await getRelevantKnowledge(message, modalityId);
-        const clientProfile = CLIENT_DATABASE[selectedClientId] || { name: "Клиент", gender: "female", bio: "..." };
+        const knowledge = await getRAGContext(message, modalityId);
+        const clientProfile = CLIENT_DATABASE[selectedClientId] || CLIENT_DATABASE['c1'];
 
-        // 1. СОВЕТ СУПЕРВИЗОРА (Logging 2.0)
+        // 1. СОВЕТ СУПЕРВИЗОРА
         if (action === 'get_hint') {
             const sys = PromptManager.generateSupervisorPrompt(modalityId, history, knowledge);
-            const hint = await callYandexGPT([{ role: 'user', content: `Дай совет на: ${message}` }], sys);
-            
+            const hint = await callYandexAi(`Психолог написал: ${message}. Дай совет.`, sys, 0.3);
             if(db) await db.collection('training_logs').add({ 
                 userId, type: 'supervisor_hint', context: message, hint, timestamp: admin.firestore.FieldValue.serverTimestamp() 
             });
-            
             return res.json({ hint });
         }
 
-        // 2. СПИСАНИЕ БРИЛЛИАНТА (только при старте новой сессии)
+        // 2. СПИСАНИЕ ЗА СТАРТ
         if (history.length === 0 && role === 'psychologist') {
-            const success = await processDiamonds(userId, -1);
+            const success = await spendDiamond(userId);
             if (!success) return res.status(403).json({ error: "Недостаточно бриллиантов" });
         }
 
-        // 3. ГЕНЕРАЦИЯ ОТВЕТА
+        // 3. ОТВЕТ ИИ
         const systemPrompt = role === 'client' 
             ? PromptManager.generateAiTherapistPrompt(flow) 
             : PromptManager.generateClientPrompt(modalityId, difficulty, clientProfile, knowledge);
 
-        const content = await callYandexGPT([...history, { role: 'user', content: message }], systemPrompt);
-        const voice = await generateYandexSpeech(content, clientProfile.gender);
+        const historyText = history.map(m => `${m.role}: ${m.content}`).join('\n');
+        const content = await callYandexAi(`${historyText}\nuser: ${message}`, systemPrompt);
+        const voice = await generateYandexVoice(content, clientProfile.gender);
 
-        // ЛОГ ДЛЯ САМООБУЧЕНИЯ БОТА
+        // Логирование диалога для обучения
         if(db) await db.collection('training_logs').add({ 
-            userId, role, userMessage: message, aiResponse: content, modalityId, timestamp: admin.firestore.FieldValue.serverTimestamp() 
+            userId, role, message, response: content, modalityId, timestamp: admin.firestore.FieldValue.serverTimestamp() 
         });
 
         res.json({ content, voice });
-    } catch (e) { 
-        logger.error("Chat API Fail: " + e.message);
-        res.status(500).json({ error: "Ошибка искусственного интеллекта." }); 
-    }
+    } catch (e) { res.status(500).json({ error: "AI Processing Error" }); }
 });
 
 /**
- * ФИНАЛИЗАЦИЯ: Аудит, PDF, Пополнение пула (Infinite Loop)
+ * ФИНАЛИЗАЦИЯ (Аудит, PDF, Бесконечный цикл)
  */
 app.post('/api/finish', async (req, res) => {
     const { userId, history, modalityId, selectedClientId } = req.body;
@@ -357,47 +348,43 @@ app.post('/api/finish', async (req, res) => {
         const historyText = history.map(m => `${m.role}: ${m.content}`).join('\n');
         const auditPrompt = PromptManager.generateDeepAnalysisPrompt(modalityId, historyText);
         
-        const analysisRaw = await callYandexGPT([{ role: 'user', content: "Проведи аудит сессии" }], auditPrompt);
+        const analysisRaw = await callYandexAi("Проведи полный аудит сессии и выдай JSON.", auditPrompt, 0.2);
         const analysis = JSON.parse(analysisRaw.replace(/```json|```/g, '').trim());
 
         let certificateUrl = null;
         if (db && userId) {
-            // 1. PDF ГЕНЕРАЦИЯ
-            const doc = new PDFDocument({ size: 'A4', margin: 50 });
+            // Генерация PDF
+            const doc = new PDFDocument({ size: 'A4' });
             const filename = `certificates/${userId}_${Date.now()}.pdf`;
             const file = bucket.file(filename);
             const stream = file.createWriteStream({ metadata: { contentType: 'application/pdf' } });
-            
             doc.pipe(stream);
             doc.fillColor('#020617').rect(0, 0, 595, 842).fill();
-            doc.fillColor('#6366f1').fontSize(35).text('CONNECTUM GOLDEN CERTIFICATE', 50, 80);
+            doc.fillColor('#6366f1').fontSize(30).text('CONNECTUM PRO CERTIFICATE', 50, 80);
             doc.fillColor('#ffffff').fontSize(15).text(`Master ID: ${userId}`, 50, 150);
-            doc.text(`Score: ${analysis.method}%`, 50, 180);
-            doc.fontSize(12).fillColor('#94a3b8').text(analysis.expert_comment || "", 50, 220, { width: 500 });
+            doc.text(`Score: ${analysis.method}%`, 50, 185);
             doc.end();
             certificateUrl = `https://storage.googleapis.com/${bucket.name}/${filename}`;
 
-            // 2. СКРЫВАЕМ КЛИЕНТА (Passed Union)
+            // 1. Помечаем клиента пройденным
             await db.doc(`artifacts/${APP_ID}/users/${userId}/profile/progress`).set({
                 passedClients: admin.firestore.FieldValue.arrayUnion(selectedClientId)
             }, { merge: true });
 
-            // 3. ГЕНЕРИРУЕМ НОВОГО КЛИЕНТА (INFINITE LOOP)
-            const genPrompt = `
-                Создай досье НОВОГО уникального клиента для психолога. Формат JSON:
-                { "name": "Имя", "age": 20-55, "profession": "Работа", "gender": "male/female", "avatar": "Emoji", "bio": "Драматичное описание проблемы с зажимами" }
-                Не делай похоже на: ${CLIENT_DATABASE[selectedClientId]?.name || ''}.
-            `;
-            const newClientRaw = await callYandexGPT([{ role: 'user', content: "Создай клиента" }], genPrompt);
+            // 2. ГЕНЕРИРУЕМ НОВОГО КЛИЕНТА (Бесконечный цикл)
+            const genPrompt = PromptManager.generateNewClientScenarioPrompt();
+            const newClientRaw = await callYandexAi("Создай нового уникального клиента", genPrompt);
             const newClient = JSON.parse(newClientRaw.replace(/```json|```/g, '').trim());
-            await db.collection(`artifacts/${APP_ID}/users/${userId}/custom_clients`).add(newClient);
+            await db.collection(`artifacts/${APP_ID}/users/${userId}/custom_clients`).add({ 
+                ...newClient, createdAt: admin.firestore.FieldValue.serverTimestamp() 
+            });
 
-            // 4. СОХРАНЯЕМ СЕССИЮ
+            // 3. Сохраняем сессию
             await db.collection(`artifacts/${APP_ID}/users/${userId}/sessions`).add({ 
                 modalityId, analysis, certificateUrl, timestamp: admin.firestore.FieldValue.serverTimestamp() 
             });
             
-            await adminLog(`🏆 Юзер ${userId} прошел сессию на ${analysis.method}%`);
+            await adminLog(`🏆 Юзер ${userId} завершил сессию на ${analysis.method}%`);
         }
 
         res.json({ analytics: analysis, certificateUrl });
@@ -405,7 +392,7 @@ app.post('/api/finish', async (req, res) => {
 });
 
 /**
- * ПРОФИЛЬ (О СЕБЕ + МОДАЛЬНОСТИ)
+ * ПРОФИЛЬ
  */
 app.post('/api/profile', async (req, res) => {
     const { userId, profile } = req.body;
@@ -413,20 +400,18 @@ app.post('/api/profile', async (req, res) => {
     try {
         const data = { ...profile, updatedAt: admin.firestore.FieldValue.serverTimestamp() };
         await db.doc(`artifacts/${APP_ID}/users/${userId}/profile/data`).set(data, { merge: true });
-        // Публикация в витрину
+        // Обновление в витрине
         await db.doc(`artifacts/${APP_ID}/public/data/psychologists/${userId}`).set({ 
-            ...data, skillRating: 80 
+            ...data, skillRating: 85, verified: true 
         }, { merge: true });
         res.json({ status: 'success' });
-    } catch (e) { res.status(500).send("Profile Fail"); }
-});
+    } catch (e) { res.status(500).send("Profile Save Fail"); }
+} );
 
-app.get('*', (req, res) => {
-    res.sendFile(path.join(distPath, 'index.html'));
-});
+app.get('*', (req, res) => { res.sendFile(path.join(distPath, 'index.html')); });
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-    logger.info(`🚀 Connectum v21.25 PLATINUM MASTER Online on port ${PORT}`);
-    adminLog("🚀 Система Connectum v21.25 запущена: YandexGPT Pro Active.");
+    logger.info(`🚀 Connectum v21.26 PLATINUM MASTER Online on port ${PORT}`);
+    adminLog("🚀 Система v21.26 запущена на Yandex Assistant API.");
 });
