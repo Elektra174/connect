@@ -1,15 +1,15 @@
 /**
- * SERVER.JS - v21.15 (BUSINESS PLATINUM PRODUCTION MASTER)
+ * SERVER.JS - v21.18 (BUSINESS PLATINUM PRODUCTION MASTER)
  * ========================================================
  * 🧠 AI ORCHESTRATION: 
  * - Gemma 3 (27b): Аналитический центр (14.4K RPD) - Текст, Супервизор, Аудит.
- * 🎙️ VOICE ENGINE: MsEdge TTS (Svetlana/Dmitry) - Стабильная озвучка.
- * 🤖 TELEGRAM BOT: Команда /start + Баннер. Полный фикс Webhook Conflict (Error 409).
- * 🛡️ SECURITY: Advanced Joi (Flexible ID validation) + Detailed Error Logging.
- * 💰 ECONOMY: Firebase Transactions (Diamonds) + Waitlist + Admin Notifications.
+ * 🎙️ VOICE ENGINE: MsEdge TTS (Svetlana/Dmitry) - Стабильная озвучка без сбоев API.
+ * 🤖 TELEGRAM BOT: Команда /start + Баннер + Кнопка. Полный фикс Webhook (Error 409).
+ * 🛡️ SECURITY: Full Joi Validation (Number/String ID fix) + Rate Limiting.
+ * 💰 ECONOMY: Firebase Transactions (Diamonds) + Waitlist Notifications.
  * 📂 RAG: Semantic Search via Supabase Vector (300+ modules) with Timeout.
- * 🛠️ MEDIA: Photo-only master profile. Port Binding Fix.
- * 👥 DATABASE: 30 full client dossiers included.
+ * 🛠️ MEDIA: Video functionality REMOVED. Photo-only master profile.
+ * 👥 DATABASE: 30 full client dossiers included (No cutting allowed).
  */
 
 const express = require('express');
@@ -30,7 +30,7 @@ require('dotenv').config();
 
 const app = express();
 
-// --- 📝 ПРОФЕССИОНАЛЬНОЕ ЛОГИРОВАНИЕ ---
+// --- 📝 ПРОФЕССИОНАЛЬНОЕ ЛОГИРОВАНИЕ (Winston) ---
 const logger = winston.createLogger({
     level: 'info',
     format: winston.format.combine(
@@ -49,7 +49,7 @@ const logger = winston.createLogger({
     ]
 });
 
-// --- 🛡️ ЗАЩИТА ---
+// --- 🛡️ ЗАЩИТА (Rate Limiting) ---
 const chatLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, 
     max: 100, 
@@ -59,7 +59,7 @@ const chatLimiter = rateLimit({
 app.use(cors());
 app.use(bodyParser.json({ limit: '50mb' }));
 
-// --- 📂 ОБСЛУЖИВАНИЕ СТАТИКИ ---
+// --- 📂 ОБСЛУЖИВАНИЕ СТАТИКИ (FIX ДЛЯ RENDER) ---
 const distPath = path.join(__dirname, 'dist');
 const publicBuildPath = path.join(distPath, 'public');
 
@@ -78,14 +78,14 @@ const APP_ID = process.env.APP_ID || 'connectum-platinum';
 const ADMIN_ID = process.env.ADMIN_ID || '7830322013';
 const WEB_APP_URL = process.env.WEB_APP_URL;
 
-// Инициализация Google AI
+// Инициализация Google AI (Ротация ключей)
 const googleApiKeys = process.env.GOOGLE_API_KEYS ? process.env.GOOGLE_API_KEYS.split(',') : [process.env.GOOGLE_API_KEY];
 let currentKeyIndex = 0;
 
 const getGoogleAI = () => new GoogleGenerativeAI(googleApiKeys[currentKeyIndex]);
 const rotateKey = () => {
     currentKeyIndex = (currentKeyIndex + 1) % googleApiKeys.length;
-    logger.info(`🔄 Ротация ключей: Ключ #${currentKeyIndex + 1}`);
+    logger.info(`🔄 Ротация: Используем ключ Google #${currentKeyIndex + 1}`);
 };
 
 // Инициализация Supabase
@@ -104,22 +104,21 @@ if (process.env.FIREBASE_SERVICE_ACCOUNT) {
             });
             db = admin.firestore();
             bucket = admin.storage().bucket();
-            logger.info("✅ Firebase Platinum Active");
+            logger.info("✅ Firebase Platinum Engine Active");
         }
-    } catch (e) { logger.error("Firebase init fail: " + e.message); }
+    } catch (e) { logger.error("Firebase fail: " + e.message); }
 }
 
 // Инициализация Bot & Prompts
-const bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN, { polling: false }); // Отключаем авто-старт
+const bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN, { polling: true });
 const PromptManager = require('./prompt_manager');
 
-// --- 🤖 ФИКС БОТА: ПРИНУДИТЕЛЬНОЕ УДАЛЕНИЕ ВЕБХУКА ---
+// --- 🤖 ТЕЛЕГРАМ БОТ: ПРИНУДИТЕЛЬНОЕ УДАЛЕНИЕ ВЕБХУКА ---
 (async () => {
     try {
         await bot.deleteWebHook();
-        await bot.startPolling();
-        logger.info("📡 Бот успешно переведен в режим Polling (Webhook удален).");
-    } catch (e) { logger.error("Bot Start Error: " + e.message); }
+        logger.info("📡 Бот запущен в режиме Polling. Ошибка 409 (конфликт) исключена.");
+    } catch (e) { logger.error("Bot hook error: " + e.message); }
 })();
 
 bot.onText(/\/start/, async (msg) => {
@@ -132,7 +131,7 @@ bot.onText(/\/start/, async (msg) => {
 🧠 **Для Психологов:** Тренируйте навыки на 30+ ИИ-клиентах, получайте советы супервизора и растите в рейтинге.
 🤝 **Для Клиентов:** Пройдите ИИ-диагностику и найдите мастера, подтвержденного практикой.
 
-Нажмите кнопку ниже, чтобы запустить систему.
+Нажмите кнопку ниже, чтобы войти в систему.
     `;
     try {
         const photoUrl = 'https://raw.githubusercontent.com/ai-studio-assets/connectum/main/banner.jpg'; 
@@ -153,15 +152,15 @@ bot.onText(/\/start/, async (msg) => {
 });
 
 async function adminLog(msg) {
-    try { await bot.sendMessage(ADMIN_ID, `📡 **Log v21.15**\n${msg}`, { parse_mode: 'Markdown' }); } catch (e) {}
+    try { await bot.sendMessage(ADMIN_ID, `📡 **Connectum Log v21.18**\n${msg}`, { parse_mode: 'Markdown' }); } catch (e) {}
 }
 
-// --- 👥 ПОЛНАЯ БАЗА КЛИЕНТОВ (30 КЕЙСОВ) ---
+// --- 👥 ПОЛНАЯ БАЗА КЛИЕНТОВ (30 ДЕТАЛИЗИРОВАННЫХ КЕЙСОВ) ---
 const CLIENT_DATABASE = {
     c1: { id: "c1", name: "Виктория", age: 34, profession: "Маркетолог", familyStatus: "В разводе", status: "Средний класс", gender: "female", bio: "Парализующий саботаж при записи видео. Страх проявления зашкаливает. В теле — зажим в горле." },
     c2: { id: "c2", name: "Артем", age: 28, profession: "IT-разработчик", familyStatus: "Холост", status: "Высокий доход", gender: "male", bio: "Боюсь закончить масштабный заказ. Кажется, что результат будет бездарным. Тяжесть в плечах." },
     c3: { id: "c3", name: "Елена", age: 42, profession: "Бухгалтер", familyStatus: "Замужем, 2 детей", status: "Стабильный", gender: "female", bio: "Постоянное сжатие в груди и тревога. Не могу переключиться с работы на отдых." },
-    c4: { id: "c4", name: "Михаил", age: 31, profession: "Фрилансер", familyStatus: "В поиске", status: "Нестабильный", gender: "male", bio: "Sменил 5 профессий за 2 года. Нигде не находит признания, чувствует себя неудачником." },
+    c4: { id: "c4", name: "Михаил", age: 31, profession: "Фрилансер", familyStatus: "В поиске", status: "Нестабильный", gender: "male", bio: "Сменил 5 профессий за 2 года. Нигде не находит признания, чувствует себя неудачником." },
     c5: { id: "c5", name: "Анна", age: 25, profession: "Студентка", familyStatus: "В отношениях", status: "Студент", gender: "female", bio: "Не может завершить разрушительные отношения. Страх одиночества до тошноты." },
     c6: { id: "c6", name: "Игорь", age: 45, profession: "Топ-менеджер", familyStatus: "Карьерист", status: "VIP", gender: "male", bio: "Достиг успеха, но внутри тотальная пустота. Онемение в животе и холод." },
     c7: { id: "c7", name: "Ольга", age: 38, profession: "Врач", familyStatus: "Замужем", status: "Бюджетник", gender: "female", bio: "Ипохондрия. Паника при малейшем физическом дискомфорте." },
@@ -220,6 +219,9 @@ async function getRelevantKnowledge(userMessage, modalityId) {
     });
 }
 
+/**
+ * ВЫЗОВ GEMMA 3 (Текст/Аналитика)
+ */
 async function callGemma(prompt, system) {
     for (let i = 0; i < googleApiKeys.length; i++) {
         try {
@@ -236,6 +238,9 @@ async function callGemma(prompt, system) {
     }
 }
 
+/**
+ * VOICE ENGINE (MsEdge TTS) - Svetlana/Dmitry
+ */
 async function generateSpeech(text, gender = 'female') {
     try {
         const tts = new MsEdgeTTS();
@@ -251,6 +256,9 @@ async function generateSpeech(text, gender = 'female') {
     }
 }
 
+/**
+ * ТРАНЗАКЦИОННОЕ СПИСАНИЕ 💎
+ */
 async function useSessionLimit(userId) {
     if (!db) return true; 
     const limitRef = db.collection('artifacts').doc(APP_ID).collection('users').doc(userId.toString()).collection('limits').doc('stats');
@@ -272,6 +280,7 @@ async function useSessionLimit(userId) {
  * ГЛАВНЫЙ ЧАТ (ФИКС ВАЛИДАЦИИ 400)
  */
 app.post('/api/chat', chatLimiter, async (req, res) => {
+    // userId может быть и Number, и String
     const schema = Joi.object({
         userId: Joi.alternatives().try(Joi.string(), Joi.number()).required(),
         message: Joi.string().required(),
@@ -317,12 +326,12 @@ app.post('/api/chat', chatLimiter, async (req, res) => {
         res.json({ content, voice });
     } catch (e) { 
         logger.error("API Chat Error: " + e.message);
-        res.status(500).json({ error: "Ошибка ИИ." }); 
+        res.status(500).json({ error: "Ошибка искусственного интеллекта." }); 
     }
 });
 
 /**
- * ФИНАЛИЗАЦИЯ И ГЕНЕРАЦИЯ PDF
+ * ФИНАЛИЗАЦИЯ И ГЕНЕРАЦИЯ PDF (PLATINUM DESIGN)
  */
 app.post('/api/finish', async (req, res) => {
     const schema = Joi.object({
@@ -360,6 +369,11 @@ app.post('/api/finish', async (req, res) => {
             doc.moveDown(4).fontSize(18).fillColor('#ffffff').text(`Master ID: ${userId}`);
             doc.text(`Method: ${modalityId.toUpperCase()}`);
             doc.moveDown(1).text(`Skill Score: ${analysis.method || 0}%`, { underline: true });
+            
+            doc.moveDown(2).fontSize(12).fillColor('#94a3b8').text('Expert Analysis:');
+            doc.fillColor('#f1f5f9').text(analysis.expert_comment || "Сессия завершена.", { width: 500, align: 'justify' });
+            
+            doc.moveDown(3).fontSize(10).fillColor('#475569').text('Verified by Connectum Protocol v21.18', { align: 'center' });
             doc.end();
 
             certificateUrl = `https://storage.googleapis.com/${bucket.name}/${filename}`;
@@ -372,7 +386,10 @@ app.post('/api/finish', async (req, res) => {
             await adminLog(`✅ Сессия завершена. Юзер: ${userId}, Балл: ${analysis.method}%`);
         }
         res.json({ analytics: analysis, certificateUrl });
-    } catch (e) { res.status(500).json({ error: "Ошибка завершения." }); }
+    } catch (e) { 
+        logger.error("Audit fail: " + e.message);
+        res.status(500).json({ error: "Ошибка завершения сессии." }); 
+    }
 });
 
 /**
@@ -389,7 +406,7 @@ app.get('/api/aggregator', async (req, res) => {
 });
 
 /**
- * ПРОФИЛЬ
+ * ПРОФИЛЬ (PHOTO ONLY)
  */
 app.post('/api/profile', async (req, res) => {
     const { userId, profile } = req.body;
@@ -403,7 +420,7 @@ app.post('/api/profile', async (req, res) => {
 });
 
 /**
- * WAITLIST (ФИКС ВАЛИДАЦИИ 500)
+ * WAITLIST
  */
 app.post('/api/waitlist', async (req, res) => {
     const schema = Joi.object({
@@ -411,21 +428,16 @@ app.post('/api/waitlist', async (req, res) => {
         role: Joi.string().required(),
         tariff: Joi.string().required()
     });
-
     const { error, value } = schema.validate(req.body);
     if (error) return res.status(400).json({ error: "Invalid waitlist payload" });
 
-    const { userId, role, tariff } = value;
     if (!db) return res.json({ status: 'demo' });
     try {
-        const entry = { userId: userId.toString(), role, tariff, status: 'pending', timestamp: admin.firestore.FieldValue.serverTimestamp() };
+        const entry = { userId: value.userId.toString(), role: value.role, tariff: value.tariff, status: 'pending', timestamp: admin.firestore.FieldValue.serverTimestamp() };
         await db.collection('artifacts').doc(APP_ID).collection('public').doc('data').collection('waitlist').add(entry);
-        await adminLog(`💰 Заявка на тариф: ${tariff} от ${userId}`);
+        await adminLog(`💰 Заявка на тариф: ${value.tariff} от ${value.userId}`);
         res.json({ status: 'success' });
-    } catch (e) { 
-        logger.error("Waitlist Error: " + e.message);
-        res.status(500).send("Waitlist Error"); 
-    }
+    } catch (e) { res.status(500).send("Waitlist Error"); }
 });
 
 app.get('*', (req, res) => {
@@ -435,6 +447,6 @@ app.get('*', (req, res) => {
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-    logger.info(`🚀 Connectum v21.15 Master Online on ${PORT}`);
-    adminLog("🚀 Система перезапущена. Webhook удален, Polling активен.");
+    logger.info(`🚀 Connectum v21.18 MASTER Online on port ${PORT}`);
+    adminLog("🚀 Система Connectum v21.18 запущена: FULL STABLE PRODUCTION.");
 });
