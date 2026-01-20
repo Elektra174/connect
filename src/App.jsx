@@ -11,7 +11,7 @@ import { marked } from 'marked';
  * 💎 ECONOMY: Diamonds Online Sync (1 Session = 1 💎).
  */
 
-// --- 1. ПРЕМИАЛЬНАЯ СИСТЕМА ИКОНОК (ГЛАДКИЕ ЛИНИИ) ---
+// --- 1. ПРЕМИАЛЬНАЯ СИСТЕМА ИКОНОК ---
 const Icons = {
   Infinity: ({ className }) => (
     <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -57,7 +57,7 @@ const Icons = {
   )
 };
 
-// --- 2. ПОЛНАЯ БАЗА КЛИЕНТОВ (30 ДЕТАЛИЗИРОВАННЫХ КЕЙСОВ) ---
+// --- 2. ПОЛНАЯ БАЗА КЛИЕНТОВ (30 КЕЙСОВ) ---
 const CLIENT_DATABASE = [
     { id: "c1", name: "Виктория", age: 34, profession: "Маркетолог", avatar: "👩‍💻", bio: "Парализующий саботаж при записи видео. Страх проявления зашкаливает. В теле — зажим в горле." },
     { id: "c2", name: "Артем", age: 28, profession: "IT-разработчик", avatar: "👨‍🎨", bio: "Боюсь закончить масштабный заказ. Кажется, что результат будет бездарным. Тяжесть в плечах." },
@@ -181,6 +181,7 @@ export default function App() {
   const [messages, setMessages] = useState([]);
   const [inputText, setInputText] = useState('');
   const [isTyping, setIsTyping] = useState(false);
+  const [psychologists, setPsychologists] = useState([]);
   const [userProfile, setUserProfile] = useState({ name: '', experience: 0, price: 0, about: '', methods: '', photoUrl: null });
   const [diamonds, setDiamonds] = useState(5);
   const [notification, setNotification] = useState(null);
@@ -448,7 +449,7 @@ export default function App() {
            <div className="flex-1 overflow-y-auto p-6 space-y-7 no-scrollbar pb-32 text-left animate-in">
               <h2 className="text-3xl font-black text-white uppercase tracking-tighter leading-none">Хаб Помощи</h2>
               <div className="p-10 bg-gradient-to-br from-indigo-600/30 to-indigo-900/50 rounded-[3rem] border border-indigo-500/20 flex justify-between items-center relative overflow-hidden group active:scale-95 transition shadow-5xl">
-                  <div className="relative z-10"><h4 className="text-[11px] font-black uppercase text-indigo-300 tracking-[0.3em]">Client Premium</h4><p className="text-[12px] font-bold text-indigo-100/60 mt-2 uppercase tracking-tight leading-none">ИИ-терапия 24/7</p></div>
+                  <div className="relative z-10"><h4 className="text-xs font-black uppercase text-indigo-300 tracking-[0.3em]">Client Premium</h4><p className="text-[12px] font-bold text-indigo-100/60 mt-2 uppercase tracking-tight leading-none">ИИ-терапия 24/7</p></div>
                   <div className="relative z-10 text-right"><span className="text-3xl font-black text-white">1990₽</span><button onClick={()=>showToast("Заявка принята")} className="block bg-indigo-500 hover:bg-indigo-400 text-[10px] font-black uppercase px-8 py-3.5 rounded-2xl mt-4 shadow-3xl active:scale-95 transition">Купить</button></div>
               </div>
               <div className="grid gap-5">
@@ -496,7 +497,7 @@ export default function App() {
 
         {/* 5. ВИТРИНА (MARKETPLACE) */}
         {screen === 'aggregator' && (
-           <div className="flex-1 overflow-y-auto p-6 space-y-8 no-scrollbar pb-32 text-left animate-in">
+           <div className="flex-1 overflow-y-auto p-8 space-y-10 no-scrollbar pb-32 text-left animate-in">
                <h2 className="text-3xl font-black text-white uppercase tracking-tighter">Витрина</h2>
                <div className="space-y-6">
                    {psychologists.length === 0 ? (
@@ -505,18 +506,18 @@ export default function App() {
                         <p className="text-[11px] font-black text-slate-500 uppercase tracking-widest">Поиск активных мастеров...</p>
                     </div>
                    ) : psychologists.map((p, i) => (
-                       <div key={i} className={`p-8 rounded-[3rem] bg-slate-900/60 border border-indigo-500/20 shadow-5xl animate-in`}>
-                           <div className="flex gap-6 items-center">
-                               <div className="w-20 h-20 bg-slate-800 rounded-3xl flex items-center justify-center text-5xl overflow-hidden border border-white/5 shadow-inner">
+                       <div key={i} className={`p-10 rounded-[3.5rem] bg-slate-900/60 border border-indigo-500/20 shadow-5xl animate-in delay-[${i*100}ms]`}>
+                           <div className="flex gap-8 items-center">
+                               <div className="w-24 h-24 bg-slate-800 rounded-[2.5rem] flex items-center justify-center text-5xl overflow-hidden border border-white/5 shadow-inner">
                                    {p.photoUrl ? <img src={p.photoUrl} className="w-full h-full object-cover"/> : '👤'}
                                </div>
                                <div className="flex-1">
                                    <h4 className="text-2xl font-black text-white leading-tight">{p.name}</h4>
-                                   <p className="text-[10px] font-black uppercase text-indigo-400 mt-2 tracking-widest">Стаж {p.experience} лет • {p.methods}</p>
+                                   <p className="text-[11px] font-black uppercase text-indigo-400 mt-2 tracking-widest">Стаж {p.experience} лет • {p.methods}</p>
                                </div>
                            </div>
-                           <div className="mt-8 flex justify-between items-center border-t border-white/5 pt-6">
-                               <div><span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Сессия</span><p className="text-2xl font-black text-white mt-1">{p.price}₽</p></div>
+                           <div className="mt-10 flex justify-between items-center border-t border-white/5 pt-8">
+                               <div><span className="text-[11px] font-black text-slate-500 uppercase tracking-widest">Сессия</span><p className="text-3xl font-black text-white leading-none mt-2">{p.price}₽</p></div>
                                <button onClick={()=>showToast("Заявка принята")} className="bg-indigo-600 px-10 py-4.5 rounded-[1.2rem] text-[10px] font-black uppercase tracking-widest text-white shadow-3xl active:scale-95 transition-all transform hover:-translate-y-1">Записаться</button>
                            </div>
                        </div>
@@ -559,7 +560,7 @@ export default function App() {
                        <div className="space-y-3"><label className="text-[11px] font-black text-slate-600 uppercase ml-5 tracking-[0.3em]">Методы работы (модальности)</label><input type="text" className="w-full p-6 glass-card rounded-[1.8rem] text-[15px] font-bold text-white outline-none focus:border-indigo-500 transition shadow-4xl" placeholder="Напр: МПТ, КПТ, ТА, ЭОТ" value={userProfile.methods} onChange={e=>setUserProfile({...userProfile, methods:e.target.value})}/></div>
                    </div>
                    
-                   <button onClick={saveProfile} className="w-full py-8 bg-gradient-to-r from-indigo-600 to-indigo-900 rounded-[2.5rem] text-[13px] font-black uppercase tracking-[0.5em] text-white shadow-5xl active:scale-95 transition-all mt-8 transform hover:-translate-y-1.5">СОХРАНИТЬ МАСТЕРА</button>
+                   <button onClick={saveProfile} className="w-full py-8 bg-gradient-to-r from-indigo-600 to-indigo-900 rounded-[2.5rem] text-[13px] font-black uppercase tracking-[0.5em] text-white shadow-5xl active:scale-95 transition-all mt-10 transform hover:-translate-y-2">СОХРАНИТЬ МАСТЕРА</button>
                </div>
            </div>
         )}
