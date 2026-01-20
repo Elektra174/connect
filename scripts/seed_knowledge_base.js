@@ -19,7 +19,10 @@ const logger = winston.createLogger({
     transports: [
         new winston.transports.File({ filename: 'logs/seed_yandex.log' }),
         new winston.transports.Console({
-            format: winston.format.combine(winston.format.colorize(), winston.format.simple())
+            format: winston.format.combine(
+                winston.format.colorize(),
+                winston.format.simple()
+            )
         })
     ],
 });
@@ -30,8 +33,16 @@ const FOLDER_ID = process.env.YANDEX_FOLDER_ID;
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_KEY = process.env.SUPABASE_KEY;
 
-if (!YANDEX_API_KEY || !FOLDER_ID || !SUPABASE_URL || !SUPABASE_KEY) {
-    console.error("❌ Ошибка: Проверьте переменные окружения (YANDEX_API_KEY, FOLDER_ID, SUPABASE_URL, SUPABASE_KEY)");
+// Улучшенная проверка переменных окружения для Render
+const missingVars = [];
+if (!YANDEX_API_KEY) missingVars.push("YANDEX_API_KEY");
+if (!FOLDER_ID) missingVars.push("YANDEX_FOLDER_ID");
+if (!SUPABASE_URL) missingVars.push("SUPABASE_URL");
+if (!SUPABASE_KEY) missingVars.push("SUPABASE_KEY");
+
+if (missingVars.length > 0) {
+    console.error(`❌ Ошибка сборки: Отсутствуют переменные окружения: ${missingVars.join(', ')}`);
+    console.log("💡 Инструкция: Зайдите в Render Dashboard -> Settings -> Environment Variables и добавьте их.");
     process.exit(1);
 }
 
@@ -93,39 +104,37 @@ async function getYandexEmbedding(text) {
 async function run() {
     console.log(`🚀 ЗАПУСК СИНХРОНИЗАЦИИ ЗНАНИЙ (YANDEX EDITION).`);
 
-    // 1. Получаем список существующих триггеров из базы, чтобы не делать лишнюю работу
-    const { data: existingData, error: fetchError } = await supabase
-        .from('knowledge_base')
-        .select('context_trigger, modality_id');
+    try {
+        // 1. Получаем список существующих триггеров из базы
+        const { data: existingData, error: fetchError } = await supabase
+            .from('knowledge_base')
+            .select('context_trigger, modality_id');
 
-    if (fetchError) {
-        console.error("❌ Ошибка при получении текущей базы знаний:", fetchError.message);
-        return;
-    }
+        if (fetchError) {
+            console.error("❌ Ошибка при получении текущей базы знаний:", fetchError.message);
+            return;
+        }
 
-    // Создаем карту существующих ключей для мгновенного поиска
-    const existingKeys = new Set(existingData.map(d => `${d.modality_id}:${d.context_trigger}`));
-    console.log(`📦 В базе уже есть модулей: ${existingKeys.size}`);
+        // Создаем карту существующих ключей
+        const existingKeys = new Set(existingData.map(d => `${d.modality_id}:${d.context_trigger}`));
+        console.log(`📦 В базе уже есть модулей: ${existingKeys.size}`);
 
-    let addedCount = 0;
-    let skippedCount = 0;
+        let addedCount = 0;
+        let skippedCount = 0;
 
-    for (const [index, item] of KNOWLEDGE_DATA.entries()) {
-        try {
+        for (const [index, item] of KNOWLEDGE_DATA.entries()) {
             const key = `${item.mod}:${item.trigger}`;
             
-            // ПРОВЕРКА: если такой модуль уже есть — пропускаем
             if (existingKeys.has(key)) {
                 skippedCount++;
                 continue;
             }
 
-            // Формируем текст для векторизации
             const combinedText = `СИТУАЦИЯ: ${item.trigger} | МЕТОД: ${item.mod} | ИНТЕРВЕНЦИЯ: ${item.text}`;
             const embedding = await getYandexEmbedding(combinedText);
 
             if (!embedding) {
-                console.error(`❌ Пропуск [${index + 1}]: Ошибка API`);
+                console.error(`❌ Пропуск [${index + 1}]: Ошибка API Яндекса`);
                 continue;
             }
 
@@ -142,17 +151,17 @@ async function run() {
             addedCount++;
             console.log(`✅ [${index + 1}/${KNOWLEDGE_DATA.length}] Добавлен вектор Yandex: ${item.mod}`);
 
-            // Пауза 0.3 сек для стабильности
             await new Promise(resolve => setTimeout(resolve, 300));
-        } catch (e) {
-            console.error(`❌ Сбой на модуле "${item.trigger}":`, e.message);
         }
-    }
 
-    console.log(`\n🏁 ФИНАЛ СИНХРОНИЗАЦИИ:`);
-    console.log(`➕ Добавлено новых: ${addedCount}`);
-    console.log(`⏭️ Пропущено дубликатов: ${skippedCount}`);
-    console.log("------------------------------------------");
+        console.log(`\n🏁 ФИНАЛ СИНХРОНИЗАЦИИ:`);
+        console.log(`➕ Добавлено новых: ${addedCount}`);
+        console.log(`⏭️ Пропущено дубликатов: ${skippedCount}`);
+        console.log("------------------------------------------");
+
+    } catch (globalError) {
+        console.error("❌ Критическая ошибка скрипта:", globalError.message);
+    }
 }
 
 run();
