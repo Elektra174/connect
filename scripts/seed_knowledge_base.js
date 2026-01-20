@@ -1,7 +1,7 @@
 /**
- * CONNECTUM PRO v21.25 - KNOWLEDGE SEEDER (YANDEX EDITION)
+ * CONNECTUM PRO v21.26 - KNOWLEDGE SEEDER (YANDEX EDITION)
  * ========================================================
- * 🚀 ЗАДАЧА: Первичная прошивка или обновление базы знаний.
+ * 🚀 ЗАДАЧА: Первичная прошивка или обновление базы знаний (RAG).
  * 🧠 МОДЕЛЬ: Yandex text-search-query (оптимизировано для RU).
  * 📂 DATABASE: Supabase (pgvector) - хранение смысловых векторов.
  * 🛡️ LOGIC: Пакетная загрузка с ЗАЩИТОЙ ОТ ДУБЛИКАТОВ для авто-деплоя.
@@ -12,7 +12,7 @@ const { createClient } = require('@supabase/supabase-js');
 const axios = require('axios');
 const winston = require('winston');
 
-// --- 📝 ЛОГИРОВАНИЕ ---
+// --- 📝 ПРОФЕССИОНАЛЬНОЕ ЛОГИРОВАНИЕ ---
 const logger = winston.createLogger({
     level: 'info',
     format: winston.format.combine(winston.format.timestamp(), winston.format.json()),
@@ -28,25 +28,21 @@ const logger = winston.createLogger({
 });
 
 // --- ⚙️ КОНФИГУРАЦИЯ ---
-// Поддержка как расширенных, так и кратких имен переменных для гибкости на разных хостингах
 const YANDEX_API_KEY = process.env.YANDEX_API_KEY || process.env.API_KEY;
 const FOLDER_ID = process.env.YANDEX_FOLDER_ID || process.env.FOLDER_ID;
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_KEY = process.env.SUPABASE_KEY;
 
-// Улучшенная проверка переменных окружения для Render
+// Строгая проверка переменных для Render
 const missingVars = [];
-if (!YANDEX_API_KEY) missingVars.push("YANDEX_API_KEY (или API_KEY)");
-if (!FOLDER_ID) missingVars.push("YANDEX_FOLDER_ID (или FOLDER_ID)");
+if (!YANDEX_API_KEY) missingVars.push("YANDEX_API_KEY");
+if (!FOLDER_ID) missingVars.push("YANDEX_FOLDER_ID");
 if (!SUPABASE_URL) missingVars.push("SUPABASE_URL");
 if (!SUPABASE_KEY) missingVars.push("SUPABASE_KEY");
 
 if (missingVars.length > 0) {
     console.error(`❌ Ошибка сборки: Отсутствуют переменные окружения: ${missingVars.join(', ')}`);
-    console.log("💡 Инструкция:");
-    console.log("1. Зайдите в Render Dashboard -> Settings -> Environment Variables.");
-    console.log("2. Убедитесь, что вы добавили переменную именно с именем YANDEX_FOLDER_ID.");
-    console.log("3. Нажмите 'Save Changes' и запустите 'Manual Deploy' -> 'Clear Cache & Deploy'.");
+    console.log("💡 Инструкция: Зайдите в Render Dashboard -> Settings -> Environment Variables и добавьте их.");
     process.exit(1);
 }
 
@@ -54,11 +50,12 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 /**
  * 📚 РЕЕСТР ЭТАЛОННЫХ ЗНАНИЙ (Ядро Connectum)
+ * Содержит лучшие практики из 6 школ психотерапии.
  */
 const KNOWLEDGE_DATA = [
     // --- 💎 МПТ (АЛЕКСАНДР ВОЛЫНСКИЙ) ---
     { mod: 'mpt', cat: 'Авторство', trigger: 'Клиент говорит "оно само", "меня мучает"', text: 'Что ТЫ делаешь прямо сейчас, чтобы это продолжалось? Покажи телом это действие.', marker: 'Переход в субъектную позицию' },
-    { mod: 'mpt', cat: 'Целостность', trigger: 'Страх внешней силы или авторитета', text: 'Представь, что ты и есть эта сила. Какое quality бытия ты чувствуешь из этой роли? Проблема остается?', marker: 'Обнаружение ресурса через идентификацию' },
+    { mod: 'mpt', cat: 'Целостность', trigger: 'Страх внешней силы или авторитета', text: 'Представь, что ты и есть эта сила. Какое качество бытия ты чувствуешь из этой роли? Проблема остается?', marker: 'Обнаружение ресурса через идентификацию' },
     { mod: 'mpt', cat: 'Точка решения', trigger: 'Клиент застрял в описании боли', text: 'Представь, что проблема решена. Опиши свое состояние из этой точки будущего. Как дышится?', marker: 'Телесное расширение, вдох' },
     { mod: 'mpt', cat: 'Позитивная цель', trigger: 'Саботаж, лень, откладывание', text: 'От какой опасности тебя бережет этот саботаж? Поблагодари его за защиту. Что изменится?', marker: 'Снятие вины, легализация отдыха' },
     { mod: 'mpt', cat: 'Идентичность', trigger: 'Я никчемный / Я дефектный', text: 'Кто это говорит? Стань этим критиком. Какую свою силу ты вкладываешь в это подавление?', marker: 'Присвоение агрессии' },
@@ -86,14 +83,22 @@ const KNOWLEDGE_DATA = [
 ];
 
 /**
- * ГЕНЕРАЦИЯ ЭМБЕДДИНГА ЧЕРЕЗ YANDEX CLOUD
+ * ГЕНЕРАЦИЯ ЭМБЕДДИНГА ЧЕРЕЗ YANDEX CLOUD (FOUNDATION MODELS API)
  */
 async function getYandexEmbedding(text) {
     const url = 'https://llm.api.cloud.yandex.net/foundationModels/v1/textEmbedding';
-    const payload = { modelUri: `emb://${FOLDER_ID}/text-search-query/latest`, text: text };
+    const payload = {
+        modelUri: `emb://${FOLDER_ID}/text-search-query/latest`,
+        text: text
+    };
+
     try {
         const res = await axios.post(url, payload, {
-            headers: { 'Authorization': `Api-Key ${YANDEX_API_KEY}`, 'x-folder-id': FOLDER_ID }
+            headers: {
+                'Authorization': `Api-Key ${YANDEX_API_KEY}`,
+                'x-folder-id': FOLDER_ID,
+                'Content-Type': 'application/json'
+            }
         });
         return res.data.embedding;
     } catch (e) {
@@ -106,22 +111,25 @@ async function getYandexEmbedding(text) {
  * ОСНОВНОЙ ЦИКЛ ЗАГРУЗКИ С ПРОВЕРКОЙ НА ДУБЛИКАТЫ
  */
 async function run() {
-    console.log(`🚀 ЗАПУСК СИНХРОНИЗАЦИИ ЗНАНИЙ (YANDEX EDITION).`);
+    console.log(`🚀 ЗАПУСК СИНХРОНИЗАЦИИ ЗНАНИЙ (YANDEX v21.26).`);
 
     try {
-        // 1. Получаем список существующих триггеров из базы
+        // 1. Получаем список существующих модулей из базы, чтобы избежать дублей
         const { data: existingData, error: fetchError } = await supabase
             .from('knowledge_base')
             .select('context_trigger, modality_id');
 
         if (fetchError) {
             console.error("❌ Ошибка при получении текущей базы знаний:", fetchError.message);
-            return;
+            // Если таблицы нет, возможно, это первый запуск. Продолжаем.
         }
 
-        // Создаем карту существующих ключей
-        const existingKeys = new Set(existingData.map(d => `${d.modality_id}:${d.context_trigger}`));
-        console.log(`📦 В базе уже есть модулей: ${existingKeys.size}`);
+        // Создаем Set уникальных ключей (Метод + Триггер)
+        const existingKeys = new Set(
+            (existingData || []).map(d => `${d.modality_id}:${d.context_trigger}`)
+        );
+        
+        console.log(`📦 В базе обнаружено модулей: ${existingKeys.size}`);
 
         let addedCount = 0;
         let skippedCount = 0;
@@ -129,20 +137,22 @@ async function run() {
         for (const [index, item] of KNOWLEDGE_DATA.entries()) {
             const key = `${item.mod}:${item.trigger}`;
             
+            // Если такой модуль уже есть — просто пропускаем его
             if (existingKeys.has(key)) {
                 skippedCount++;
                 continue;
             }
 
+            // Формируем текст для векторизации (такой же формат поиска будет в server.js)
             const combinedText = `СИТУАЦИЯ: ${item.trigger} | МЕТОД: ${item.mod} | ИНТЕРВЕНЦИЯ: ${item.text}`;
             const embedding = await getYandexEmbedding(combinedText);
 
             if (!embedding) {
-                console.error(`❌ Пропуск [${index + 1}]: Ошибка API Яндекса`);
+                console.error(`❌ Пропуск модуля [${index + 1}]: Ошибка API Яндекса`);
                 continue;
             }
 
-            const { error } = await supabase.from('knowledge_base').insert({
+            const { error: insertError } = await supabase.from('knowledge_base').insert({
                 modality_id: item.mod,
                 category: item.cat,
                 context_trigger: item.trigger,
@@ -150,11 +160,14 @@ async function run() {
                 embedding: embedding
             });
 
-            if (error) throw error;
-           
-            addedCount++;
-            console.log(`✅ [${index + 1}/${KNOWLEDGE_DATA.length}] Добавлен вектор Yandex: ${item.mod}`);
+            if (insertError) {
+                console.error(`❌ Ошибка записи в Supabase:`, insertError.message);
+            } else {
+                addedCount++;
+                console.log(`✅ [${index + 1}/${KNOWLEDGE_DATA.length}] Добавлен вектор Yandex: ${item.mod}`);
+            }
 
+            // Небольшая пауза для стабильности
             await new Promise(resolve => setTimeout(resolve, 300));
         }
 
@@ -164,7 +177,7 @@ async function run() {
         console.log("------------------------------------------");
 
     } catch (globalError) {
-        console.error("❌ Критическая ошибка скрипта:", globalError.message);
+        console.error("❌ Критическая ошибка скрипта сидирования:", globalError.message);
     }
 }
 
