@@ -1,7 +1,7 @@
 {
   "name": "connectum-pro-platinum",
-  "version": "20.7.1",
-  "description": "Connectum Pro Platinum: Ультимативная экосистема психологической помощи на базе ИИ (v20.7 Synced)",
+  "version": "21.7.0",
+  "description": "Connectum Pro Platinum: Ультимативная экосистема психологической помощи на базе гибридного ИИ (Gemma 3 + Gemini Native Audio)",
   "main": "server.js",
   "type": "commonjs",
   "scripts": {
@@ -52,7 +52,9 @@
     "telegram-mini-app",
     "mpt",
     "hybrid-ai",
-    "platinum"
+    "platinum",
+    "gemma-3",
+    "gemini-audio"
   ],
   "author": "Connectum Team",
   "license": "MIT"
