@@ -4,7 +4,7 @@
  * 🚀 ЗАДАЧА: Первичная прошивка или обновление базы знаний.
  * 🧠 МОДЕЛЬ: Yandex text-search-query (оптимизировано для RU).
  * 📂 DATABASE: Supabase (pgvector) - хранение смысловых векторов.
- * 🛡️ LOGIC: Пакетная загрузка с защитой от перегрузки API.
+ * 🛡️ LOGIC: Пакетная загрузка с ЗАЩИТОЙ ОТ ДУБЛИКАТОВ для авто-деплоя.
  */
 
 require('dotenv').config();
@@ -39,7 +39,6 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 /**
  * 📚 РЕЕСТР ЭТАЛОННЫХ ЗНАНИЙ (Ядро Connectum)
- * Включает ключевые интервенции по всем модальностям.
  */
 const KNOWLEDGE_DATA = [
     // --- 💎 МПТ (АЛЕКСАНДР ВОЛЫНСКИЙ) ---
@@ -76,17 +75,10 @@ const KNOWLEDGE_DATA = [
  */
 async function getYandexEmbedding(text) {
     const url = 'https://llm.api.cloud.yandex.net/foundationModels/v1/textEmbedding';
-    const payload = {
-        modelUri: `emb://${FOLDER_ID}/text-search-query/latest`,
-        text: text
-    };
-
+    const payload = { modelUri: `emb://${FOLDER_ID}/text-search-query/latest`, text: text };
     try {
         const res = await axios.post(url, payload, {
-            headers: {
-                'Authorization': `Api-Key ${YANDEX_API_KEY}`,
-                'x-folder-id': FOLDER_ID
-            }
+            headers: { 'Authorization': `Api-Key ${YANDEX_API_KEY}`, 'x-folder-id': FOLDER_ID }
         });
         return res.data.embedding;
     } catch (e) {
@@ -96,24 +88,44 @@ async function getYandexEmbedding(text) {
 }
 
 /**
- * ОСНОВНОЙ ЦИКЛ ЗАГРУЗКИ
+ * ОСНОВНОЙ ЦИКЛ ЗАГРУЗКИ С ПРОВЕРКОЙ НА ДУБЛИКАТЫ
  */
 async function run() {
-    console.log(`🚀 ЗАПУСК МИГРАЦИИ НА YANDEX: ${KNOWLEDGE_DATA.length} модулей.`);
+    console.log(`🚀 ЗАПУСК СИНХРОНИЗАЦИИ ЗНАНИЙ (YANDEX EDITION).`);
 
-    // 1. Опционально: Очистка старой базы (если нужно начать с нуля)
-    // const { error: deleteError } = await supabase.from('knowledge_base').delete().neq('id', 0);
-    // if (deleteError) logger.warn("Не удалось очистить старую базу.");
+    // 1. Получаем список существующих триггеров из базы, чтобы не делать лишнюю работу
+    const { data: existingData, error: fetchError } = await supabase
+        .from('knowledge_base')
+        .select('context_trigger, modality_id');
+
+    if (fetchError) {
+        console.error("❌ Ошибка при получении текущей базы знаний:", fetchError.message);
+        return;
+    }
+
+    // Создаем карту существующих ключей для мгновенного поиска
+    const existingKeys = new Set(existingData.map(d => `${d.modality_id}:${d.context_trigger}`));
+    console.log(`📦 В базе уже есть модулей: ${existingKeys.size}`);
+
+    let addedCount = 0;
+    let skippedCount = 0;
 
     for (const [index, item] of KNOWLEDGE_DATA.entries()) {
         try {
-            // Формируем текст для векторизации (такой же как в server.js для совпадения контекста)
+            const key = `${item.mod}:${item.trigger}`;
+            
+            // ПРОВЕРКА: если такой модуль уже есть — пропускаем
+            if (existingKeys.has(key)) {
+                skippedCount++;
+                continue;
+            }
+
+            // Формируем текст для векторизации
             const combinedText = `СИТУАЦИЯ: ${item.trigger} | МЕТОД: ${item.mod} | ИНТЕРВЕНЦИЯ: ${item.text}`;
-           
             const embedding = await getYandexEmbedding(combinedText);
 
             if (!embedding) {
-                console.error(`❌ Пропуск модуля [${index + 1}]: Ошибка API Яндекса`);
+                console.error(`❌ Пропуск [${index + 1}]: Ошибка API`);
                 continue;
             }
 
@@ -127,16 +139,20 @@ async function run() {
 
             if (error) throw error;
            
-            console.log(`✅ [${index + 1}/${KNOWLEDGE_DATA.length}] Вектор Yandex загружен: ${item.mod}`);
+            addedCount++;
+            console.log(`✅ [${index + 1}/${KNOWLEDGE_DATA.length}] Добавлен вектор Yandex: ${item.mod}`);
 
-            // Пауза 0.5 сек для стабильности (у Яндекса лимиты выше, чем у Google Free)
-            await new Promise(resolve => setTimeout(resolve, 500));
+            // Пауза 0.3 сек для стабильности
+            await new Promise(resolve => setTimeout(resolve, 300));
         } catch (e) {
             console.error(`❌ Сбой на модуле "${item.trigger}":`, e.message);
         }
     }
 
-    console.log("\n🏁 ФИНАЛ: База знаний успешно переведена на 'язык' YandexGPT Pro!");
+    console.log(`\n🏁 ФИНАЛ СИНХРОНИЗАЦИИ:`);
+    console.log(`➕ Добавлено новых: ${addedCount}`);
+    console.log(`⏭️ Пропущено дубликатов: ${skippedCount}`);
+    console.log("------------------------------------------");
 }
 
 run();
