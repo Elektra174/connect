@@ -320,7 +320,7 @@ app.post('/api/chat', chatLimiter, async (req, res) => {
         const knowledge = await getRAGContext(message, modalityId);
         const clientProfile = CLIENT_DATABASE[selectedClientId] || CLIENT_DATABASE['c1'];
 
-        // 1. СОВЕТ СУПЕРВИЗОРА
+        // 1. СОВЕТ СУПЕРВИЗОРА (Logging 2.0)
         if (action === 'get_hint') {
             const sys = PromptManager.generateSupervisorPrompt(modalityId, history, knowledge);
             const hint = await callYandexAi(`Психолог написал: ${message}. Дай совет.`, sys, 0.3);
@@ -330,7 +330,7 @@ app.post('/api/chat', chatLimiter, async (req, res) => {
             return res.json({ hint });
         }
 
-        // 2. СПИСАНИЕ ЗА СТАРТ
+        // 2. СПИСАНИЕ ЗА СТАРТ (Первое сообщение)
         if (history.length === 0 && role === 'psychologist') {
             const success = await spendDiamond(userId);
             if (!success) return res.status(403).json({ error: "Недостаточно бриллиантов" });
@@ -345,7 +345,7 @@ app.post('/api/chat', chatLimiter, async (req, res) => {
         const content = await callYandexAi(`${historyText}\nuser: ${message}`, systemPrompt);
         const voice = await generateYandexVoice(content, clientProfile.gender);
 
-        // Логирование диалога для обучения
+        // Логирование диалога для будущего Fine-tuning
         if(db) await db.collection('training_logs').add({ 
             userId, role, message, response: content, modalityId, timestamp: admin.firestore.FieldValue.serverTimestamp() 
         });
@@ -378,25 +378,29 @@ app.post('/api/finish', async (req, res) => {
 
         let certificateUrl = null;
         if (db && userId) {
-            // Генерация PDF
-            const doc = new PDFDocument({ size: 'A4' });
+            // 1. Генерация PDF Сертификата
+            const doc = new PDFDocument({ size: 'A4', margin: 50 });
             const filename = `certificates/${userId}_${Date.now()}.pdf`;
             const file = bucket.file(filename);
             const stream = file.createWriteStream({ metadata: { contentType: 'application/pdf' } });
+            
             doc.pipe(stream);
             doc.fillColor('#020617').rect(0, 0, 595, 842).fill();
             doc.fillColor('#6366f1').fontSize(30).text('CONNECTUM PRO CERTIFICATE', 50, 80);
             doc.fillColor('#ffffff').fontSize(15).text(`Master ID: ${userId}`, 50, 150);
-            doc.text(`Score: ${analysis.method}%`, 50, 185);
+            doc.text(`Modality: ${modalityId.toUpperCase()}`, 50, 175);
+            doc.text(`Score: ${analysis.method}%`, 50, 200);
+            doc.moveDown();
+            doc.fontSize(12).fillColor('#94a3b8').text(analysis.expert_comment || "Сессия успешно проанализирована.", { width: 500 });
             doc.end();
             certificateUrl = `https://storage.googleapis.com/${bucket.name}/${filename}`;
 
-            // 1. Помечаем клиента пройденным
+            // 2. Помечаем клиента пройденным (Фильтрация для бесконечного цикла)
             await db.doc(`artifacts/${APP_ID}/users/${userId}/profile/progress`).set({
                 passedClients: admin.firestore.FieldValue.arrayUnion(selectedClientId)
             }, { merge: true });
 
-            // 2. ГЕНЕРИРУЕМ НОВОГО КЛИЕНТА (Бесконечный цикл)
+            // 3. ГЕНЕРИРУЕМ НОВОГО КЛИЕНТА (Infinite Loop Logic)
             const genPrompt = PromptManager.generateNewClientScenarioPrompt();
             const newClientRaw = await callYandexAi("Создай нового уникального клиента", genPrompt);
             const newClient = JSON.parse(newClientRaw.replace(/```json|```/g, '').trim());
@@ -404,33 +408,47 @@ app.post('/api/finish', async (req, res) => {
                 ...newClient, createdAt: admin.firestore.FieldValue.serverTimestamp() 
             });
 
-            // 3. Сохраняем сессию
+            // 4. Сохраняем сессию в историю
             await db.collection(`artifacts/${APP_ID}/users/${userId}/sessions`).add({ 
                 modalityId, analysis, certificateUrl, timestamp: admin.firestore.FieldValue.serverTimestamp() 
             });
             
-            await adminLog(`🏆 Юзер ${userId} завершил сессию на ${analysis.method}%`);
+            await adminLog(`🏆 Юзер ${userId} завершил сессию ${modalityId} на ${analysis.method}%`);
         }
 
         res.json({ analytics: analysis, certificateUrl });
-    } catch (e) { res.status(500).json({ error: "Finish Audit Fail" }); }
+    } catch (e) { 
+        logger.error("Audit Fail: " + e.message);
+        res.status(500).json({ error: "Ошибка формирования аудита." }); 
+    }
 });
 
 /**
- * ПРОФИЛЬ
+ * ПРОФИЛЬ (О СЕБЕ + МОДАЛЬНОСТИ + ВИТРИНА)
  */
 app.post('/api/profile', async (req, res) => {
     const { userId, profile } = req.body;
     if (!db || !userId) return res.json({ status: 'error' });
     try {
-        const data = { ...profile, updatedAt: admin.firestore.FieldValue.serverTimestamp() };
-        await db.doc(`artifacts/${APP_ID}/users/${userId}/profile/data`).set(data, { merge: true });
-        // Обновление в витрине
-        await db.doc(`artifacts/${APP_ID}/public/data/psychologists/${userId}`).set({ 
-            ...data, skillRating: 85, verified: true 
+        const data = { 
+            ...profile, 
+            updatedAt: admin.firestore.FieldValue.serverTimestamp() 
+        };
+        // Личный профиль
+        await db.doc(`artifacts/${APP_ID}/users/${userId.toString()}/profile/data`).set(data, { merge: true });
+        
+        // Публичная витрина агрегатора
+        await db.doc(`artifacts/${APP_ID}/public/data/psychologists/${userId.toString()}`).set({ 
+            ...data, 
+            skillRating: 85, 
+            verified: true 
         }, { merge: true });
+        
         res.json({ status: 'success' });
-    } catch (e) { res.status(500).send("Profile Save Fail"); }
+    } catch (e) { 
+        logger.error("Profile Save Fail: " + e.message);
+        res.status(500).send("Profile Save Fail"); 
+    }
 } );
 
 app.get('*', (req, res) => { res.sendFile(path.join(distPath, 'index.html')); });
