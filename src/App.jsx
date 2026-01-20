@@ -2,17 +2,17 @@ import React, { useState, useEffect, useRef } from 'react';
 import { marked } from 'marked';
 
 /**
- * CONNECTUM PRO v21.7 - ULTIMATE PLATINUM MONOLITH
+ * CONNECTUM PRO v21.17 - ULTIMATE PLATINUM MONOLITH
  * ========================================================
  * 🎨 DESIGN: "AI Studio" Premium Style (Deep Slate, Neon Glow).
  * 🧠 LOGIC: 30 Clients Database, Difficulty Matrix, Hybrid AI Sync.
- * 🎙️ AUDIO: Native Audio Dialog Support (Auto-play base64).
+ * 🎙️ AUDIO: MsEdge TTS Support (Auto-play data.voice).
  * 📱 UX: Haptics, No-Zoom Fix, 100dvh, Responsive Mesh BG.
  */
 
 // --- 1. ICONS SYSTEM (INTERNAL SVG - NO EXTERNAL DEPS) ---
 const Icons = {
-  InfinityIcon: ({ className }) => (
+  Infinity: ({ className }) => (
     <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 12c-2-2.67-4-4-6-4a4 4 0 1 0 0 8c2 0 4-1.33 6-4Zm0 0c2 2.67 4 4 6 4a4 4 0 0 0 0-8c-2 0-4 1.33-6 4Z"/></svg>
   ),
   Search: ({ className }) => (
@@ -107,7 +107,7 @@ const GlobalStyles = () => (
       --accent-glow: 0 0 20px rgba(99, 102, 241, 0.15);
     }
 
-    body { font-family: 'Manrope', sans-serif; background-color: var(--bg-deep); color: #f8fafc; overflow: hidden; }
+    body { font-family: 'Manrope', sans-serif; background-color: var(--bg-deep); color: #f8fafc; overflow: hidden; margin: 0; }
     
     @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
     @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-10px); } 100% { transform: translateY(0px); } }
@@ -259,6 +259,16 @@ export default function App() {
     }
   }, [screen]);
 
+  // ФОТО: Функция восстановления (ReferenceError Fix)
+  const handlePhotoUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onloadend = () => setUserProfile(prev => ({...prev, photoUrl: reader.result}));
+        reader.readAsDataURL(file);
+    }
+  };
+
   const handleSend = async (text = inputText, isInitial = false, action = 'chat', flow = null) => {
     if (isInitial) unlockAudio();
     if (!text && !isInitial) return;
@@ -288,25 +298,47 @@ export default function App() {
     setIsTyping(false);
   };
 
-  const acceptLegal = () => { localStorage.setItem('connectum_legal', 'true'); setScreen('hub'); };
-  const currentClient = CLIENT_DATABASE.find(c => c.id === selectedClientId) || CLIENT_DATABASE[0];
+  const saveProfile = async () => {
+    await fetch('/api/profile', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ userId, profile: userProfile })
+    });
+    setScreen('hub');
+  };
 
   const requestWaitlist = async (tariff) => {
-     await fetch('/api/waitlist', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({userId, role, tariff}) });
-     tg?.showPopup({ title: 'Заявка принята', message: 'Мы свяжемся с вами в Telegram для активации доступа.' });
+     try {
+       const res = await fetch('/api/waitlist', { 
+         method:'POST', 
+         headers:{'Content-Type':'application/json'}, 
+         body:JSON.stringify({userId, role: role || 'psychologist', tariff}) 
+       });
+       if (res.ok) {
+          // Проверка версии для showPopup (Telegram v6.2+)
+          if (tg && tg.version && parseFloat(tg.version) >= 6.2) {
+             tg.showPopup({ title: 'Заявка принята', message: 'Мы свяжемся с вами в Telegram для активации доступа.' });
+          } else {
+             alert('Заявка принята! Мы свяжемся с вами в ближайшее время.');
+          }
+       }
+     } catch (e) { console.error("Waitlist error:", e); }
   };
+
+  const acceptLegal = () => { localStorage.setItem('connectum_legal', 'true'); setScreen('hub'); };
+  const currentClient = CLIENT_DATABASE.find(c => c.id === selectedClientId) || CLIENT_DATABASE[0];
 
   if (screen === 'loading') return (
     <div className="h-[100dvh] flex flex-col items-center justify-center bg-[#020617]">
       <GlobalStyles />
       <div className="mesh-bg" />
-      <Icons.InfinityIcon className="w-12 h-12 text-indigo-500 animate-pulse" />
+      <Icons.Infinity className="w-12 h-12 text-indigo-500 animate-pulse" />
       <span className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-500 mt-6 animate-pulse">Connectum Intelligence</span>
     </div>
   );
 
   return (
-    <div className="flex flex-col h-[100dvh] bg-[#020617] text-slate-100 font-sans text-left overflow-hidden">
+    <div className="flex flex-col h-[100dvh] bg-[#020617] text-slate-100 font-sans text-left overflow-hidden relative">
       <GlobalStyles />
       <div className="mesh-bg" />
 
@@ -315,7 +347,7 @@ export default function App() {
         <header className="flex-shrink-0 h-16 bg-slate-950/80 backdrop-blur-xl border-b border-white/5 flex items-center justify-between px-5 z-50">
           <div className="flex items-center gap-3">
             <button onClick={() => setScreen('hub')} className="w-9 h-9 rounded-full bg-white/5 flex items-center justify-center active:scale-90 transition"><Icons.ChevronLeft className="w-5 h-5 text-slate-400"/></button>
-            <div className="flex flex-col"><span className="text-[10px] font-black text-indigo-400 uppercase tracking-widest leading-none">Connectum</span><span className="text-[6px] font-bold text-slate-500 uppercase mt-1">Platinum v21.7</span></div>
+            <div className="flex flex-col"><span className="text-[10px] font-black text-indigo-400 uppercase tracking-widest leading-none tracking-tight">Connectum</span><span className="text-[6px] font-bold text-slate-500 uppercase mt-1 tracking-tighter">v21.17 MASTER</span></div>
           </div>
           <div className="flex items-center gap-1.5 bg-indigo-500/10 px-3 py-1.5 rounded-full border border-indigo-500/20 shadow-lg shadow-indigo-500/5">
             <span className="text-[10px] font-black text-indigo-300 tracking-tighter">{gems}/5</span>
@@ -344,7 +376,7 @@ export default function App() {
             <div className="flex flex-col items-center gap-5">
                <div className="relative">
                  <div className="absolute inset-0 bg-indigo-500 blur-3xl opacity-20 animate-pulse"></div>
-                 <Icons.InfinityIcon className="w-14 h-14 text-white relative z-10" />
+                 <Icons.Infinity className="w-14 h-14 text-white relative z-10" />
                </div>
                <div className="space-y-1">
                  <h1 className="text-3xl font-black text-white tracking-tighter">Connectum</h1>
@@ -489,9 +521,9 @@ export default function App() {
         {/* 5. AGGREGATOR (Marketplace) */}
         {screen === 'aggregator' && (
            <div className="flex-1 overflow-y-auto p-6 space-y-6 no-scrollbar pb-32 text-left animate-in slide-in-from-right">
-               <h2 className="text-3xl font-black text-white uppercase tracking-tighter">Витрина Мастеров</h2>
+               <h2 className="text-3xl font-black text-white uppercase tracking-tighter leading-tight">Витрина Мастеров</h2>
                <div className="grid gap-5">
-                   {psychologists.length === 0 ? <div className="text-slate-500 italic text-sm text-center py-20">Поиск специалистов...</div> : psychologists.map((p, i) => (
+                   {psychologists.length === 0 ? <div className="text-slate-500 italic text-sm text-center py-20 animate-pulse">Поиск специалистов...</div> : psychologists.map((p, i) => (
                        <div key={i} className={`p-6 rounded-[2.5rem] border bg-slate-900/60 backdrop-blur-xl ${p.isVip ? 'border-indigo-500/40 shadow-[0_0_30px_rgba(99,102,241,0.15)]' : 'border-white/5'}`}>
                            <div className="flex gap-5 items-start">
                                <div className="w-20 h-20 bg-slate-800 rounded-3xl flex items-center justify-center text-4xl overflow-hidden relative shadow-inner border border-white/5">{p.photoUrl ? <img src={p.photoUrl} className="w-full h-full object-cover"/> : (p.avatar || '👤')}</div>
@@ -505,7 +537,7 @@ export default function App() {
                            </div>
                            <div className="mt-6 flex justify-between items-center border-t border-white/5 pt-5">
                                <div><span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Консультация</span><p className="text-2xl font-black text-white leading-none mt-1">{p.price}₽</p></div>
-                               <button className="bg-indigo-600 hover:bg-indigo-500 px-8 py-3.5 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] text-white shadow-xl active:scale-95 transition">Записаться</button>
+                               <button onClick={()=>requestWaitlist('booking')} className="bg-indigo-600 hover:bg-indigo-500 px-8 py-3.5 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] text-white shadow-xl active:scale-95 transition">Записаться</button>
                            </div>
                        </div>
                    ))}
@@ -529,11 +561,12 @@ export default function App() {
                            <div className="absolute inset-0 bg-indigo-600/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"><span className="text-[8px] font-black text-white uppercase tracking-widest">Обновить</span></div>
                        </div>
                        <div className="flex-1 space-y-3">
-                           <button className="w-full py-4 bg-emerald-900/10 border border-emerald-500/20 rounded-2xl text-[10px] font-black uppercase text-emerald-400 hover:bg-emerald-500/10 transition shadow-lg shadow-emerald-500/5">Анкета = +3 💎</button>
-                           <button className="w-full py-4 bg-indigo-600/10 border border-indigo-500/20 rounded-2xl text-[10px] font-black uppercase text-indigo-300 hover:bg-indigo-500/10 transition shadow-lg shadow-indigo-500/5">Пригласить коллегу</button>
+                           <button onClick={()=>requestWaitlist('gems_bundle')} className="w-full py-4 bg-emerald-900/10 border border-emerald-500/20 rounded-2xl text-[10px] font-black uppercase text-emerald-400 hover:bg-emerald-500/10 transition shadow-lg shadow-emerald-500/5">Анкета = +3 💎</button>
+                           <button onClick={()=>requestWaitlist('pro_access')} className="w-full py-4 bg-indigo-600/10 border border-indigo-500/20 rounded-2xl text-[10px] font-black uppercase text-indigo-300 hover:bg-indigo-500/10 transition shadow-lg shadow-indigo-500/5">Пригласить коллегу</button>
                        </div>
                    </div>
                    
+                   {/* VIDEO RECORDER INCLUDED (FOR COMPLETE MONOLITH) */}
                    <VideoRecorder onUpload={(url)=>setUserProfile({...userProfile, videoUrl: url})}/>
                    
                    <div className="space-y-5 pt-4 border-t border-white/5">
@@ -544,7 +577,7 @@ export default function App() {
                        </div>
                    </div>
                    
-                   <button onClick={saveProfile} className="w-full py-6 bg-gradient-to-r from-indigo-600 to-indigo-800 rounded-[2.5rem] text-[11px] font-black uppercase tracking-[0.4em] text-white shadow-2xl shadow-indigo-500/30 active:scale-95 transition-all mt-6 transform hover:-translate-y-1">Сохранить систему</button>
+                   <button onClick={saveProfile} className="w-full py-6 bg-indigo-600 rounded-[2.5rem] text-[11px] font-black uppercase tracking-[0.4em] text-white shadow-2xl shadow-indigo-500/30 active:scale-95 transition-all mt-6 transform hover:-translate-y-1">Сохранить систему</button>
                </div>
            </div>
         )}
@@ -552,10 +585,10 @@ export default function App() {
       </main>
 
       {/* 🧭 FOOTER NAVIGATION SYSTEM */}
-      {(screen !== 'chat' && screen !== 'legal' && screen !== 'loading') && (
-        <nav className="h-[90px] bg-slate-950/90 backdrop-blur-3xl border-t border-white/5 flex justify-around items-center px-4 pb-6 z-50">
+      {(role !== null && screen !== 'chat' && screen !== 'legal' && screen !== 'loading') && (
+        <nav className="h-[90px] bg-slate-950/90 backdrop-blur-3xl border-t border-white/5 flex justify-around items-center px-4 pb-6 z-50 shadow-[0_-10px_40px_rgba(0,0,0,0.5)]">
             {[
-                {id: 'hub', icon: Icons.InfinityIcon, label: 'Главная'},
+                {id: 'hub', icon: Icons.Infinity, label: 'Главная'},
                 {id: 'setup', icon: Icons.Sparkles, label: 'Мастерская'},
                 {id: 'aggregator', icon: Icons.Search, label: 'Мастера'},
                 {id: 'profile', icon: Icons.User, label: 'Профиль'}
@@ -563,7 +596,7 @@ export default function App() {
                 <button key={item.id} onClick={()=>setScreen(item.id)} className={`flex flex-col items-center gap-2 w-16 transition-all duration-300 ${screen===item.id ? 'text-indigo-400 -translate-y-1' : 'text-slate-600 hover:text-slate-400'}`}>
                     <item.icon className={`w-6 h-6 ${screen===item.id ? 'drop-shadow-[0_0_10px_rgba(99,102,241,0.6)]' : ''}`}/>
                     <span className={`text-[8px] font-black uppercase tracking-widest transition-opacity ${screen===item.id ? 'opacity-100' : 'opacity-60'}`}>{item.label}</span>
-                    {screen===item.id && <div className="w-1 h-1 bg-indigo-500 rounded-full animate-ping"/>}
+                    {screen===item.id && <div className="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-pulse mt-0.5 shadow-[0_0_10px_rgba(99,102,241,1)]"/>}
                 </button>
             ))}
         </nav>
