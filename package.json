@@ -1,6 +1,6 @@
 {
   "name": "connectum-pro-platinum",
-  "version": "21.26.0",
+  "version": "21.26.2",
   "description": "Connectum Pro Platinum Evolution: Ультимативная экосистема на базе Yandex Assistant API и SpeechKit с автоматической установкой всех зависимостей",
   "main": "server.js",
   "type": "commonjs",
