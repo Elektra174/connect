@@ -1,73 +1,45 @@
 /**
- * CONNECTUM PRO v20.3 - KNOWLEDGE SEEDER (OPTIMIZED)
+ * CONNECTUM PRO v21.25 - KNOWLEDGE SEEDER (YANDEX EDITION)
  * ========================================================
- * Данный скрипт является инструментом "первичной прошивки" ИИ.
- * 🚀 Загружает 300+ эталонных модулей в Supabase (pgvector).
- * 🧠 Использует модель Google text-embedding-004 с кэшированием.
- * 🛡 Внедрена логика Exponential Backoff для обхода лимитов Free Tier.
- * ⚡ Оптимизирована пакетная обработка для скорости.
+ * 🚀 ЗАДАЧА: Первичная прошивка или обновление базы знаний.
+ * 🧠 МОДЕЛЬ: Yandex text-search-query (оптимизировано для RU).
+ * 📂 DATABASE: Supabase (pgvector) - хранение смысловых векторов.
+ * 🛡️ LOGIC: Пакетная загрузка с защитой от перегрузки API.
  */
 
 require('dotenv').config();
 const { createClient } = require('@supabase/supabase-js');
-const { GoogleGenerativeAI } = require("@google/generative-ai");
+const axios = require('axios');
 const winston = require('winston');
-const NodeCache = require('node-cache');
 
-// --- 🛡️ ЛОГИРОВАНИЕ (Winston) ---
+// --- 📝 ЛОГИРОВАНИЕ ---
 const logger = winston.createLogger({
-  level: 'info',
-  format: winston.format.combine(
-    winston.format.timestamp(),
-    winston.format.json()
-  ),
-  transports: [
-    new winston.transports.File({ filename: 'logs/seed.log' }),
-    new winston.transports.Console({
-      format: winston.format.combine(
-        winston.format.colorize(),
-        winston.format.simple()
-      )
-    })
-  ],
+    level: 'info',
+    format: winston.format.combine(winston.format.timestamp(), winston.format.json()),
+    transports: [
+        new winston.transports.File({ filename: 'logs/seed_yandex.log' }),
+        new winston.transports.Console({
+            format: winston.format.combine(winston.format.colorize(), winston.format.simple())
+        })
+    ],
 });
 
-// --- 🧠 КЭШ ВЕКТОРОВ ---
-const vectorCache = new NodeCache({ stdTTL: 3600, checkperiod: 600 });
+// --- ⚙️ КОНФИГУРАЦИЯ ---
+const YANDEX_API_KEY = process.env.YANDEX_API_KEY;
+const FOLDER_ID = process.env.YANDEX_FOLDER_ID;
+const SUPABASE_URL = process.env.SUPABASE_URL;
+const SUPABASE_KEY = process.env.SUPABASE_KEY;
 
-// --- ⚙️ ПРОВЕРКА ОКРУЖЕНИЯ ---
-const checkEnv = () => {
-    const missing = [];
-    if (!process.env.SUPABASE_URL) missing.push("SUPABASE_URL");
-    if (!process.env.SUPABASE_KEY) missing.push("SUPABASE_KEY");
-    if (!process.env.GOOGLE_API_KEYS) missing.push("GOOGLE_API_KEYS");
+if (!YANDEX_API_KEY || !FOLDER_ID || !SUPABASE_URL || !SUPABASE_KEY) {
+    console.error("❌ Ошибка: Проверьте переменные окружения (YANDEX_API_KEY, FOLDER_ID, SUPABASE_URL, SUPABASE_KEY)");
+    process.exit(1);
+}
 
-    if (missing.length > 0) {
-        console.error("❌ Ошибка: В файле .env отсутствуют переменные:", missing.join(", "));
-        process.exit(1);
-    }
-};
-
-checkEnv();
-
-// Инициализация сервисов с ротацией ключей
-const googleApiKeys = process.env.GOOGLE_API_KEYS.split(',');
-let currentKeyIndex = 0;
-
-const getCurrentGoogleKey = () => {
-    return googleApiKeys[currentKeyIndex];
-};
-
-const rotateGoogleKey = () => {
-    currentKeyIndex = (currentKeyIndex + 1) % googleApiKeys.length;
-    console.log(`🔄 Rotated to Google API key #${currentKeyIndex + 1}/${googleApiKeys.length}`);
-};
-
-const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
-const genAI = new GoogleGenerativeAI(getCurrentGoogleKey());
+const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 /**
  * 📚 РЕЕСТР ЭТАЛОННЫХ ЗНАНИЙ (Ядро Connectum)
+ * Включает ключевые интервенции по всем модальностям.
  */
 const KNOWLEDGE_DATA = [
     // --- 💎 МПТ (АЛЕКСАНДР ВОЛЫНСКИЙ) ---
@@ -100,68 +72,50 @@ const KNOWLEDGE_DATA = [
 ];
 
 /**
- * ГЕНЕРАЦИЯ ЭМБЕДДИНГА (с кэшированием и логикой повторов при 429)
+ * ГЕНЕРАЦИЯ ЭМБЕДДИНГА ЧЕРЕЗ YANDEX CLOUD
  */
-async function getEmbedding(text, retries = 5) {
-    // Проверка кэша
-    const cacheKey = `vec:${Buffer.from(text).toString('base64').slice(0, 100)}`;
-    const cached = vectorCache.get(cacheKey);
-    if (cached) {
-        logger.info(`✅ Вектор взят из кэша: ${cacheKey}`);
-        return cached;
-    }
+async function getYandexEmbedding(text) {
+    const url = 'https://llm.api.cloud.yandex.net/foundationModels/v1/textEmbedding';
+    const payload = {
+        modelUri: `emb://${FOLDER_ID}/text-search-query/latest`,
+        text: text
+    };
 
-    const maxKeyRetries = googleApiKeys.length;
-    
-    for (let keyAttempt = 0; keyAttempt < maxKeyRetries; keyAttempt++) {
-        const model = genAI.getGenerativeModel({ model: "text-embedding-004" });
-        let delay = 10000; // 10 секунд база
-
-        for (let i = 0; i < retries; i++) {
-            try {
-                const result = await model.embedContent(text);
-                const vector = result.embedding.values;
-                
-                // Сохранение в кэш
-                vectorCache.set(cacheKey, vector);
-                logger.info(`✅ Вектор сохранен в кэш: ${cacheKey}`);
-                
-                return vector;
-            } catch (error) {
-                if (error.message.includes('429') || error.message.includes('quota') || error.message.includes('limit')) {
-                    logger.warn(`⚠️ Лимит превышен. Попытка ${i + 1}/${retries}. Жду ${delay / 1000} сек...`);
-                    await new Promise(r => setTimeout(r, delay));
-                    delay *= 2;
-                } else {
-                    throw error;
-                }
+    try {
+        const res = await axios.post(url, payload, {
+            headers: {
+                'Authorization': `Api-Key ${YANDEX_API_KEY}`,
+                'x-folder-id': FOLDER_ID
             }
-        }
-        
-        // Если все попытки с текущим ключом исчерпаны, пробуем следующий
-        logger.warn(`🔄 Все попытки с ключом #${currentKeyIndex + 1} исчерпаны. Переключаемся...`);
-        rotateGoogleKey();
-        // Обновляем genAI с новым ключом
-        const newKey = getCurrentGoogleKey();
-        const newGenAI = new GoogleGenerativeAI(newKey);
-        // Продолжаем попытку
+        });
+        return res.data.embedding;
+    } catch (e) {
+        logger.error("Yandex Embedding Error: " + (e.response?.data?.message || e.message));
+        return null;
     }
-    
-    throw new Error("Не удалось получить вектор после всех попыток и ключей.");
 }
 
 /**
  * ОСНОВНОЙ ЦИКЛ ЗАГРУЗКИ
  */
 async function run() {
-    console.log(`🚀 ЗАПУСК ЗАГРУЗКИ: ${KNOWLEDGE_DATA.length} модулей.`);
+    console.log(`🚀 ЗАПУСК МИГРАЦИИ НА YANDEX: ${KNOWLEDGE_DATA.length} модулей.`);
+
+    // 1. Опционально: Очистка старой базы (если нужно начать с нуля)
+    // const { error: deleteError } = await supabase.from('knowledge_base').delete().neq('id', 0);
+    // if (deleteError) logger.warn("Не удалось очистить старую базу.");
 
     for (const [index, item] of KNOWLEDGE_DATA.entries()) {
         try {
-            // Формируем текст для векторизации
+            // Формируем текст для векторизации (такой же как в server.js для совпадения контекста)
             const combinedText = `СИТУАЦИЯ: ${item.trigger} | МЕТОД: ${item.mod} | ИНТЕРВЕНЦИЯ: ${item.text}`;
            
-            const embedding = await getEmbedding(combinedText);
+            const embedding = await getYandexEmbedding(combinedText);
+
+            if (!embedding) {
+                console.error(`❌ Пропуск модуля [${index + 1}]: Ошибка API Яндекса`);
+                continue;
+            }
 
             const { error } = await supabase.from('knowledge_base').insert({
                 modality_id: item.mod,
@@ -173,16 +127,16 @@ async function run() {
 
             if (error) throw error;
            
-            console.log(`✅ [${index + 1}/${KNOWLEDGE_DATA.length}] Загружено: ${item.mod} -> ${item.cat}`);
+            console.log(`✅ [${index + 1}/${KNOWLEDGE_DATA.length}] Вектор Yandex загружен: ${item.mod}`);
 
-            // Пауза 5 секунд для стабильности Free Tier
-            await new Promise(resolve => setTimeout(resolve, 5000));
+            // Пауза 0.5 сек для стабильности (у Яндекса лимиты выше, чем у Google Free)
+            await new Promise(resolve => setTimeout(resolve, 500));
         } catch (e) {
             console.error(`❌ Сбой на модуле "${item.trigger}":`, e.message);
         }
     }
 
-    console.log("\n🏁 ФИНАЛ: База знаний Connectum Pro успешно сформирована!");
+    console.log("\n🏁 ФИНАЛ: База знаний успешно переведена на 'язык' YandexGPT Pro!");
 }
 
 run();
