@@ -1,15 +1,15 @@
 /**
- * SERVER.JS - v21.7 (BUSINESS PLATINUM ULTIMATE MONOLITH)
+ * SERVER.JS - v21.9 (BUSINESS PLATINUM PRODUCTION MASTER)
  * ========================================================
  * 🧠 AI ORCHESTRATION: 
- * - Gemma 3 (27b): Аналитический центр, Супервизор, Диагностика (14.4K RPD).
- * - Gemini 2.5 Flash Native Audio: Живой эмоциональный голос и текст (Unlimited).
- * 🤝 B2B & B2C: Тренажер для профи + ИИ-терапия для клиентов.
- * 💰 ECONOMY: Firebase Transactions (Diamonds) + Waitlist + Telegram Bot Logs.
- * 📂 RAG: Semantic Search via Supabase Vector (300+ modules).
- * 🛡️ SECURITY: Full Joi Validation + Rate Limiting + Winston Professional Logs.
- * 🛠️ RENDER SYNC: Fixed MIME types & SPA Fallback.
- * 👥 DATABASE: 30 full client dossiers.
+ * - Gemma 3 (27b): Аналитический центр, Супервизор, Аудит (14.4K RPD).
+ * - Gemini 2.5 Flash Native Audio: Актерское мастерство и живой голос (Unlimited).
+ * 🤖 TELEGRAM BOT: Команда /start с отправкой баннера и кнопкой запуска Mini App.
+ * 🛡️ SECURITY: Full Joi Validation + Rate Limiting + Winston Logging.
+ * 💰 ECONOMY: Firebase Transactions (Diamonds) + Waitlist Admin Notifications.
+ * 📂 RAG: Semantic Search via Supabase Vector (300+ modules) with timeout protection.
+ * 🛠️ RENDER SYNC: Fixed MIME types, SPA Fallback & Port Binding.
+ * 👥 DATABASE: 30 full client dossiers included (No cutting allowed).
  */
 
 const express = require('express');
@@ -76,6 +76,7 @@ app.use(express.static(publicBuildPath));
 // --- ⚙️ КОНФИГУРАЦИЯ ---
 const APP_ID = process.env.APP_ID || 'connectum-platinum';
 const ADMIN_ID = process.env.ADMIN_ID || '7830322013';
+const WEB_APP_URL = process.env.WEB_APP_URL;
 
 // Инициализация Google AI (Ротация ключей)
 const googleApiKeys = process.env.GOOGLE_API_KEYS ? process.env.GOOGLE_API_KEYS.split(',') : [process.env.GOOGLE_API_KEY];
@@ -84,7 +85,7 @@ let currentKeyIndex = 0;
 const getGoogleAI = () => new GoogleGenerativeAI(googleApiKeys[currentKeyIndex]);
 const rotateKey = () => {
     currentKeyIndex = (currentKeyIndex + 1) % googleApiKeys.length;
-    logger.info(`🔄 Ротация ключей: Ключ #${currentKeyIndex + 1}`);
+    logger.info(`🔄 Ротация ключей: Используем ключ #${currentKeyIndex + 1}`);
 };
 
 // Инициализация Supabase (RAG)
@@ -103,14 +104,47 @@ if (process.env.FIREBASE_SERVICE_ACCOUNT) {
             });
             db = admin.firestore();
             bucket = admin.storage().bucket();
-            logger.info("✅ Firebase Platinum Active");
+            logger.info("✅ Firebase Platinum Engine Active");
         }
-    } catch (e) { logger.error("Firebase init error: " + e.message); }
+    } catch (e) { logger.error("Firebase fail: " + e.message); }
 }
 
 // Инициализация Bot & Prompts
-const bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN);
+const bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN, { polling: true });
 const PromptManager = require('./prompt_manager');
+
+// --- 🤖 ТЕЛЕГРАМ БОТ: ПРИВЕТСТВИЕ ---
+bot.onText(/\/start/, async (msg) => {
+    const chatId = msg.chat.id;
+    const welcomeText = `
+**Connectum | Эволюция Психологии** 💫
+
+Добро пожаловать в профессиональную экосистему будущего.
+
+🧠 **Для Психологов:** Тренируйте навыки на 30+ ИИ-клиентах, получайте советы супервизора и растите в рейтинге.
+🤝 **Для Клиентов:** Пройдите ИИ-диагностику и найдите мастера, подтвержденного практикой.
+
+Нажмите кнопку ниже, чтобы войти в систему.
+    `;
+
+    try {
+        const photoUrl = 'https://raw.githubusercontent.com/ai-studio-assets/connectum/main/banner.jpg'; 
+        await bot.sendPhoto(chatId, photoUrl, {
+            caption: welcomeText,
+            parse_mode: 'Markdown',
+            reply_markup: {
+                inline_keyboard: [[{ text: "🚀 Запустить Connectum", web_app: { url: WEB_APP_URL } }]]
+            }
+        });
+    } catch (e) {
+        await bot.sendMessage(chatId, welcomeText, {
+            parse_mode: 'Markdown',
+            reply_markup: {
+                inline_keyboard: [[{ text: "🚀 Запустить Connectum", web_app: { url: WEB_APP_URL } }]]
+            }
+        });
+    }
+});
 
 // --- 👥 ПОЛНАЯ БАЗА КЛИЕНТОВ (30 ДЕТАЛИЗИРОВАННЫХ КЕЙСОВ) ---
 const CLIENT_DATABASE = {
@@ -180,9 +214,6 @@ async function getRelevantKnowledge(userMessage, modalityId) {
     });
 }
 
-/**
- * ВЫЗОВ GEMMA 3 (Текст/Аналитика)
- */
 async function callGemma(prompt, system) {
     try {
         const model = getGoogleAI().getGenerativeModel({ model: "gemma-3-27b" });
@@ -191,9 +222,6 @@ async function callGemma(prompt, system) {
     } catch (e) { rotateKey(); return "Я задумался..."; }
 }
 
-/**
- * ВЫЗОВ GEMINI NATIVE AUDIO (Мультимодальный чат)
- */
 async function callGeminiAudio(prompt, system, voiceName = "Aoede") {
     try {
         const apiKey = googleApiKeys[currentKeyIndex];
@@ -216,11 +244,8 @@ async function callGeminiAudio(prompt, system, voiceName = "Aoede") {
     } catch (e) { rotateKey(); return { text: "Ошибка аудио-движка", audio: null }; }
 }
 
-/**
- * ТРАНЗАКЦИОННОЕ СПИСАНИЕ ЛИМИТОВ 💎
- */
 async function useSessionLimit(userId) {
-    if (!db) return true; // Демо-режим
+    if (!db) return true; 
     const limitRef = db.collection('artifacts').doc(APP_ID).collection('users').doc(userId).collection('limits').doc('stats');
     try {
         return await db.runTransaction(async (t) => {
@@ -237,7 +262,7 @@ async function useSessionLimit(userId) {
 // --- 🌐 API ENDPOINTS ---
 
 /**
- * ГЛАВНЫЙ ЧАТ (С ВАЛИДАЦИЕЙ JOI)
+ * ГЛАВНЫЙ ЧАТ
  */
 app.post('/api/chat', chatLimiter, async (req, res) => {
     const schema = Joi.object({
@@ -261,20 +286,17 @@ app.post('/api/chat', chatLimiter, async (req, res) => {
     try {
         const knowledge = await getRelevantKnowledge(message, modalityId);
         
-        // 1. СУПЕРВИЗОР (Gemma 3)
         if (action === 'get_hint') {
             const sys = PromptManager.generateSupervisorPrompt(modalityId, history, knowledge);
             const hint = await callGemma(`Дай краткий совет: ${message}`, sys);
             return res.json({ hint });
         }
 
-        // 2. СПИСАНИЕ ПРИ СТАРТЕ
         if (history.length === 0 && role === 'psychologist') {
             const ok = await useSessionLimit(userId);
             if (!ok) return res.status(403).json({ error: "Недостаточно 💎. Пожалуйста, пополните баланс." });
         }
 
-        // 3. ЖИВОЙ ДИАЛОГ (Gemini Native Audio)
         const sys = role === 'client' 
             ? PromptManager.generateAiTherapistPrompt(flow) 
             : PromptManager.generateClientPrompt(modalityId, difficulty, clientProfile, knowledge); 
@@ -290,10 +312,20 @@ app.post('/api/chat', chatLimiter, async (req, res) => {
 });
 
 /**
- * ФИНАЛИЗАЦИЯ И ГЕНЕРАЦИЯ PDF (С ДИЗАЙНОМ v20.8.3)
+ * ФИНАЛИЗАЦИЯ И PDF СЕРТИФИКАТ
  */
 app.post('/api/finish', async (req, res) => {
-    const { userId, history, modalityId, role } = req.body;
+    const schema = Joi.object({
+        userId: Joi.string().required(),
+        history: Joi.array().required(),
+        modalityId: Joi.string().required(),
+        role: Joi.string().required()
+    });
+
+    const { error, value } = schema.validate(req.body);
+    if (error) return res.status(400).json({ error: "Invalid finish payload" });
+
+    const { userId, history, modalityId, role } = value;
     try {
         const historyText = history.map(m => `${m.role}: ${m.content}`).join('\n');
         const sys = role === 'client' 
@@ -311,7 +343,6 @@ app.post('/api/finish', async (req, res) => {
             const stream = file.createWriteStream({ metadata: { contentType: 'application/pdf' } });
 
             doc.pipe(stream);
-            // Визуальный стиль сертификата Platinum
             doc.rect(0, 0, 595, 842).fill('#020617');
             doc.fillColor('#6366f1').fontSize(40).text('CONNECTUM', 50, 50);
             doc.fillColor('#f8fafc').fontSize(14).text('GOLDEN CERTIFICATE OF MASTERY', 50, 105);
@@ -324,7 +355,7 @@ app.post('/api/finish', async (req, res) => {
             doc.moveDown(2).fontSize(12).fillColor('#94a3b8').text('Expert Analysis:');
             doc.fillColor('#f1f5f9').text(analysis.expert_comment || "Сессия успешно проанализирована.", { width: 500, align: 'justify' });
             
-            doc.moveDown(3).fontSize(10).fillColor('#475569').text('Verified by Connectum AI Protocol v21.7', { align: 'center' });
+            doc.moveDown(3).fontSize(10).fillColor('#475569').text('Verified by Connectum AI Protocol v21.9', { align: 'center' });
             doc.end();
 
             certificateUrl = `https://storage.googleapis.com/${bucket.name}/${filename}`;
@@ -341,7 +372,7 @@ app.post('/api/finish', async (req, res) => {
 });
 
 /**
- * ОСТАЛЬНЫЕ ЭНДПОИНТЫ (АГРЕГАТОР, ПРОФИЛЬ, WAITLIST)
+ * АГРЕГАТОР
  */
 app.get('/api/aggregator', async (req, res) => {
     if (!db) return res.json([]);
@@ -353,6 +384,9 @@ app.get('/api/aggregator', async (req, res) => {
     } catch (e) { res.status(500).send("Aggregator Error"); }
 });
 
+/**
+ * ПРОФИЛЬ
+ */
 app.post('/api/profile', async (req, res) => {
     const { userId, profile } = req.body;
     if (!db) return res.json({ status: 'demo' });
@@ -364,6 +398,9 @@ app.post('/api/profile', async (req, res) => {
     } catch (e) { res.status(500).send("Profile Error"); }
 });
 
+/**
+ * WAITLIST
+ */
 app.post('/api/waitlist', async (req, res) => {
     const { userId, role, tariff, amount } = req.body;
     if (!db) return res.json({ status: 'demo' });
@@ -375,6 +412,24 @@ app.post('/api/waitlist', async (req, res) => {
     } catch (e) { res.status(500).send("Waitlist Error"); }
 });
 
+/**
+ * ЗАГРУЗКА ВИДЕО (Overwrite)
+ */
+app.post('/api/upload-video', async (req, res) => {
+    const { userId, videoBase64 } = req.body;
+    if (!db) return res.json({ url: '#' });
+    try {
+        const fileName = `videos/${userId}/intro.webm`;
+        const file = bucket.file(fileName);
+        await file.save(Buffer.from(videoBase64.split(',')[1], 'base64'), {
+            metadata: { contentType: 'video/webm' }, public: true
+        });
+        const url = `https://storage.googleapis.com/${bucket.name}/${fileName}`;
+        await db.doc(`artifacts/${APP_ID}/users/${userId}/profile/data`).update({ videoUrl: url });
+        res.json({ url });
+    } catch (e) { res.status(500).send("Upload Error"); }
+});
+
 app.get('*', (req, res) => {
     if (req.url.includes('.')) return res.status(404).send('Not found');
     res.sendFile(path.join(distPath, 'index.html'));
@@ -382,6 +437,6 @@ app.get('*', (req, res) => {
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-    logger.info(`🚀 Connectum v21.7 Platinum Engine Online on ${PORT}`);
-    adminLog("🚀 Система успешно запущена: Full Detailed Hybrid Edition.");
+    logger.info(`🚀 Connectum v21.9 Ultimate Production Online on ${PORT}`);
+    adminLog("🚀 Система запущена: Full Monolith Production Sync.");
 });
