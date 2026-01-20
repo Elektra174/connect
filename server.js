@@ -144,19 +144,19 @@ const CLIENT_DATABASE = {
     c15: { id: "c15", name: "Екатерина", age: 36, profession: "HR-директор", gender: "female", bio: "Выгорание. Перфекционизм. Жжение в глазах от истощения." },
     c16: { id: "c16", name: "Александр", age: 44, profession: "Инженер", gender: "male", bio: "Застрял в горе. Чувствует вину перед ушедшим близким." },
     c17: { id: "c17", name: "Светлана", age: 30, profession: "Бьюти-мастер", gender: "female", bio: "Низкая самооценка. Считает себя 'недостаточной' для любви." },
-    { id: "c18", name: "Роман", age: 32, profession: "Аналитик", gender: "male", bio: "Игровая зависимость. Уход от реальности в виртуальный мир." },
-    { id: "c19", name: "Ирина", age: 48, profession: "Юрист", gender: "female", bio: "Синдром пустого гнезда. Смысл жизни пропал." },
-    { id: "c20", name: "Кирилл", age: 26, profession: "Дизайнер", gender: "male", bio: "Агорафобия. Боится выходить на открытые пространства." },
-    { id: "c21", name: "Татьяна", age: 55, profession: "Пенсионерка", gender: "female", bio: "Кризис старения. Ощущение, что время уходит впустую." },
-    { id: "c22", name: "Виктор", age: 39, profession: "Водитель", gender: "male", bio: "Переживает измену. Колючая проволока вокруг сердца." },
-    { id: "c23", name: "Алина", age: 24, profession: "Бариста", gender: "female", bio: "Не умеет говорить 'нет'. Чувствует, что все ею пользуются." },
-    { id: "c24", name: "Денис", age: 37, profession: "Охранник", gender: "male", bio: "Навязчивые мысли о здоровье. Постоянные проверки." },
-    { id: "c25", name: "Людмила", age: 60, profession: "Педагог", gender: "female", bio: "Конфликт с невесткой. Чувствует себя ненужной и лишней." },
-    { id: "c26", name: "Максим", age: 21, profession: "Блогер", gender: "male", bio: "Подростковый бунт против системы. Ничего не хочет делать." },
-    { id: "c27", name: "Валерия", age: 31, profession: "Стилист", gender: "female", bio: "Болезненная ревность. Постоянный поиск улик измены." },
-    { id: "c28", name: "Станислав", age: 43, profession: "Адвокат", gender: "male", bio: "Трудоголизм. Не умеет расслабляться без алкоголя." },
-    { id: "c29", name: "Евгения", age: 29, profession: "Копирайтер", gender: "female", bio: "Страх перемен. Боится менять работу, даже если там плохо." },
-    { id: "c30", name: "Константин", age: 35, profession: "Финансист", gender: "male", bio: "Эмоциональная холодность. Не понимает, что чувствует." }
+    c18: { id: "c18", name: "Роман", age: 32, profession: "Аналитик", gender: "male", bio: "Игровая зависимость. Уход от реальности в виртуальный мир." },
+    c19: { id: "c19", name: "Ирина", age: 48, profession: "Юрист", gender: "female", bio: "Синдром пустого гнезда. Смысл жизни пропал." },
+    c20: { id: "c20", name: "Кирилл", age: 26, profession: "Дизайнер", gender: "male", bio: "Агорафобия. Боится выходить на открытые пространства." },
+    c21: { id: "c21", name: "Татьяна", age: 55, profession: "Пенсионерка", gender: "female", bio: "Кризис старения. Ощущение, что время уходит впустую." },
+    c22: { id: "c22", name: "Виктор", age: 39, profession: "Водитель", gender: "male", bio: "Переживает измену. Колючая проволока вокруг сердца." },
+    c23: { id: "c23", name: "Алина", age: 24, profession: "Бариста", gender: "female", bio: "Не умеет говорить 'нет'. Чувствует, что все ею пользуются." },
+    c24: { id: "c24", name: "Денис", age: 37, profession: "Охранник", gender: "male", bio: "Навязчивые мысли о здоровье. Постоянные проверки." },
+    c25: { id: "c25", name: "Людмила", age: 60, profession: "Педагог", gender: "female", bio: "Конфликт с невесткой. Чувствует себя ненужной и лишней." },
+    c26: { id: "c26", name: "Максим", age: 21, profession: "Блогер", gender: "male", bio: "Подростковый бунт против системы. Ничего не хочет делать." },
+    c27: { id: "c27", name: "Валерия", age: 31, profession: "Стилист", gender: "female", bio: "Болезненная ревность. Постоянный поиск улик измены." },
+    c28: { id: "c28", name: "Станислав", age: 43, profession: "Адвокат", gender: "male", bio: "Трудоголизм. Не умеет расслабляться без алкоголя." },
+    c29: { id: "c29", name: "Евгения", age: 29, profession: "Копирайтер", gender: "female", bio: "Страх перемен. Боится менять работу, даже если там плохо." },
+    c30: { id: "c30", name: "Константин", age: 35, profession: "Финансист", gender: "male", bio: "Эмоциональная холодность. Не понимает, что чувствует." }
 };
 
 // --- 🛠 ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ---
@@ -299,7 +299,22 @@ app.get('/api/sync', async (req, res) => {
  * ГЛАВНЫЙ ЧАТ
  */
 app.post('/api/chat', chatLimiter, async (req, res) => {
-    const { userId, message, modalityId, action, selectedClientId, role, flow, difficulty, history = [] } = req.body;
+    const schema = Joi.object({
+        userId: Joi.string().required(),
+        message: Joi.string().required(),
+        modalityId: Joi.string().required(),
+        action: Joi.string().optional().allow(''),
+        selectedClientId: Joi.string().optional().allow(''),
+        role: Joi.string().valid('psychologist', 'client').required(),
+        flow: Joi.string().optional().allow(''),
+        difficulty: Joi.number().min(1).max(3).optional(),
+        history: Joi.array().items(Joi.object().unknown()).optional()
+    });
+
+    const { error, value } = schema.validate(req.body);
+    if (error) return res.status(400).json({ error: error.details[0].message });
+
+    const { userId, message, modalityId, action, selectedClientId, role, flow, difficulty, history = [] } = value;
     
     try {
         const knowledge = await getRAGContext(message, modalityId);
@@ -343,7 +358,17 @@ app.post('/api/chat', chatLimiter, async (req, res) => {
  * ФИНАЛИЗАЦИЯ (Аудит, PDF, Бесконечный цикл)
  */
 app.post('/api/finish', async (req, res) => {
-    const { userId, history, modalityId, selectedClientId } = req.body;
+    const schema = Joi.object({
+        userId: Joi.string().required(),
+        history: Joi.array().required(),
+        modalityId: Joi.string().required(),
+        selectedClientId: Joi.string().required()
+    });
+
+    const { error, value } = schema.validate(req.body);
+    if (error) return res.status(400).json({ error: "Invalid finish payload" });
+
+    const { userId, history, modalityId, selectedClientId } = value;
     try {
         const historyText = history.map(m => `${m.role}: ${m.content}`).join('\n');
         const auditPrompt = PromptManager.generateDeepAnalysisPrompt(modalityId, historyText);
@@ -412,6 +437,6 @@ app.get('*', (req, res) => { res.sendFile(path.join(distPath, 'index.html')); })
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-    logger.info(`🚀 Connectum v21.26 PLATINUM MASTER Online on port ${PORT}`);
-    adminLog("🚀 Система v21.26 запущена на Yandex Assistant API.");
+    logger.info(`🚀 Connectum v21.26 MASTER Online on port ${PORT}`);
+    adminLog("🚀 Система v21.26 запущенна на Yandex Assistant API.");
 });
