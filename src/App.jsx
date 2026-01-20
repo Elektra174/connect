@@ -275,6 +275,114 @@ const GlobalStyles = () => (
       filter: blur(80px); 
     }
 
+    /* Mesh Gradient для экрана загрузки */
+    .mesh-gradient {
+      background: radial-gradient(circle at 20% 30%, rgba(95, 32, 239, 0.15) 0%, transparent 50%),
+                  radial-gradient(circle at 80% 70%, rgba(45, 10, 120, 0.2) 0%, transparent 50%),
+                  radial-gradient(circle at 50% 50%, rgba(0, 210, 255, 0.05) 0%, transparent 40%);
+    }
+
+    /* 3D Infinity Logo Container */
+    .infinity-logo-container {
+      perspective: 1000px;
+    }
+
+    /* Floating Infinity Animation */
+    .floating-infinity {
+      filter: drop-shadow(0 0 30px rgba(95, 32, 239, 0.6));
+      animation: float 3s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0px) rotateX(0deg); }
+      50% { transform: translateY(-10px) rotateX(5deg); }
+    }
+
+    /* Loading Glow Head */
+    .loading-glow-head {
+      box-shadow: 0 0 15px 2px #5F20EF;
+    }
+
+    /* Letter Spacing Widest */
+    .letter-spacing-widest {
+      letter-spacing: 0.4em;
+    }
+
+    /* Grain Overlay */
+    .grain-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 20;
+      pointer-events-none;
+      opacity: 0.03;
+      background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDHgUPX_YljpKN4reCKHiN18D5XLdhJNzJG_lk8w7rJoH17968ARv9uEuUWv9nxn07F2zNl-Lv8mUB48_GPNwvTIZXrTpZguUT0jsMPPiYKlRlhI0L_39LSWuMbM1Vryt7nE4bukY_Ido9C38V--GBGVfwX_ilZYvk6l4gIK9UW4eHfyKhFsrpuHua7kroXNDHIzM0a_mEiTLhtq_FS2kN-9vzFGW1QnpAzAFLo1upo0jb4gFzDkjLYXCVAp6EzQ8rzmEm8ZpssdnE');
+    }
+
+    /* Progress Bar Styles */
+    .progress-container {
+      position: relative;
+      height: 2px;
+      width: 100%;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 9999px;
+      overflow: hidden;
+    }
+
+    .progress-bar {
+      position: absolute;
+      left: 0;
+      top: 0;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, #5F20EF, #00D2FF, #5F20EF);
+      background-size: 200% 100%;
+      animation: progressShine 1.5s linear infinite;
+      border-radius: 9999px;
+    }
+
+    @keyframes progressShine {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    /* Scanline Effect */
+    .scanline {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to bottom, transparent 50%, rgba(0, 240, 255, 0.05) 50%);
+      background-size: 100% 4px;
+      pointer-events: none;
+      opacity: 0.3;
+    }
+
+    /* Pulse Animation for Logo */
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.8; transform: scale(1.02); }
+    }
+
+    .pulse-animation {
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    /* Terminal Text Fixed */
+    .terminal-text {
+      position: fixed;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%) rotate(-90deg);
+      transform-origin: left center;
+      font-size: 8px;
+      font-family: monospace;
+      font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: 0.5em;
+      color: white;
+      opacity: 0.2;
+      white-space: nowrap;
+      pointer-events: none;
+      z-index: 10;
+    }
+
     /* Стеклянные карточки */
     .glass-card {
       background: var(--card-glass);
@@ -442,13 +550,14 @@ const VideoRecorder = ({ onUpload }) => {
   );
 };
 
-// --- 6. ОСНОВНОЙ МОНОЛИТНЫЙ КОМПОНЕНТ APP ---
+  // --- 6. ОСНОВНОЙ МОНОЛИТНЫЙ КОМПОНЕНТ APP ---
 
-export default function App() {
-  // --- СОСТОЯНИЯ ЭКРАНОВ И НАВИГАЦИИ ---
-  const [screen, setScreen] = useState('loading');
-  const [role, setRole] = useState(null); 
-  const [isSubscribed, setIsSubscribed] = useState(true); 
+  export default function App() {
+    // --- СОСТОЯНИЯ ЭКРАНОВ И НАВИГАЦИИ ---
+    const [screen, setScreen] = useState('loading');
+    const [role, setRole] = useState(null); 
+    const [isSubscribed, setIsSubscribed] = useState(true); 
+    const [progress, setProgress] = useState(0);
 
   // --- СОСТОЯНИЯ ТРЕНАЖЕРА ---
   const [clientPool, setClientPool] = useState(CLIENT_DATABASE);
@@ -514,6 +623,23 @@ export default function App() {
     const timer = setTimeout(initApp, 2000);
     return () => clearTimeout(timer);
   }, [tg, userId]);
+
+  // Анимация прогресс-бара экрана загрузки
+  useEffect(() => {
+    let progressInterval;
+    if (screen === 'loading') {
+      progressInterval = setInterval(() => {
+        setProgress(prev => {
+          if (prev >= 100) {
+            clearInterval(progressInterval);
+            return 100;
+          }
+          return prev + 2;
+        });
+      }, 50);
+    }
+    return () => clearInterval(progressInterval);
+  }, [screen]);
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -654,14 +780,89 @@ export default function App() {
   // --- 7. РЕНДЕР: ЭКРАН ЗАГРУЗКИ ---
 
   if (screen === 'loading') return (
-    <div className="h-screen flex flex-col items-center justify-center bg-[#020617]">
-      <GlobalStyles /><div className="mesh-bg" />
-      <div className="relative">
-        <Icons.Infinity className="w-20 h-20 animate-pulse text-indigo-500 drop-shadow-[0_0_20px_#6366f1]" />
-        <div className="absolute inset-0 bg-indigo-500/10 blur-3xl rounded-full animate-pulse"></div>
+    <div className="h-screen w-full flex flex-col items-center justify-center bg-[#020718] overflow-hidden relative">
+      <GlobalStyles />
+      
+      {/* Фоновый mesh gradient */}
+      <div className="fixed inset-0 z-0 mesh-gradient pointer-events-none"></div>
+      
+      {/* Scanline Effect */}
+      <div className="scanline"></div>
+      
+      {/* Центральный контент */}
+      <div className="relative z-10 flex flex-col items-center justify-center gap-12 w-full max-w-sm px-8">
+        
+        {/* 3D Floating Infinity Icon */}
+        <div className="infinity-logo-container relative w-48 h-48 flex items-center justify-center pulse-animation">
+          {/* Inner Glow */}
+          <div className="absolute inset-0 bg-[#5F20EF]/20 blur-[60px] rounded-full"></div>
+          
+          {/* The Infinity Icon */}
+          <div className="relative floating-infinity">
+            <svg className="text-white" fill="none" height="80" viewBox="0 0 160 80" width="160" xmlns="http://www.w3.org/2000/svg">
+              <path d="M40 20C20 20 20 60 40 60C50 60 60 50 80 40C100 30 110 20 120 20C140 20 140 60 120 60C110 60 100 50 80 40C60 30 50 20 40 20Z" stroke="url(#paint0_linear)" stroke-linecap="round" stroke-linejoin="round" stroke-width="6"></path>
+              <defs>
+                <linearGradient gradientUnits="userSpaceOnUse" id="paint0_linear" x1="0" x2="160" y1="40" y2="40">
+                  <stop stop-color="#5F20EF"></stop>
+                  <stop offset="0.5" stop-color="#00D2FF"></stop>
+                  <stop offset="1" stop-color="#5F20EF"></stop>
+                </linearGradient>
+              </defs>
+            </svg>
+            {/* Highlight sparkle */}
+            <div className="absolute top-4 right-8 w-1 h-1 bg-[#00D2FF] rounded-full blur-[1px]"></div>
+          </div>
+        </div>
+        
+        {/* Typography */}
+        <div className="text-center">
+          <h1 className="text-white text-5xl font-extrabold tracking-tighter leading-none mb-4">
+            CONNECTUM
+          </h1>
+          <p className="text-[#5F20EF]/80 text-[10px] font-bold letter-spacing-widest uppercase ml-[0.4em]">
+            PRO PLATINUM
+          </p>
+        </div>
       </div>
-      <span className="text-[11px] font-black uppercase tracking-[1em] text-slate-500 mt-12 animate-pulse pl-[1em]">Connectum Master</span>
-      <div className="absolute bottom-12 text-[8px] font-bold text-slate-700 uppercase tracking-widest">Initialising v21.26 Platinum Engine...</div>
+      
+      {/* Bottom Content: Loading & Slogan */}
+      <div className="absolute bottom-0 w-full max-w-xs pb-8 px-8">
+        {/* Minimalist Loading Bar */}
+        <div className="w-full flex flex-col gap-3">
+          <div className="relative h-[2px] w-full bg-white/10 rounded-full overflow-hidden">
+            {/* Progress Segment */}
+            <div 
+              className="absolute left-0 top-0 h-full bg-gradient-to-r from-transparent via-[#5F20EF] to-[#5F20EF]"
+              style={{ width: `${progress}%` }}
+            >
+              {/* Glowing Lead */}
+              <div className="absolute right-0 top-1/2 -translate-y-1/2 w-4 h-4 bg-white rounded-full loading-glow-head blur-[4px]"></div>
+            </div>
+          </div>
+          <div className="flex justify-between items-center opacity-40">
+            <span className="text-[10px] text-white font-medium tracking-widest uppercase">Initializing...</span>
+            <span className="text-[10px] text-white font-medium">{progress}%</span>
+          </div>
+        </div>
+        
+        {/* Slogan Label */}
+        <div className="text-center mt-8">
+          <p className="text-white/50 text-xs font-light tracking-[0.05em]">
+            Синергия мастерства и доверия
+          </p>
+        </div>
+      </div>
+      
+      {/* iOS Safe Area Spacer */}
+      <div className="h-2"></div>
+      
+      {/* Decorative Grain Layer */}
+      <div className="grain-overlay"></div>
+      
+      {/* Terminal Text Fixed */}
+      <div className="terminal-text">
+        CONNECTUM PLATINUM TERMINAL v4.2 // NEURAL SYNC ACTIVE // [OK]
+      </div>
     </div>
   );
 
