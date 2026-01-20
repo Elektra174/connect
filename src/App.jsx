@@ -237,12 +237,22 @@ const GlobalStyles = () => (
   <style>{`
     @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&display=swap');
     
-    :root { 
-      --bg-deep: #020617; 
-      --card-glass: rgba(15, 23, 42, 0.75); 
-      --card-border: rgba(255, 255, 255, 0.08); 
-      --accent-primary: #6366f1; 
-      --accent-secondary: #a855f7;
+    :root {
+      /* Цветовая палитра Platinum */
+      --bg-deep: #0a0c18;
+      --card-glass: rgba(22, 25, 50, 0.85);
+      --card-border: rgba(255, 255, 255, 0.12);
+      --accent-primary: #7367f0;
+      --accent-secondary: #ce9ffc;
+      --text-primary: #f8fafc;
+      --text-secondary: #94a3b8;
+      
+      /* Тени и эффекты */
+      --shadow-xl: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+      --glow-primary: 0 0 20px rgba(115, 103, 240, 0.4);
+      
+      /* Анимации */
+      --transition-all: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     }
     
     body { 
@@ -266,11 +276,17 @@ const GlobalStyles = () => (
     }
 
     /* Стеклянные карточки */
-    .glass-card { 
-      background: var(--card-glass); 
-      backdrop-filter: blur(28px); 
-      border: 1px solid var(--card-border); 
-      box-shadow: 0 12px 48px rgba(0,0,0,0.5);
+    .glass-card {
+      background: var(--card-glass);
+      backdrop-filter: blur(28px);
+      border: 1px solid var(--card-border);
+      box-shadow: var(--shadow-xl), var(--glow-primary);
+      transition: var(--transition-all);
+      
+      &:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 30px 60px rgba(0,0,0,0.6), var(--glow-primary);
+      }
     }
 
     /* Анимации появления */
@@ -313,8 +329,36 @@ const GlobalStyles = () => (
     /* Кнопки с градиентом */
     .btn-platinum {
       background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
-      box-shadow: 0 8px 25px rgba(99,102,241,0.3);
-      transition: all 0.3s ease;
+      box-shadow: var(--glow-primary);
+      transition: var(--transition-all);
+      position: relative;
+      overflow: hidden;
+      z-index: 1;
+      
+      &::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          rgba(255, 255, 255, 0.15),
+          transparent
+        );
+        transition: 0.5s;
+        z-index: -1;
+      }
+      
+      &:hover {
+        box-shadow: 0 0 30px rgba(115, 103, 240, 0.6);
+        
+        &::before {
+          left: 100%;
+        }
+      }
     }
     .btn-platinum:active { transform: scale(0.96); opacity: 0.9; }
 
