@@ -1,49 +1,29 @@
 {
   "name": "connectum-pro-platinum",
   "version": "21.26.5",
-  "description": "Connectum Pro Platinum Evolution: Ультимативная ИИ-экосистема для психологов на базе YandexGPT Pro, Assistant REST API и SpeechKit. Включает автоматическую инициализацию базы знаний и генерацию PDF-сертификатов.",
+  "description": "Connectum Pro Platinum Evolution: Ультимативная ИИ-экосистема для психологов",
   "main": "server.js",
   "type": "commonjs",
   "scripts": {
     "start": "node server.js",
     "dev": "nodemon server.js",
-    "build": "vite build && node scripts/seed_knowledge_base.js",
-    "seed": "node scripts/seed_knowledge_base.js",
-    "preview": "vite preview",
-    "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0"
+    "test": "mocha test/**/*.test.js"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.39.3",
-    "axios": "^1.6.7",
-    "body-parser": "^1.20.2",
-    "cors": "^2.8.5",
-    "dotenv": "^16.4.1",
-    "express": "^4.18.2",
-    "express-rate-limit": "^7.1.5",
-    "firebase-admin": "^12.0.0",
-    "joi": "^17.11.0",
-    "marked": "^11.1.1",
-    "node-cache": "^5.1.2",
+    "@cerebras/cerebras_cloud_sdk": "^1.4.2",
+    "@google/generative-ai": "^0.4.1",
+    "express": "^4.22.1",
+    "firebase-admin": "^12.7.0",
     "node-telegram-bot-api": "^0.66.0",
-    "openai": "^4.28.0",
-    "pdfkit": "^0.14.0",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "winston": "^3.11.0"
+    "winston": "^3.19.0",
+    "cors": "^2.8.5",
+    "body-parser": "^1.20.4",
+    "dotenv": "^16.6.1",
+    "pdfkit": "^0.14.0"
   },
   "devDependencies": {
-    "@types/react": "^18.2.48",
-    "@types/react-dom": "^18.2.18",
-    "@vitejs/plugin-react": "^4.2.1",
-    "autoprefixer": "^10.4.17",
-    "eslint": "^8.56.0",
-    "eslint-plugin-react": "^7.33.2",
-    "eslint-plugin-react-hooks": "^4.6.0",
-    "eslint-plugin-react-refresh": "^0.4.5",
-    "nodemon": "^3.0.3",
-    "postcss": "^8.4.35",
-    "tailwindcss": "^3.4.1",
-    "vite": "^5.0.12"
+    "nodemon": "^3.1.11",
+    "mocha": "^11.7.5"
   },
   "engines": {
     "node": "20.x",
@@ -51,15 +31,8 @@
   },
   "keywords": [
     "connectum",
-    "yandex-gpt-pro",
-    "yandex-assistant",
-    "speechkit",
     "psychology-ai",
-    "platinum-evolution",
-    "telegram-mini-app",
-    "render-auto-seed",
-    "rag-system",
-    "supabase-vector"
+    "telegram-mini-app"
   ],
   "author": "Connectum Master Team",
   "license": "MIT",
