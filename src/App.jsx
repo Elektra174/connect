@@ -2,57 +2,77 @@ import React, { useState, useEffect, useRef } from 'react';
 import { marked } from 'marked';
 
 /**
- * CONNECTUM PRO v21.17 - ULTIMATE PLATINUM MONOLITH
+ * CONNECTUM PRO v21.18 - ULTIMATE PLATINUM MONOLITH
  * ========================================================
- * 🎨 DESIGN: "AI Studio" Premium Style (Deep Slate, Neon Glow).
+ * 🎨 DESIGN: "Premium AI Studio" Style (Deep Slate, Glass, Neon).
  * 🧠 LOGIC: 30 Clients Database, Difficulty Matrix, Hybrid AI Sync.
  * 🎙️ AUDIO: MsEdge TTS Support (Auto-play data.voice).
- * 📱 UX: Haptics, No-Zoom Fix, 100dvh, Responsive Mesh BG.
+ * 📱 UX: Premium Icons, Shine Effect, No Video.
  */
 
-// --- 1. ICONS SYSTEM (INTERNAL SVG - NO EXTERNAL DEPS) ---
+// --- 1. PREMIUM ICONS SYSTEM (SVG WITH GRADIENTS & REFINED LINES) ---
 const Icons = {
   Infinity: ({ className }) => (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 12c-2-2.67-4-4-6-4a4 4 0 1 0 0 8c2 0 4-1.33 6-4Zm0 0c2 2.67 4 4 6 4a4 4 0 0 0 0-8c-2 0-4 1.33-6 4Z"/></svg>
+    <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="infGrad" x1="2" y1="12" x2="22" y2="12" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stopColor="#818cf8" />
+          <stop offset="100%" stopColor="#c084fc" />
+        </linearGradient>
+      </defs>
+      <path d="M12 12c-2.5-3.5-7-3.5-9 0s6.5 10.5 9 0c2.5-3.5 7-3.5 9 0s-6.5 10.5-9 0Z" stroke="url(#infGrad)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
   ),
   Search: ({ className }) => (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="11" cy="11" r="7" stroke="currentColor" />
+      <path d="m21 21-4.3-4.3" />
+    </svg>
   ),
   User: ({ className }) => (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M18 20a6 6 0 0 0-12 0" />
+      <circle cx="12" cy="10" r="4" />
+      <circle cx="12" cy="12" r="10" strokeOpacity="0.1" />
+    </svg>
   ),
   Sparkles: ({ className }) => (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>
+    <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M5.6 18.4l1.4-1.4M17 7l1.4-1.4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+      <path d="M12 8l1 3 3 1-3 1-1 3-1-3-3-1 3-1 1-3Z" fill="currentColor" />
+    </svg>
   ),
   Diamond: ({ className }) => (
     <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <defs><linearGradient id="diamGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#818cf8"/><stop offset="100%" stopColor="#4f46e5"/></linearGradient></defs>
-      <path d="M6 4H18L22 9L12 21L2 9L6 4Z" stroke="url(#diamGrad)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-      <path d="M6 4L12 9L18 4" stroke="currentColor" strokeWidth="1" strokeOpacity="0.3"/>
-      <path d="M2 9H22" stroke="currentColor" strokeWidth="1" strokeOpacity="0.3"/>
+      <defs>
+        <linearGradient id="diamGradPremium" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stopColor="#6366f1" />
+          <stop offset="100%" stopColor="#a855f7" />
+        </linearGradient>
+      </defs>
+      <path d="M6 4h12l4 5-10 11L2 9l4-5Z" stroke="url(#diamGradPremium)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M12 20V9M2 9h20M6 4l6 5 6-5" stroke="currentColor" strokeOpacity="0.2" strokeWidth="1" />
     </svg>
   ),
   ChevronLeft: ({ className }) => (
     <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
   ),
   Send: ({ className }) => (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
-  ),
-  Camera: ({ className }) => (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M22 2 11 13M22 2l-7 20-4-9-9-4 20-7Z" />
+    </svg>
   ),
   Trophy: ({ className }) => (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6M18 9h1.5a2.5 2.5 0 0 0 0-5H18M4 22h16M18 2H6v7a6 6 0 0 0 12 0V2Z"/>
+    </svg>
   ),
-  Telegram: ({ className }) => (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 10l-4 4l6 6l4 -16l-18 7l4 2l2 6l3 -4" /></svg>
-  ),
-  Play: ({ className }) => (
-    <svg className={className} viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+  Camera: ({ className }) => (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
   )
 };
 
-// --- 2. FULL CLIENT DATABASE (30 ITEMS) ---
+// --- 2. FULL CLIENT DATABASE (30 DETAILED ITEMS) ---
 const CLIENT_DATABASE = [
     { id: "c1", name: "Виктория", age: 34, profession: "Маркетолог", familyStatus: "В разводе", status: "Средний класс", avatar: "👩‍💻", bio: "Парализующий саботаж при записи видео. Страх проявления зашкаливает. В теле — зажим в горле." },
     { id: "c2", name: "Артем", age: 28, profession: "IT-разработчик", familyStatus: "Холост", status: "Высокий доход", avatar: "👨‍🎨", bio: "Боюсь закончить масштабный заказ. Кажется, что результат будет бездарным. Тяжесть в плечах." },
@@ -91,69 +111,60 @@ const MODALITIES = {
   cbt: { id: "cbt", name: "КПТ (Когнитивно-поведенческая терапия)", color: "emerald" },
   gestalt: { id: "gestalt", name: "Гештальт-терапия", color: "purple" },
   eit: { id: "eit", name: "ЭОТ (Эмоционально-образная терапия)", color: "amber" },
-  psychoanalysis: { id: "psychoanalysis", name: "Психоаналитическая терапия", color: "rose" },
   ta: { id: "ta", name: "Транзактный анализ", color: "cyan" }
 };
 
-// --- 3. STYLES (AI STUDIO THEME) ---
+// --- 3. STYLES (PREMIUM REFINEMENT) ---
 const GlobalStyles = () => (
   <style>{`
     @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&display=swap');
     
-    :root {
-      --bg-deep: #020617;
-      --card-glass: rgba(15, 23, 42, 0.6);
-      --card-border: rgba(255, 255, 255, 0.08);
-      --accent-glow: 0 0 20px rgba(99, 102, 241, 0.15);
+    :root { 
+      --bg-deep: #020617; 
+      --card-glass: rgba(15, 23, 42, 0.6); 
+      --card-border: rgba(255, 255, 255, 0.08); 
+      --neon-glow: 0 0 15px rgba(99, 102, 241, 0.3);
     }
-
     body { font-family: 'Manrope', sans-serif; background-color: var(--bg-deep); color: #f8fafc; overflow: hidden; margin: 0; }
     
-    @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
-    @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-10px); } 100% { transform: translateY(0px); } }
-
-    .btn-magnetic {
-      background: linear-gradient(90deg, rgba(255,255,255,0.01) 0%, rgba(255,255,255,0.05) 50%, rgba(255,255,255,0.01) 100%);
-      background-size: 200% 100%;
-      animation: shimmer 6s infinite linear;
-      position: relative; overflow: hidden; 
-      border: 1px solid var(--card-border);
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    /* Эффект блика для кнопок (Shine) */
+    .btn-magnetic { 
+      position: relative;
+      overflow: hidden;
+      background: linear-gradient(135deg, rgba(255,255,255,0.02) 0%, rgba(255,255,255,0.06) 100%); 
+      border: 1px solid var(--card-border); 
+      transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1); 
     }
-    .btn-magnetic:active { transform: scale(0.96); }
+    .btn-magnetic::after {
+      content: "";
+      position: absolute;
+      top: -50%; left: -60%;
+      width: 20%; height: 200%;
+      background: linear-gradient(to right, transparent, rgba(255,255,255,0.1), transparent);
+      transform: rotate(35deg);
+      transition: all 0.6s ease;
+    }
+    .btn-magnetic:hover::after { left: 120%; }
+    .btn-magnetic:active { transform: scale(0.96); opacity: 0.8; }
     
-    .outlined-text {
-      position: absolute; bottom: -4px; right: 10px;
-      font-size: clamp(1.5rem, 6vw, 2.5rem); 
-      font-weight: 900;
-      color: transparent;
-      -webkit-text-stroke: 1px rgba(255, 255, 255, 0.08);
-      pointer-events: none;
-      text-transform: uppercase;
-      line-height: 1;
-      letter-spacing: 0.05em;
-      z-index: 0;
+    .outlined-text { 
+      position: absolute; bottom: -4px; right: 10px; 
+      font-size: clamp(1.5rem, 7vw, 2.5rem); 
+      font-weight: 900; 
+      color: transparent; 
+      -webkit-text-stroke: 1px rgba(255, 255, 255, 0.06); 
+      pointer-events: none; text-transform: uppercase; line-height: 1; z-index: 0; 
     }
-
-    .mesh-bg {
-      position: fixed; inset: 0; z-index: -1;
-      background: radial-gradient(circle at 50% 0%, rgba(99, 102, 241, 0.15) 0%, transparent 50%),
-                  radial-gradient(circle at 100% 100%, rgba(168, 85, 247, 0.1) 0%, transparent 50%);
-      filter: blur(80px);
+    
+    .mesh-bg { 
+      position: fixed; inset: 0; z-index: -1; 
+      background: radial-gradient(circle at 50% 0%, rgba(99, 102, 241, 0.12), transparent 50%), 
+                  radial-gradient(circle at 100% 100%, rgba(168, 85, 247, 0.08), transparent 50%); 
+      filter: blur(80px); 
     }
-
-    .glass-card {
-      background: var(--card-glass);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      border: 1px solid var(--card-border);
-      box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-    }
-
+    
+    .glass-card { background: var(--card-glass); backdrop-filter: blur(24px); border: 1px solid var(--card-border); box-shadow: 0 10px 40px rgba(0,0,0,0.4); }
     .no-scrollbar::-webkit-scrollbar { display: none; }
-    
-    .chat-bubble-ai { border-radius: 20px 20px 20px 4px; background: rgba(30, 41, 59, 0.5); border: 1px solid var(--card-border); }
-    .chat-bubble-user { border-radius: 20px 20px 4px 20px; background: linear-gradient(135deg, #4f46e5, #7c3aed); box-shadow: var(--accent-glow); }
     
     input, select, textarea { font-size: 16px !important; }
   `}</style>
@@ -173,9 +184,9 @@ const RadarChart = ({ data }) => {
     const poly = pts.map((p, i) => `${i===0?'M':'L'} ${p.x} ${p.y}`).join(' ') + ' Z';
     return (
       <div className="flex justify-center my-6">
-        <svg width={size} height={size} className="overflow-visible drop-shadow-[0_0_15px_rgba(99,102,241,0.4)]">
-          <circle cx={center} cy={center} r={radius} fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="1"/>
-          <path d={poly} fill="rgba(99, 102, 241, 0.3)" stroke="#6366f1" strokeWidth="3" strokeLinejoin="round"/>
+        <svg width={size} height={size} className="overflow-visible drop-shadow-[0_0_12px_rgba(99,102,241,0.4)]">
+          <circle cx={center} cy={center} r={radius} fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="1"/>
+          <path d={poly} fill="rgba(99, 102, 241, 0.25)" stroke="#6366f1" strokeWidth="2.5" strokeLinejoin="round"/>
         </svg>
       </div>
     );
@@ -205,7 +216,7 @@ const VideoRecorder = ({ onUpload }) => {
   };
 
   return (
-    <div className="glass-card rounded-3xl p-1 overflow-hidden relative group">
+    <div className="glass-card rounded-3xl p-1 overflow-hidden relative group my-4">
       <div className="aspect-video bg-black/50 rounded-2xl flex items-center justify-center">
         <video ref={videoRef} autoPlay muted playsInline className="w-full h-full object-cover rounded-2xl" />
         {!recording && <div className="absolute inset-0 flex items-center justify-center"><Icons.Camera className="w-8 h-8 text-white/30"/></div>}
@@ -222,7 +233,7 @@ const VideoRecorder = ({ onUpload }) => {
 
 export default function App() {
   const [screen, setScreen] = useState('loading');
-  const [role, setRole] = useState(null);
+  const [role, setRole] = useState(null); 
   const [selectedClientId, setSelectedClientId] = useState('c1');
   const [selectedModality, setSelectedModality] = useState('mpt');
   const [difficulty, setDifficulty] = useState(2); 
@@ -248,7 +259,7 @@ export default function App() {
     if (tg) { tg.ready(); tg.expand(); tg.setHeaderColor('#020617'); }
     setTimeout(() => {
       setScreen(localStorage.getItem('connectum_legal') ? 'hub' : 'legal');
-    }, 1500);
+    }, 1200);
   }, []);
 
   useEffect(() => chatEndRef.current?.scrollIntoView({ behavior: "smooth" }), [messages, isTyping]);
@@ -315,7 +326,6 @@ export default function App() {
          body:JSON.stringify({userId, role: role || 'psychologist', tariff}) 
        });
        if (res.ok) {
-          // Проверка версии для showPopup (Telegram v6.2+)
           if (tg && tg.version && parseFloat(tg.version) >= 6.2) {
              tg.showPopup({ title: 'Заявка принята', message: 'Мы свяжемся с вами в Telegram для активации доступа.' });
           } else {
@@ -329,29 +339,27 @@ export default function App() {
   const currentClient = CLIENT_DATABASE.find(c => c.id === selectedClientId) || CLIENT_DATABASE[0];
 
   if (screen === 'loading') return (
-    <div className="h-[100dvh] flex flex-col items-center justify-center bg-[#020617]">
-      <GlobalStyles />
-      <div className="mesh-bg" />
-      <Icons.Infinity className="w-12 h-12 text-indigo-500 animate-pulse" />
-      <span className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-500 mt-6 animate-pulse">Connectum Intelligence</span>
+    <div className="h-screen flex flex-col items-center justify-center bg-[#020617]">
+      <GlobalStyles /><div className="mesh-bg" />
+      <Icons.Infinity className="w-16 h-16 animate-pulse" />
+      <span className="text-[10px] font-black uppercase tracking-[0.5em] text-slate-500 mt-8 opacity-60">Connectum Intelligence</span>
     </div>
   );
 
   return (
     <div className="flex flex-col h-[100dvh] bg-[#020617] text-slate-100 font-sans text-left overflow-hidden relative">
-      <GlobalStyles />
-      <div className="mesh-bg" />
+      <GlobalStyles /><div className="mesh-bg" />
 
       {/* HEADER */}
       {screen !== 'hub' && screen !== 'legal' && (
         <header className="flex-shrink-0 h-16 bg-slate-950/80 backdrop-blur-xl border-b border-white/5 flex items-center justify-between px-5 z-50">
           <div className="flex items-center gap-3">
-            <button onClick={() => setScreen('hub')} className="w-9 h-9 rounded-full bg-white/5 flex items-center justify-center active:scale-90 transition"><Icons.ChevronLeft className="w-5 h-5 text-slate-400"/></button>
-            <div className="flex flex-col"><span className="text-[10px] font-black text-indigo-400 uppercase tracking-widest leading-none tracking-tight">Connectum</span><span className="text-[6px] font-bold text-slate-500 uppercase mt-1 tracking-tighter">v21.17 MASTER</span></div>
+            <button onClick={() => setScreen('hub')} className="w-9 h-9 rounded-full bg-white/5 border border-white/5 flex items-center justify-center active:scale-90 transition"><Icons.ChevronLeft className="w-5 h-5 text-slate-400"/></button>
+            <div className="flex flex-col"><span className="text-[10px] font-black text-indigo-400 uppercase tracking-widest leading-none tracking-tight">Connectum</span><span className="text-[6px] font-bold text-slate-500 uppercase mt-1 tracking-tighter">v21.18 PLATINUM</span></div>
           </div>
           <div className="flex items-center gap-1.5 bg-indigo-500/10 px-3 py-1.5 rounded-full border border-indigo-500/20 shadow-lg shadow-indigo-500/5">
             <span className="text-[10px] font-black text-indigo-300 tracking-tighter">{gems}/5</span>
-            <Icons.Diamond className="w-3.5 h-3.5 text-indigo-400" />
+            <Icons.Diamond className="w-3.5 h-3.5" />
           </div>
         </header>
       )}
@@ -363,8 +371,8 @@ export default function App() {
            <div className="h-full flex flex-col items-center justify-center p-6 text-center animate-in fade-in">
               <div className="glass-card p-8 rounded-[2.5rem] max-w-sm border-t border-white/10 shadow-2xl">
                   <div className="w-16 h-16 bg-indigo-500/10 rounded-3xl flex items-center justify-center mx-auto mb-6"><Icons.User className="w-8 h-8 text-indigo-400"/></div>
-                  <h2 className="text-xl font-black mb-4 text-white">Соглашение</h2>
-                  <p className="text-xs text-slate-400 mb-8 leading-relaxed font-medium">Подтверждаю, что мне исполнилось 18 лет и я принимаю условия обработки данных для обучения ИИ-моделей.</p>
+                  <h2 className="text-xl font-black mb-4 text-white tracking-tight">Соглашение</h2>
+                  <p className="text-xs text-slate-400 mb-8 leading-relaxed">Мне исполнилось 18 лет и я принимаю условия обработки данных для улучшения ИИ-моделей.</p>
                   <button onClick={acceptLegal} className="w-full py-4 bg-indigo-600 rounded-2xl text-[10px] font-black uppercase tracking-widest text-white shadow-xl shadow-indigo-500/20 active:scale-95 transition">Принять и войти</button>
               </div>
            </div>
@@ -372,41 +380,41 @@ export default function App() {
 
         {/* 1. HUB SCREEN */}
         {screen === 'hub' && (
-          <div className="h-full flex flex-col items-center justify-center p-6 text-center space-y-10 animate-in fade-in duration-700">
-            <div className="flex flex-col items-center gap-5">
+          <div className="h-full flex flex-col items-center justify-center p-6 text-center space-y-12 animate-in fade-in duration-700">
+            <div className="flex flex-col items-center gap-6">
                <div className="relative">
                  <div className="absolute inset-0 bg-indigo-500 blur-3xl opacity-20 animate-pulse"></div>
-                 <Icons.Infinity className="w-14 h-14 text-white relative z-10" />
+                 <Icons.Infinity className="w-16 h-16 relative z-10" />
                </div>
                <div className="space-y-1">
                  <h1 className="text-3xl font-black text-white tracking-tighter">Connectum</h1>
-                 <p className="text-[9px] font-bold text-slate-500 uppercase tracking-[0.5em]">Эволюция Психологии</p>
+                 <p className="text-[9px] font-bold text-slate-500 uppercase tracking-[0.6em] opacity-80">Эволюция Психологии</p>
                </div>
             </div>
             
-            <div className="w-full grid gap-4 max-w-sm">
-                <button onClick={() => { unlockAudio(); setScreen('client_hub'); setRole('client'); }} className="btn-magnetic w-full p-8 glass-card rounded-[2.5rem] flex items-center gap-6 active:scale-95 text-left relative group overflow-hidden">
+            <div className="w-full grid gap-5 max-w-sm">
+                <button onClick={() => { unlockAudio(); setScreen('client_hub'); setRole('client'); }} className="btn-magnetic w-full p-8 glass-card rounded-[2.5rem] flex items-center gap-6 active:scale-95 text-left relative overflow-hidden group">
                     <div className="outlined-text">ДОВЕРИЕ</div>
-                    <div className="w-14 h-14 bg-emerald-500/10 rounded-2xl flex items-center justify-center text-3xl relative z-10 shadow-inner">🤝</div>
+                    <div className="w-14 h-14 bg-emerald-500/10 rounded-2xl flex items-center justify-center text-3xl z-10 shadow-inner group-hover:scale-110 transition-transform">🤝</div>
                     <div className="relative z-10">
-                      <h3 className="text-lg font-black text-white uppercase leading-tight">Я Клиент</h3>
+                      <h3 className="text-lg font-black text-white uppercase tracking-tight">Я Клиент</h3>
                       <p className="text-[8px] font-bold text-slate-500 uppercase mt-1 tracking-widest">Помощь • Диагностика</p>
                     </div>
                 </button>
                 
-                <button onClick={() => { unlockAudio(); setScreen('setup'); setRole('psychologist'); }} className="btn-magnetic w-full p-8 glass-card rounded-[2.5rem] flex items-center gap-6 active:scale-95 text-left relative group overflow-hidden">
+                <button onClick={() => { unlockAudio(); setScreen('setup'); setRole('psychologist'); }} className="btn-magnetic w-full p-8 glass-card rounded-[2.5rem] flex items-center gap-6 active:scale-95 text-left relative overflow-hidden group">
                     <div className="outlined-text">МАСТЕРСТВО</div>
-                    <div className="w-14 h-14 bg-indigo-500/10 rounded-2xl flex items-center justify-center text-3xl relative z-10 shadow-inner">🧠</div>
+                    <div className="w-14 h-14 bg-indigo-500/10 rounded-2xl flex items-center justify-center text-3xl z-10 shadow-inner group-hover:scale-110 transition-transform">🧠</div>
                     <div className="relative z-10">
-                      <h3 className="text-lg font-black text-white uppercase leading-tight">Я Психолог</h3>
+                      <h3 className="text-lg font-black text-white uppercase tracking-tight">Я Психолог</h3>
                       <p className="text-[8px] font-bold text-slate-500 uppercase mt-1 tracking-widest">Тренажер • Рост</p>
                     </div>
                 </button>
             </div>
             
-            <div className="flex justify-center gap-10 mt-auto pb-4 opacity-40 hover:opacity-100 transition-opacity">
-                <a href="https://t.me/psy_connectum" target="_blank" className="flex items-center gap-2 text-[9px] font-black uppercase tracking-widest text-slate-400 hover:text-white transition"><Icons.Telegram className="w-3.5 h-3.5"/> Канал</a>
-                <a href="https://t.me/lazalex81" target="_blank" className="flex items-center gap-2 text-[9px] font-black uppercase tracking-widest text-slate-400 hover:text-white transition"><Icons.User className="w-3.5 h-3.5"/> Поддержка</a>
+            <div className="flex justify-center gap-12 mt-auto pb-4 opacity-40 hover:opacity-100 transition-opacity">
+                <a href="https://t.me/psy_connectum" target="_blank" className="flex items-center gap-2 text-[9px] font-black uppercase tracking-widest text-slate-400 hover:text-indigo-400 transition-colors underline-offset-4 underline decoration-white/10">Канал</a>
+                <a href="https://t.me/lazalex81" target="_blank" className="flex items-center gap-2 text-[9px] font-black uppercase tracking-widest text-slate-400 hover:text-indigo-400 transition-colors underline-offset-4 underline decoration-white/10">Поддержка</a>
             </div>
           </div>
         )}
@@ -416,26 +424,26 @@ export default function App() {
            <div className="flex-1 overflow-y-auto p-6 space-y-6 no-scrollbar pb-24 text-left animate-in slide-in-from-left duration-500">
               <h2 className="text-3xl font-black text-white uppercase tracking-tighter">Клиентский Хаб</h2>
               
-              <div className="p-7 bg-gradient-to-br from-indigo-600/20 to-indigo-900/40 rounded-[2.5rem] border border-indigo-500/20 flex justify-between items-center relative overflow-hidden group active:scale-[0.98] transition">
-                  <div className="absolute -bottom-6 -right-6 opacity-10 group-hover:scale-110 transition-transform"><Icons.Diamond className="w-40 h-40"/></div>
-                  <div className="relative z-10"><h4 className="text-xs font-black uppercase text-indigo-300 tracking-widest">Client Premium</h4><p className="text-[9px] font-bold text-indigo-100/60 mt-1 uppercase tracking-tight">ИИ-терапия 24/7 • План</p></div>
-                  <div className="relative z-10 text-right"><span className="text-2xl font-black text-white">1990₽</span><button onClick={()=>requestWaitlist('client_premium')} className="block bg-indigo-600 hover:bg-indigo-500 text-[8px] font-black uppercase px-6 py-2 rounded-full mt-2 shadow-xl active:scale-90 transition">Оформить</button></div>
+              <div className="p-8 bg-gradient-to-br from-indigo-600/20 to-indigo-900/40 rounded-[2.5rem] border border-indigo-500/20 flex justify-between items-center relative overflow-hidden group active:scale-[0.98] transition duration-500">
+                  <div className="absolute -bottom-8 -right-8 opacity-10 group-hover:scale-110 transition-transform duration-700"><Icons.Diamond className="w-48 h-48"/></div>
+                  <div className="relative z-10"><h4 className="text-xs font-black uppercase text-indigo-300 tracking-[0.2em]">Client Premium</h4><p className="text-[10px] font-bold text-indigo-100/60 mt-1.5 uppercase tracking-tighter">ИИ-терапия 24/7 • Без ограничений</p></div>
+                  <div className="relative z-10 text-right"><span className="text-2xl font-black text-white">1990₽</span><button onClick={()=>requestWaitlist('client_premium')} className="block bg-indigo-600 hover:bg-indigo-500 text-[9px] font-black uppercase px-7 py-2.5 rounded-full mt-3 shadow-2xl active:scale-90 transition">Оформить</button></div>
               </div>
 
-              <div className="grid gap-3">
+              <div className="grid gap-4">
                   {[
                     {id: 'diagnostics', icon: "🔍", title: "ИИ-Диагностика", sub: "Найти корень проблемы", color: "indigo", msg: "Начать диагностику"},
                     {id: 'therapy', icon: "✨", title: "ИИ-Терапевт", sub: "Поддержка здесь и сейчас", color: "emerald", msg: "Мне нужна помощь"},
                     {id: 'aggregator', icon: "👥", title: "Витрина Мастеров", sub: "Живой специалист", color: "purple", msg: null}
                   ].map(btn => (
-                    <button key={btn.id} onClick={() => { if(btn.id==='aggregator') setScreen('aggregator'); else { setScreen('chat'); setMessages([]); handleSend(btn.msg, true, 'chat', btn.id); }}} className={`p-6 glass-card rounded-[2rem] flex items-center gap-5 active:scale-95 text-left border-l-4 border-${btn.color}-500 group transition`}>
-                        <div className={`w-12 h-12 bg-${btn.color}-500/10 rounded-2xl flex items-center justify-center text-2xl text-${btn.color}-400 group-hover:scale-110 transition`}>{btn.icon}</div>
-                        <div><h4 className="text-sm font-black text-white uppercase tracking-tight">{btn.title}</h4><p className="text-[9px] font-bold text-slate-500 uppercase mt-0.5">{btn.sub}</p></div>
+                    <button key={btn.id} onClick={() => { if(btn.id==='aggregator') setScreen('aggregator'); else { setScreen('chat'); setMessages([]); handleSend(btn.msg, true, 'chat', btn.id); }}} className={`p-7 glass-card rounded-[2.2rem] flex items-center gap-6 active:scale-95 text-left border-l-4 border-${btn.color}-500 group transition-all shadow-xl`}>
+                        <div className={`w-14 h-14 bg-${btn.color}-500/10 rounded-2xl flex items-center justify-center text-3xl text-${btn.color}-400 group-hover:rotate-12 transition-transform`}>{btn.icon}</div>
+                        <div><h4 className="text-sm font-black text-white uppercase tracking-tight">{btn.title}</h4><p className="text-[10px] font-bold text-slate-500 uppercase mt-1 tracking-tight opacity-70">{btn.sub}</p></div>
                     </button>
                   ))}
               </div>
               
-              <div className="text-center text-[10px] font-black text-indigo-400 uppercase tracking-widest bg-indigo-500/5 p-4 rounded-2xl border border-indigo-500/10 shadow-lg">Пригласи друга = +3 💎 к балансу</div>
+              <div className="text-center text-[10px] font-black text-indigo-400 uppercase tracking-[0.3em] bg-indigo-500/5 p-5 rounded-2xl border border-indigo-500/10 shadow-lg mt-4 opacity-80 hover:opacity-100 transition-opacity">Пригласи друга = +3 💎 к балансу</div>
            </div>
         )}
 
@@ -445,34 +453,34 @@ export default function App() {
                <h2 className="text-3xl font-black text-white uppercase tracking-tighter">Мастерская</h2>
                
                <div className="flex gap-4">
-                   <div onClick={()=>requestWaitlist('test_drive')} className="flex-1 p-5 glass-card rounded-[2rem] border-l-4 border-orange-500 active:scale-95 transition cursor-pointer"><h5 className="text-[9px] font-black uppercase text-orange-400 tracking-widest leading-none">Тест-драйв</h5><p className="text-xl font-black mt-2">490₽</p></div>
-                   <div onClick={()=>requestWaitlist('pro')} className="flex-1 p-5 bg-indigo-600/10 border border-white/5 rounded-[2rem] border-l-4 border-indigo-600 active:scale-95 transition cursor-pointer"><h5 className="text-[9px] font-black uppercase text-indigo-400 tracking-widest leading-none">PRO Доступ</h5><p className="text-xl font-black mt-2">2990₽</p></div>
+                   <div onClick={()=>requestWaitlist('test_drive')} className="flex-1 p-5 glass-card rounded-[2.5rem] border-l-4 border-orange-500 active:scale-95 transition cursor-pointer shadow-xl"><h5 className="text-[9px] font-black uppercase text-orange-400 tracking-widest leading-none">Тест-драйв</h5><p className="text-xl font-black mt-2">490₽</p></div>
+                   <div onClick={()=>requestWaitlist('pro')} className="flex-1 p-5 bg-indigo-600/10 border border-white/5 rounded-[2.5rem] border-l-4 border-indigo-600 active:scale-95 transition cursor-pointer shadow-xl"><h5 className="text-[9px] font-black uppercase text-indigo-400 tracking-widest leading-none">PRO Доступ</h5><p className="text-xl font-black mt-2">2990₽</p></div>
                </div>
 
-               <div className="space-y-5">
+               <div className="space-y-6">
                    <div className="space-y-2">
-                     <label className="text-[9px] font-black text-slate-600 uppercase ml-3 tracking-[0.2em]">Сложность сессии</label>
-                     <div className="flex p-1 bg-white/5 rounded-2xl border border-white/5">
+                     <label className="text-[9px] font-black text-slate-600 uppercase ml-3 tracking-widest">Сложность сессии</label>
+                     <div className="flex p-1 bg-white/5 rounded-2xl border border-white/5 shadow-inner">
                         {[1, 2, 3].map(lvl => (
                             <button key={lvl} onClick={() => setDifficulty(lvl)} className={`flex-1 py-3 rounded-xl text-[9px] font-black uppercase transition-all duration-300 ${difficulty === lvl ? (lvl===1?'bg-emerald-600 shadow-[0_0_15px_rgba(16,185,129,0.3)]':lvl===2?'bg-blue-600 shadow-[0_0_15px_rgba(37,99,235,0.3)]':'bg-rose-600 shadow-[0_0_15px_rgba(225,29,72,0.3)]') : 'text-slate-500 hover:text-slate-300'}`}>{lvl===1?'Легкий':lvl===2?'Средний':'Трудный'}</button>
                         ))}
                      </div>
                    </div>
                    
-                   <div className="grid gap-4">
-                       <div className="space-y-1"><label className="text-[9px] font-black text-slate-600 uppercase ml-3 tracking-widest">Модальность</label><select value={selectedModality} onChange={(e) => setSelectedModality(e.target.value)} className="w-full p-5 glass-card rounded-[1.5rem] text-xs font-bold text-white outline-none appearance-none cursor-pointer focus:border-indigo-500 transition shadow-xl">{Object.keys(MODALITIES).map(k => <option key={k} value={k} className="bg-slate-950">{MODALITIES[k].name}</option>)}</select></div>
-                       <div className="space-y-1"><label className="text-[9px] font-black text-slate-600 uppercase ml-3 tracking-widest">Кейс клиента</label><select value={selectedClientId} onChange={(e) => setSelectedClientId(e.target.value)} className="w-full p-5 glass-card rounded-[1.5rem] text-xs font-bold text-white outline-none appearance-none cursor-pointer focus:border-indigo-500 transition shadow-xl">{CLIENT_DATABASE.map(c => <option key={c.id} value={c.id} className="bg-slate-950">{c.name} ({c.profession})</option>)}</select></div>
+                   <div className="grid gap-5">
+                       <div className="space-y-1"><label className="text-[9px] font-black text-slate-600 uppercase ml-3 tracking-widest">Модальность</label><select value={selectedModality} onChange={(e) => setSelectedModality(e.target.value)} className="w-full p-5 glass-card rounded-[1.5rem] text-xs font-bold text-white outline-none appearance-none focus:border-indigo-500 transition-colors shadow-xl">{Object.keys(MODALITIES).map(k => <option key={k} value={k} className="bg-slate-950">{MODALITIES[k].name}</option>)}</select></div>
+                       <div className="space-y-1"><label className="text-[9px] font-black text-slate-600 uppercase ml-3 tracking-widest">Клиент</label><select value={selectedClientId} onChange={(e) => setSelectedClientId(e.target.value)} className="w-full p-5 glass-card rounded-[1.5rem] text-xs font-bold text-white outline-none appearance-none focus:border-indigo-500 transition-colors shadow-xl">{CLIENT_DATABASE.map(c => <option key={c.id} value={c.id} className="bg-slate-950">{c.name} ({c.profession})</option>)}</select></div>
                    </div>
 
-                   <div className="glass-card rounded-[2.5rem] p-7 relative overflow-hidden shadow-2xl border-t border-white/10">
-                       <div className="flex items-center gap-5 mb-5">
-                           <div className="w-16 h-16 bg-white/5 rounded-2xl flex items-center justify-center text-4xl shadow-inner">{currentClient.avatar}</div>
-                           <div><h4 className="text-xl font-black text-white leading-none tracking-tight">{currentClient.name}, {currentClient.age}</h4><p className="text-[9px] font-black uppercase text-indigo-400 mt-1.5 opacity-80">{currentClient.status} • {currentClient.familyStatus}</p></div>
+                   <div className="glass-card rounded-[2.5rem] p-8 relative overflow-hidden shadow-2xl border-t border-white/10">
+                       <div className="flex items-center gap-5 mb-6">
+                           <div className="w-16 h-16 bg-white/5 rounded-2xl flex items-center justify-center text-4xl shadow-inner border border-white/5">{currentClient.avatar}</div>
+                           <div><h4 className="text-xl font-black text-white leading-none tracking-tight">{currentClient.name}, {currentClient.age}</h4><p className="text-[9px] font-black uppercase text-indigo-400 mt-2 opacity-80">{currentClient.status}</p></div>
                        </div>
-                       <div className="text-[13px] text-slate-300 italic leading-relaxed border-l-2 border-indigo-500/40 pl-4 py-1">"{currentClient.bio}"</div>
+                       <div className="text-[14px] text-slate-300 italic leading-relaxed border-l-2 border-indigo-500/40 pl-5 py-1">"{currentClient.bio}"</div>
                    </div>
                    
-                   <button onClick={() => { setScreen('chat'); setMessages([]); handleSend("Здравствуйте", true); }} className="w-full bg-gradient-to-r from-indigo-600 to-purple-700 py-6 rounded-[2.5rem] font-black uppercase text-[11px] tracking-[0.3em] shadow-2xl shadow-indigo-500/20 active:scale-95 text-white transition-all transform">НАЧАТЬ СЕССИЮ</button>
+                   <button onClick={() => { setScreen('chat'); setMessages([]); handleSend("Здравствуйте", true); }} className="w-full bg-gradient-to-r from-indigo-600 to-purple-800 py-6 rounded-[2.5rem] font-black uppercase text-[11px] tracking-[0.4em] shadow-2xl active:scale-95 text-white transition-all transform">НАЧАТЬ СЕССИЮ</button>
                </div>
            </div>
         )}
@@ -480,64 +488,48 @@ export default function App() {
         {/* 4. CHAT SCREEN */}
         {screen === 'chat' && (
            <div className="flex-1 flex flex-col relative h-full">
-               <div className="flex-1 overflow-y-auto p-5 space-y-5 no-scrollbar pb-40">
+               <div className="flex-1 overflow-y-auto p-5 space-y-6 no-scrollbar pb-40 text-left">
                    {messages.map((m, i) => (
                        <div key={i} className={`flex flex-col ${m.role==='user'?'items-end':'items-start'} animate-in slide-in-from-bottom duration-400`}>
                            {m.role === 'hint' ? (
-                               <div className="bg-orange-500/10 border border-orange-500/20 p-5 rounded-[24px] flex gap-4 max-w-[90%] backdrop-blur-md shadow-xl border-l-4 border-l-orange-500">
-                                 <div className="text-2xl">🎓</div>
-                                 <div><h5 className="text-[9px] font-black uppercase text-orange-400 mb-1 tracking-widest leading-none">ИИ-Супервизор</h5><p className="text-[13px] text-orange-50/90 font-medium leading-relaxed italic">"{m.content}"</p></div>
-                               </div>
-                           ) : m.role === 'report' ? (
-                               <div className="w-full bg-slate-900/90 border border-indigo-500/30 p-8 rounded-[3rem] text-center shadow-2xl border-t-indigo-500/50">
-                                  <Icons.Trophy className="w-14 h-14 text-indigo-400 mx-auto mb-5 drop-shadow-[0_0_15px_rgba(99,102,241,0.5)]"/>
-                                  <h3 className="text-md font-black uppercase tracking-[0.3em] text-indigo-300 mb-6">Аудит Мастерства</h3>
-                                  {role === 'psychologist' && <RadarChart data={m.data} />}
-                                  <div className="bg-white/5 p-5 rounded-2xl text-left border border-white/5 mb-8"><p className="text-[13px] italic text-slate-300 leading-relaxed">"{m.data?.expert_comment || m.data?.insight}"</p></div>
-                                  <button onClick={()=>setScreen('hub')} className="w-full py-5 bg-indigo-600 rounded-[1.5rem] text-[10px] font-black uppercase tracking-widest shadow-xl">Вернуться в Хаб</button>
-                               </div>
+                               <div className="bg-orange-500/10 border border-orange-500/20 p-6 rounded-[24px] flex gap-5 max-w-[95%] backdrop-blur-md border-l-4 border-l-orange-500 shadow-xl">
+                                 <div className="text-2xl pt-1">🎓</div><div><h5 className="text-[9px] font-black uppercase text-orange-400 mb-1.5 tracking-widest">Супервизор</h5><p className="text-[13px] text-orange-50/90 font-medium italic leading-relaxed">"{m.content}"</p></div></div>
                            ) : (
-                               <div className={`max-w-[88%] p-4 text-[15px] leading-relaxed font-medium shadow-xl ${m.role==='user'?'bg-indigo-600 text-white rounded-[24px_24px_4px_24px]':'bg-slate-800/80 backdrop-blur-sm border border-white/5 text-slate-50 rounded-[24px_24px_24px_4px]'}`} dangerouslySetInnerHTML={{__html: marked.parse(m.content||"")}}/>
+                               <div className={`max-w-[88%] p-5 text-[15px] leading-relaxed font-medium shadow-2xl ${m.role==='user'?'bg-indigo-600 text-white rounded-[24px_24px_4px_24px]':'bg-slate-800/80 backdrop-blur-sm border border-white/5 text-slate-50 rounded-[24px_24px_24px_4px]'}`} dangerouslySetInnerHTML={{__html: marked.parse(m.content||"")}}/>
                            )}
                        </div>
                    ))}
-                   {isTyping && <div className="flex gap-2 p-4 bg-slate-800/50 rounded-[24px] w-fit animate-pulse border border-white/5"><div className="w-2 h-2 bg-indigo-500 rounded-full animate-bounce"/><div className="w-2 h-2 bg-indigo-500 rounded-full animate-bounce delay-75"/><div className="w-2 h-2 bg-indigo-500 rounded-full animate-bounce delay-150"/></div>}
+                   {isTyping && <div className="flex gap-2 p-4 bg-slate-800/50 rounded-[24px] w-fit animate-pulse border border-white/5"><div className="w-2 h-2 bg-indigo-500 rounded-full animate-bounce"/><div className="w-2 h-2 bg-indigo-500 rounded-full animate-bounce delay-100"/></div>}
                    <div ref={chatEndRef} />
                </div>
                
                <footer className="absolute bottom-0 w-full p-5 bg-slate-950/90 backdrop-blur-2xl border-t border-white/5 z-50">
-                   <div className="flex gap-3 mb-4">
-                       {role === 'psychologist' && <button onClick={() => handleSend("Дай совет по методике", false, 'get_hint')} className="flex-1 py-4 bg-orange-600/15 border border-orange-500/20 rounded-2xl text-[10px] font-black uppercase text-orange-400 active:scale-95 transition shadow-lg flex items-center justify-center gap-2 tracking-widest"><Icons.Sparkles className="w-3.5 h-3.5"/> Помощь</button>}
-                       <button onClick={() => { if(confirm("Завершить тренировку?")) handleSend("Завершить", false, 'finish'); }} className="flex-1 py-4 bg-emerald-600/15 border border-emerald-500/20 rounded-2xl text-[10px] font-black uppercase text-emerald-400 active:scale-95 transition shadow-lg tracking-widest">🏁 Финиш</button>
+                   <div className="flex gap-3 mb-5">
+                       {role === 'psychologist' && <button onClick={() => handleSend("Дай совет", false, 'get_hint')} className="flex-1 py-4 bg-orange-600/15 border border-orange-500/20 rounded-2xl text-[10px] font-black uppercase text-orange-400 active:scale-95 transition flex items-center justify-center gap-2 tracking-widest shadow-lg"><Icons.Sparkles className="w-4 h-4"/> Помощь</button>}
+                       <button onClick={() => { if(confirm("Завершить тренировку?")) setScreen('hub'); }} className="flex-1 py-4 bg-emerald-600/15 border border-emerald-500/20 rounded-2xl text-[10px] font-black uppercase text-emerald-400 active:scale-95 transition tracking-widest shadow-lg">🏁 Финиш</button>
                    </div>
-                   <div className="flex items-center gap-3 bg-white/5 border border-white/10 rounded-[2rem] p-2 pr-2.5 transition-all focus-within:ring-2 ring-indigo-500/30">
-                       <textarea value={inputText} onChange={e=>setInputText(e.target.value)} rows={1} className="flex-1 bg-transparent border-none outline-none text-[15px] px-4 py-2 text-white placeholder:text-slate-600 resize-none font-medium no-scrollbar" placeholder="Ваша интервенция..." onKeyDown={e => { if(e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); }}} />
-                       <button onClick={()=>handleSend()} className="w-11 h-11 bg-indigo-600 rounded-[1.2rem] flex items-center justify-center active:scale-90 transition shadow-xl shadow-indigo-600/20"><Icons.Send className="w-5 h-5 text-white"/></button>
+                   <div className="flex items-center gap-3 bg-white/5 border border-white/10 rounded-[2rem] p-2 pr-3 focus-within:ring-2 ring-indigo-500/30 transition-all shadow-inner">
+                       <textarea value={inputText} onChange={e=>setInputText(e.target.value)} rows={1} className="flex-1 bg-transparent border-none outline-none text-[15px] px-4 py-3 text-white placeholder:text-slate-600 resize-none font-medium no-scrollbar" placeholder="Ваша интервенция..." onKeyDown={e => { if(e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); }}} />
+                       <button onClick={()=>handleSend()} className="w-11 h-11 bg-indigo-600 rounded-[1.2rem] flex items-center justify-center active:scale-90 transition shadow-xl shadow-indigo-600/30"><Icons.Send className="w-5 h-5 text-white"/></button>
                    </div>
                </footer>
            </div>
         )}
 
-        {/* 5. AGGREGATOR (Marketplace) */}
+        {/* 5. AGGREGATOR SCREEN (Marketplace) */}
         {screen === 'aggregator' && (
-           <div className="flex-1 overflow-y-auto p-6 space-y-6 no-scrollbar pb-32 text-left animate-in slide-in-from-right">
-               <h2 className="text-3xl font-black text-white uppercase tracking-tighter leading-tight">Витрина Мастеров</h2>
-               <div className="grid gap-5">
-                   {psychologists.length === 0 ? <div className="text-slate-500 italic text-sm text-center py-20 animate-pulse">Поиск специалистов...</div> : psychologists.map((p, i) => (
-                       <div key={i} className={`p-6 rounded-[2.5rem] border bg-slate-900/60 backdrop-blur-xl ${p.isVip ? 'border-indigo-500/40 shadow-[0_0_30px_rgba(99,102,241,0.15)]' : 'border-white/5'}`}>
-                           <div className="flex gap-5 items-start">
-                               <div className="w-20 h-20 bg-slate-800 rounded-3xl flex items-center justify-center text-4xl overflow-hidden relative shadow-inner border border-white/5">{p.photoUrl ? <img src={p.photoUrl} className="w-full h-full object-cover"/> : (p.avatar || '👤')}</div>
-                               <div className="flex-1">
-                                   <h4 className="text-xl font-black text-white leading-tight tracking-tight">{p.name}</h4>
-                                   <div className="flex gap-2 mt-2.5">
-                                      <span className="text-[9px] font-black uppercase bg-white/5 px-2.5 py-1 rounded-lg text-slate-400 tracking-widest border border-white/5">Стаж {p.experience} лет</span>
-                                      <span className="text-[9px] font-black uppercase bg-indigo-500/15 text-indigo-300 px-2.5 py-1 rounded-lg tracking-widest border border-indigo-500/20">IQ: {p.skillRating || 70}%</span>
-                                   </div>
-                               </div>
+           <div className="flex-1 overflow-y-auto p-6 space-y-7 no-scrollbar pb-32 text-left animate-in slide-in-from-right">
+               <h2 className="text-3xl font-black text-white uppercase tracking-tighter">Мастера</h2>
+               <div className="grid gap-6">
+                   {psychologists.length === 0 ? <div className="text-slate-500 italic text-sm text-center py-24 animate-pulse tracking-widest opacity-50">Поиск активных специалистов...</div> : psychologists.map((p, i) => (
+                       <div key={i} className={`p-6 rounded-[2.5rem] border bg-slate-900/60 backdrop-blur-xl ${p.isVip ? 'border-indigo-500/40 shadow-[0_0_25px_rgba(99,102,241,0.15)]' : 'border-white/5'}`}>
+                           <div className="flex gap-6 items-start">
+                               <div className="w-20 h-20 bg-slate-800 rounded-[2rem] flex items-center justify-center text-4xl overflow-hidden border border-white/5 shadow-inner">{p.photoUrl ? <img src={p.photoUrl} className="w-full h-full object-cover"/> : '👤'}</div>
+                               <div className="flex-1"><h4 className="text-xl font-black text-white leading-tight tracking-tight">{p.name}</h4><div className="flex gap-3 mt-3"><span className="text-[9px] font-black uppercase bg-white/5 px-2.5 py-1.5 rounded-lg text-slate-400 border border-white/5">Стаж {p.experience} лет</span><span className="text-[9px] font-black uppercase bg-indigo-500/10 text-indigo-300 px-2.5 py-1.5 rounded-lg border border-indigo-500/10">IQ: {p.skillRating}%</span></div></div>
                            </div>
-                           <div className="mt-6 flex justify-between items-center border-t border-white/5 pt-5">
-                               <div><span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Консультация</span><p className="text-2xl font-black text-white leading-none mt-1">{p.price}₽</p></div>
-                               <button onClick={()=>requestWaitlist('booking')} className="bg-indigo-600 hover:bg-indigo-500 px-8 py-3.5 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] text-white shadow-xl active:scale-95 transition">Записаться</button>
+                           <div className="mt-7 flex justify-between items-center border-t border-white/5 pt-6">
+                               <div><span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Сессия</span><p className="text-2xl font-black text-white leading-none mt-1">{p.price}₽</p></div>
+                               <button onClick={()=>requestWaitlist('booking')} className="bg-indigo-600 hover:bg-indigo-500 px-9 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest text-white shadow-xl active:scale-95 transition-all">Записаться</button>
                            </div>
                        </div>
                    ))}
@@ -547,37 +539,36 @@ export default function App() {
 
         {/* 6. PROFILE SCREEN */}
         {screen === 'profile' && (
-           <div className="flex-1 overflow-y-auto p-6 space-y-8 no-scrollbar pb-32 text-left animate-in slide-in-from-bottom">
+           <div className="flex-1 overflow-y-auto p-6 space-y-9 no-scrollbar pb-32 text-left animate-in slide-in-from-bottom">
                <div className="flex justify-between items-end px-1">
                  <h2 className="text-3xl font-black text-white uppercase tracking-tighter leading-none">Мой Профиль</h2>
-                 <span className="text-[8px] font-black uppercase text-slate-500 tracking-[0.3em]">Status: Master</span>
+                 <span className="text-[8px] font-black uppercase text-slate-500 tracking-[0.4em] opacity-60">Status: Master</span>
                </div>
                
-               <div className="space-y-6">
-                   <div className="flex gap-6 items-center">
-                       <div className="w-28 h-28 bg-white/5 rounded-[2rem] flex items-center justify-center border-2 border-dashed border-white/10 cursor-pointer overflow-hidden relative shadow-2xl group transition" onClick={()=>fileInputRef.current.click()}>
+               <div className="space-y-8">
+                   <div className="flex gap-7 items-center">
+                       <div className="w-28 h-28 bg-white/5 rounded-[2.2rem] flex items-center justify-center border-2 border-dashed border-white/10 cursor-pointer overflow-hidden relative shadow-2xl group transition" onClick={()=>fileInputRef.current.click()}>
                            {userProfile.photoUrl ? <img src={userProfile.photoUrl} className="w-full h-full object-cover"/> : <Icons.Camera className="w-10 h-10 text-slate-600 group-hover:text-indigo-400 transition-colors"/>}
                            <input ref={fileInputRef} type="file" className="hidden" accept="image/*" onChange={handlePhotoUpload}/>
-                           <div className="absolute inset-0 bg-indigo-600/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"><span className="text-[8px] font-black text-white uppercase tracking-widest">Обновить</span></div>
+                           <div className="absolute inset-0 bg-indigo-600/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-sm"><span className="text-[9px] font-black text-white uppercase tracking-widest">Сменить</span></div>
                        </div>
                        <div className="flex-1 space-y-3">
-                           <button onClick={()=>requestWaitlist('gems_bundle')} className="w-full py-4 bg-emerald-900/10 border border-emerald-500/20 rounded-2xl text-[10px] font-black uppercase text-emerald-400 hover:bg-emerald-500/10 transition shadow-lg shadow-emerald-500/5">Анкета = +3 💎</button>
-                           <button onClick={()=>requestWaitlist('pro_access')} className="w-full py-4 bg-indigo-600/10 border border-indigo-500/20 rounded-2xl text-[10px] font-black uppercase text-indigo-300 hover:bg-indigo-500/10 transition shadow-lg shadow-indigo-500/5">Пригласить коллегу</button>
+                           <button onClick={()=>requestWaitlist('gems_bundle')} className="w-full py-4 bg-emerald-900/10 border border-emerald-500/20 rounded-2xl text-[9px] font-black uppercase text-emerald-400 hover:bg-emerald-500/20 transition shadow-lg shadow-emerald-500/10">Анкета = +3 💎</button>
+                           <button onClick={()=>requestWaitlist('pro_access')} className="w-full py-4 bg-indigo-600/10 border border-indigo-500/20 rounded-2xl text-[10px] font-black uppercase text-indigo-300 hover:bg-indigo-500/20 transition shadow-lg shadow-indigo-500/10">Пригласить друга</button>
                        </div>
                    </div>
                    
-                   {/* VIDEO RECORDER INCLUDED (FOR COMPLETE MONOLITH) */}
-                   <VideoRecorder onUpload={(url)=>setUserProfile({...userProfile, videoUrl: url})}/>
+                   <VideoRecorder onUpload={(url)=>setUserProfile(prev => ({...prev, videoUrl: url}))}/>
                    
-                   <div className="space-y-5 pt-4 border-t border-white/5">
-                       <div className="space-y-2"><label className="text-[9px] font-black text-slate-500 uppercase ml-4 tracking-[0.2em]">Публичное Имя</label><input type="text" className="w-full p-5 glass-card rounded-[1.5rem] text-[15px] font-bold text-white border border-white/5 outline-none focus:border-indigo-500 transition shadow-xl" value={userProfile.name} onChange={e=>setUserProfile({...userProfile, name:e.target.value})}/></div>
-                       <div className="flex gap-4">
-                           <div className="space-y-2 flex-1"><label className="text-[9px] font-black text-slate-500 uppercase ml-4 tracking-[0.2em]">Стаж (лет)</label><input type="number" className="w-full p-5 glass-card rounded-[1.5rem] text-[15px] font-bold text-white border border-white/5" value={userProfile.experience} onChange={e=>setUserProfile({...userProfile, experience:e.target.value})}/></div>
-                           <div className="space-y-2 flex-1"><label className="text-[9px] font-black text-slate-500 uppercase ml-4 tracking-[0.2em]">Цена (₽)</label><input type="number" className="w-full p-5 glass-card rounded-[1.5rem] text-[15px] font-bold text-white border border-white/5" value={userProfile.price} onChange={e=>setUserProfile({...userProfile, price:e.target.value})}/></div>
+                   <div className="space-y-6 pt-6 border-t border-white/5">
+                       <div className="space-y-2"><label className="text-[10px] font-black text-slate-500 uppercase ml-4 tracking-[0.2em]">Публичное Имя</label><input type="text" className="w-full p-5 glass-card rounded-[1.5rem] text-[15px] font-bold text-white border border-white/5 outline-none focus:border-indigo-500 transition-all shadow-xl" value={userProfile.name} onChange={e=>setUserProfile({...userProfile, name:e.target.value})}/></div>
+                       <div className="flex gap-5">
+                           <div className="space-y-2 flex-1"><label className="text-[10px] font-black text-slate-500 uppercase ml-4 tracking-[0.2em]">Стаж (лет)</label><input type="number" className="w-full p-5 glass-card rounded-[1.5rem] text-[15px] font-bold text-white border border-white/5 outline-none focus:border-indigo-500 transition-all" value={userProfile.experience} onChange={e=>setUserProfile({...userProfile, experience:e.target.value})}/></div>
+                           <div className="space-y-2 flex-1"><label className="text-[10px] font-black text-slate-500 uppercase ml-4 tracking-[0.2em]">Цена (₽)</label><input type="number" className="w-full p-5 glass-card rounded-[1.5rem] text-[15px] font-bold text-white border border-white/5 outline-none focus:border-indigo-500 transition-all" value={userProfile.price} onChange={e=>setUserProfile({...userProfile, price:e.target.value})}/></div>
                        </div>
                    </div>
                    
-                   <button onClick={saveProfile} className="w-full py-6 bg-indigo-600 rounded-[2.5rem] text-[11px] font-black uppercase tracking-[0.4em] text-white shadow-2xl shadow-indigo-500/30 active:scale-95 transition-all mt-6 transform hover:-translate-y-1">Сохранить систему</button>
+                   <button onClick={saveProfile} className="w-full py-7 bg-gradient-to-r from-indigo-600 to-indigo-900 rounded-[2.5rem] text-[12px] font-black uppercase tracking-[0.5em] text-white shadow-2xl active:scale-95 transition-all mt-6 transform hover:-translate-y-1">Сохранить систему</button>
                </div>
            </div>
         )}
@@ -586,17 +577,20 @@ export default function App() {
 
       {/* 🧭 FOOTER NAVIGATION SYSTEM */}
       {(role !== null && screen !== 'chat' && screen !== 'legal' && screen !== 'loading') && (
-        <nav className="h-[90px] bg-slate-950/90 backdrop-blur-3xl border-t border-white/5 flex justify-around items-center px-4 pb-6 z-50 shadow-[0_-10px_40px_rgba(0,0,0,0.5)]">
+        <nav className="h-[95px] bg-slate-950/95 backdrop-blur-3xl border-t border-white/5 flex justify-around items-center px-4 pb-7 z-50 shadow-[0_-15px_50px_rgba(0,0,0,0.6)]">
             {[
                 {id: 'hub', icon: Icons.Infinity, label: 'Главная'},
                 {id: 'setup', icon: Icons.Sparkles, label: 'Мастерская'},
                 {id: 'aggregator', icon: Icons.Search, label: 'Мастера'},
                 {id: 'profile', icon: Icons.User, label: 'Профиль'}
             ].map(item => (
-                <button key={item.id} onClick={()=>setScreen(item.id)} className={`flex flex-col items-center gap-2 w-16 transition-all duration-300 ${screen===item.id ? 'text-indigo-400 -translate-y-1' : 'text-slate-600 hover:text-slate-400'}`}>
-                    <item.icon className={`w-6 h-6 ${screen===item.id ? 'drop-shadow-[0_0_10px_rgba(99,102,241,0.6)]' : ''}`}/>
-                    <span className={`text-[8px] font-black uppercase tracking-widest transition-opacity ${screen===item.id ? 'opacity-100' : 'opacity-60'}`}>{item.label}</span>
-                    {screen===item.id && <div className="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-pulse mt-0.5 shadow-[0_0_10px_rgba(99,102,241,1)]"/>}
+                <button key={item.id} onClick={()=>setScreen(item.id)} className={`flex flex-col items-center gap-2.5 w-16 transition-all duration-500 ${screen===item.id ? 'text-indigo-400 -translate-y-2' : 'text-slate-600 hover:text-slate-400'}`}>
+                    <div className="relative">
+                      <item.icon className={`w-6 h-6 ${screen===item.id ? 'drop-shadow-[0_0_12px_rgba(99,102,241,0.7)]' : ''}`}/>
+                      {screen===item.id && <div className="absolute -inset-2 bg-indigo-500/5 rounded-full blur-md animate-pulse -z-10"/>}
+                    </div>
+                    <span className={`text-[8px] font-black uppercase tracking-widest transition-opacity ${screen===item.id ? 'opacity-100' : 'opacity-50'}`}>{item.label}</span>
+                    {screen===item.id && <div className="w-1.5 h-1.5 bg-indigo-500 rounded-full shadow-[0_0_10px_rgba(99,102,241,1)] animate-bounce mt-1"/>}
                 </button>
             ))}
         </nav>
