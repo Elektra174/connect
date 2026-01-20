@@ -105,20 +105,69 @@ if (process.env.FIREBASE_SERVICE_ACCOUNT) {
     }
 }
 
-const bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN, { polling: true });
+// Проверка и логирование переменных окружения
+const REQUIRED_ENV = [
+  'TELEGRAM_BOT_TOKEN',
+  'YANDEX_API_KEY',
+  'YANDEX_FOLDER_ID',
+  'SUPABASE_URL',
+  'SUPABASE_KEY'
+];
+
+// Проверка наличия переменных
+const missingEnv = REQUIRED_ENV.filter(key => !process.env[key]);
+if (missingEnv.length > 0) {
+  logger.error(`❌ Отсутствуют обязательные переменные окружения: ${missingEnv.join(', ')}`);
+  process.exit(1);
+}
+
+// Логирование версий ключей (без показа секретных данных)
+logger.info(`🔑 Yandex Folder ID: ${process.env.YANDEX_FOLDER_ID?.slice(0, 6)}...`);
+logger.info(`🔑 Supabase URL: ${process.env.SUPABASE_URL?.slice(0, 20)}...`);
+
+const bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN, { 
+  polling: {
+    params: {
+      timeout: 30,
+      limit: 1
+    },
+    autoStart: false
+  }
+});
 const PromptManager = require('./prompt_manager');
 
 // --- 🤖 ТЕЛЕГРАМ БОТ: ФИКС WEBHOOK (ERROR 409) ---
 (async () => {
-    try {
-        await bot.deleteWebHook();
-        // Задержка перед стартом, чтобы избежать конфликтов при перезагрузке Render
-        setTimeout(() => {
-            logger.info("📡 Бот Connectum активен. Режим Polling запущен.");
-        }, 2000);
-    } catch (e) { 
-        logger.error("Bot Conflict Resolution Fail: " + e.message); 
-    }
+  try {
+    await bot.deleteWebHook();
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    
+// Запускаем polling с обработкой конфликтов
+    bot.startPolling({ 
+      restart: true,
+      polling: {
+        params: { 
+          timeout: 60,
+          limit: 1,
+          allowed_updates: ['message', 'callback_query']
+        }
+      }
+    }).then(() => {
+      logger.info("📡 Бот Connectum активен. Режим Polling запущен.");
+    }).catch(e => {
+      if (e.response?.parameters?.retry_after) {
+        const retryAfter = e.response.parameters.retry_after;
+        logger.warn(`Bot conflict detected. Retrying after ${retryAfter} seconds...`);
+        setTimeout(() => bot.startPolling({ restart: true }), (retryAfter + 1) * 1000);
+      } else {
+        logger.error(`Ошибка запуска бота: ${e.message}`);
+        process.exit(1);
+      }
+    });
+  } catch (e) { 
+    logger.error("Bot Conflict Resolution Fail: " + e.message);
+    process.exit(1);
+  }
 })();
 
 bot.onText(/\/start/, async (msg) => {
@@ -283,6 +332,9 @@ const CLIENT_DATABASE = {
  */
 async function callYandexAi(prompt, instructions = "", temperature = 0.6) {
     try {
+        // Логирование параметров запроса (без секретных данных)
+        logger.info(`🧠 Yandex AI Request: ${prompt.slice(0, 50)}... [FOLDER_ID: ${FOLDER_ID?.slice(0, 6)}...]`);
+        
         const response = await yandexAi.responses.create({
             model: `gpt://${FOLDER_ID}/yandexgpt/latest`,
             instructions: instructions,
@@ -291,13 +343,18 @@ async function callYandexAi(prompt, instructions = "", temperature = 0.6) {
             max_output_tokens: 2000
         });
         
-        if (!response || !response.output_text) {
+        if (!response?.output_text) {
             throw new Error("Empty AI response content");
         }
         
         return response.output_text;
     } catch (e) {
-        logger.error(`Yandex AI Error [${FOLDER_ID}]: ` + e.message);
+        const errorDetails = {
+            message: e.message,
+            status: e.response?.status,
+            data: e.response?.data
+        };
+        logger.error(`Yandex AI Error: ${JSON.stringify(errorDetails)}`);
         return "Извините, система Connectum временно задумалась. Пожалуйста, попробуйте отправить сообщение еще раз.";
     }
 }
@@ -350,16 +407,21 @@ async function getYandexEmbed(text) {
     try {
         const res = await axios.post(url, {
             modelUri: `emb://${FOLDER_ID}/text-search-query/latest`,
-            text: text
+            text: text.substring(0, 10000) // Ограничение длины текста
         }, { 
             headers: { 
                 'Authorization': `Api-Key ${YANDEX_API_KEY}`, 
                 'x-folder-id': FOLDER_ID 
-            } 
+            },
+            timeout: 10000
         });
-        return res.data.embedding;
+        
+        if (res.data?.embedding) {
+            return res.data.embedding;
+        }
+        throw new Error("Invalid embedding response");
     } catch (e) { 
-        logger.error("Embedding Error: " + e.message);
+        logger.error(`Embedding Error: ${e.response?.data?.message || e.message}`);
         return null; 
     }
 }
@@ -540,7 +602,13 @@ app.post('/api/finish', async (req, res) => {
         const auditPrompt = PromptManager.generateDeepAnalysisPrompt(modalityId, historyText);
         
         const analysisRaw = await callYandexAi("Проведи глубокий аудит сессии. Выдай строго JSON.", auditPrompt, 0.2);
-        const analysis = JSON.parse(analysisRaw.replace(/```json|```/g, '').trim());
+        let analysis;
+        try {
+            analysis = JSON.parse(analysisRaw.replace(/```json|```/g, '').trim());
+        } catch (e) {
+            logger.error(`JSON Parse Error: ${e.message}`);
+            analysis = { method: 0, expert_comment: "Ошибка анализа сессии" };
+        }
 
         let certificateUrl = null;
         if (db && userId) {
