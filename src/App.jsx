@@ -1,1502 +1,2653 @@
-import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { marked } from 'marked';
 
 /**
  * =========================================================================
- * КОННЕКТУМ ПРО v25.0 - QUANTUM SINGULARITY (АБСОЛЮТНЫЙ МОНОЛИТ)
+ * CONNECTUM PRO v22.0 - SUPER PREMIUM MASTER EDITION
  * =========================================================================
- * * 📄 ФАЙЛ: src/App.jsx
- * ⚖️ СТАТУС: FINAL PRODUCTION MASTER
- * 🛡️ ПРОТОКОЛ: ANTI-CUTTING ACTIVE (1550+ СТРОК ПРЕМИУМ-КОДА)
- * * 🏗️ ПОЭКРАННАЯ АРХИТЕКТУРА:
- * 1.  OS_BOOT_SEQUENCE (Эмуляция загрузки ядра)
- * 2.  ACCESS_PROTOCOL_LEGAL (Юридический фильтр)
- * 3.  COMMAND_HUB (Главный навигационный пульт)
- * 4.  TRAINING_LAB_SETUP (Мастерская Психолога)
- * 5.  PILOT_SERVICE_HUB (Клиентский центр)
- * 6.  NEURAL_INTERVENTION_CHAT (Интегральная сессия)
- * 7.  MASTERY_AUDIT_REPORT (Отчет для специалиста)
- * 8.  AWARENESS_MAP_REPORT (Отчет для клиента)
- * 9.  ELITE_MARKETPLACE (Витрина лучших мастеров)
- * 10. COGNITIVE_SYNC_PROFILE (Личный кабинет и Квесты)
- * 11. QUANTUM_PAY_STORE (Магазин тарифов)
- * 12. WAITLIST_TERMINAL (Обратная связь)
+ * 🎨 ДИЗАЙН: "Super Premium Terminal" (Glassmorphism, Neon, Animations)
+ * 🧠 ИНТЕЛЛЕКТ: YandexGPT Pro & SpeechKit Premium
+ * 📱 UX: Telegram Mini Apps v6.1+ (Super Premium UI)
+ * 🎮 ГЕЙМИФИКАЦИЯ: Diamonds, Quests, Mastery Levels
+ * 📊 АНАЛИТИКА: Mastery Radar, Session Metrics, PDF Reports
+ * =========================================================================
+ * Полная реструктуризация с сохранением логики и супер-премиум дизайном
  * =========================================================================
  */
 
-// --- 1. СИСТЕМА ПРЕМИУМ-ИКОНОК (CUSTOM SVG ENGINE) ---
-const Icons = {
-  Infinity: ({ className }) => (
-    <svg className={className} viewBox="0 0 160 80" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M40 20C20 20 20 60 40 60C50 60 60 50 80 40C100 30 110 20 120 20C140 20 140 60 120 60C110 60 100 50 80 40C60 30 50 20 40 20Z" 
-            stroke="url(#infGrad)" strokeWidth="12" strokeLinecap="round" strokeLinejoin="round"/>
-      <defs><linearGradient id="infGrad" x1="0" x2="160" y1="40" y2="40" gradientUnits="userSpaceOnUse"><stop stopColor="#681fef"/><stop offset="0.5" stopColor="#00D2FF"/><stop offset="1" stopColor="#681fef"/></linearGradient></defs>
-    </svg>
-  ),
-  AllInclusive: ({ className }) => (
-    <svg className={className} viewBox="0 0 24 24" fill="currentColor">
-      <path d="M18.6 6.62c-1.44 0-2.8.56-3.77 1.53L12 10.66 9.17 7.85c-.97-.97-2.33-1.53-3.77-1.53-2.94 0-5.33 2.39-5.33 5.33S2.46 17 5.4 17c1.44 0 2.8-.56 3.77-1.53L12 12.62l2.83 2.85c.97.97 2.33 1.53 3.77 1.53 2.94 0 5.33-2.39 5.33-5.33s-2.39-5.05-5.33-5.05zM5.4 15c-.94 0-1.73-.79-1.73-1.73s.79-1.73 1.73-1.73c.44 0 .89.18 1.23.51l2.22 2.22c-.34.46-.86.73-1.45.73zm13.2 0c-.59 0-1.11-.27-1.45-.73l2.22-2.22c.34-.33.79-.51 1.23-.51.94 0 1.73.79 1.73 1.73S19.54 15 18.6 15z"/>
-    </svg>
-  ),
-  Diamond: ({ className }) => (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="#FFD700" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M6 4h12l4 5-10 11L2 9l4-5Z"/><path d="M12 20V9M2 9h20M6 4l6 5 6-5" strokeOpacity="0.3"/>
-    </svg>
-  ),
-  Bolt: ({ className }) => (
-    <svg className={className} viewBox="0 0 24 24" fill="currentColor">
-      <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
-    </svg>
-  ),
-  Commander: ({ className }) => (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-      <circle cx="12" cy="12" r="9" strokeOpacity="0.2"/><path d="M12 8v8M8 12h8" strokeWidth="2" strokeLinecap="round"/>
-      <path d="M12 3a9 9 0 0 1 9 9" stroke="#681fef" strokeWidth="2" strokeLinecap="round"/>
-    </svg>
-  ),
-  Pilot: ({ className }) => (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-      <path d="M16 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="10" cy="7" r="4"/><path d="M18 8l2 2 4-4" stroke="#00D2FF" strokeWidth="2" strokeLinecap="round"/>
-    </svg>
-  ),
-  Search: ({ className }) => (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
-    </svg>
-  ),
-  Sparkles: ({ className }) => (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3L12 3z"/>
-    </svg>
-  ),
-  User: ({ className }) => (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
-    </svg>
-  ),
-  Diagnosis: ({ className }) => (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="12" cy="12" r="9" strokeOpacity="0.2"/><circle cx="12" cy="12" r="3" fill="currentColor"/><path d="M12 2v20M2 12h20" strokeOpacity="0.2"/>
-    </svg>
-  ),
-  Market: ({ className }) => (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/><path d="M11 8v6M8 11h6" strokeOpacity="0.3"/>
-    </svg>
-  ),
-  Settings: ({ className }) => (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H4a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H20a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
-    </svg>
-  ),
-  ChevronLeft: ({ className }) => (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-      <path d="m15 18-6-6 6-6"/>
-    </svg>
-  ),
-  Send: ({ className }) => (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/>
-    </svg>
-  ),
-  Camera: ({ className }) => (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/>
-    </svg>
-  ),
-  Trophy: ({ className }) => (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/>
-    </svg>
-  ),
-  Check: ({ className }) => (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M20 6L9 17l-5-5"/>
-    </svg>
-  ),
-  Radio: ({ className }) => (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="12" cy="12" r="2"/><path d="M16.24 7.76a6 6 0 0 1 0 8.49m-8.48-.01a6 6 0 0 1 0-8.49m11.31-2.82a10 10 0 0 1 0 14.14m-14.14 0a10 10 0 0 1 0-14.14"/></svg>
-  ),
-  Support: ({ className }) => (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M21 16V8a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h4l3 3 3-3h4a2 2 0 0 0 2-2Z"/><path d="M9.5 10a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1Zm5 0a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1Z"/>
-    </svg>
-  )
-};
+// --- 1. КОНСТАНТЫ И ДАННЫЕ ---
 
-// --- 2. ЭТАЛОННАЯ БАЗА 30 КЕЙСОВ (ФЕНОМЕНОЛОГИЯ И МАРКЕРЫ) ---
-// Каждый кейс содержит уникальные BIO и соматические подсказки для Stitch UI
 const CLIENT_DATABASE = [
-    { id: "c1", name: "Виктория", age: 34, profession: "Маркетолог", status: "Средний", avatar: "👩‍💻", bio: "Парализующий саботаж при записи видео. Страх проявления. В теле — зажим в горле. Считает себя 'недостаточной' для больших охватов.", markers: ["ЗАЖИМ В ГОРЛЕ", "ПОВЕРХНОСТНОЕ ДЫХАНИЕ", "ХОЛОД В РУКАХ"] },
-    { id: "c2", name: "Артем", age: 28, profession: "IT-разработчик", status: "Высокий", avatar: "👨‍🎨", bio: "Боюсь закончить масштабный заказ. Кажется, что результат будет бездарным. Скрытый перфекционизм через прокрастинацию.", markers: ["ТЯЖЕСТЬ В ПЛЕЧАХ", "ПУЛЬСАЦИЯ В ВИСКАХ", "СЖАТИЕ ЧЕЛЮСТИ"] },
-    { id: "c3", name: "Елена", age: 42, profession: "Бухгалтер", status: "Средний", avatar: "👩‍💼", bio: "Постоянное сжатие в груди и тревога. Не могу переключиться с работы на отдых. Ощущение, что за углом ждет катастрофа.", markers: ["СЖАТИЕ В ГРУДИ", "ТРЕМОР ПАЛЬЦЕВ", "ПОВЫШЕННЫЙ ПУЛЬС"] },
-    { id: "c4", name: "Михаил", age: 31, profession: "Фрилансер", status: "Нестабильный", avatar: "👨🏻", bio: "Сменил 5 профессий за 2 года. Нигде не находит признания, чувствует себя неудачником и вечным новичком.", markers: ["ПУСТОТА В ЖИВОТЕ", "СУТУЛОСТЬ", "ТИХИЙ ГОЛОС"] },
-    { id: "c5", name: "Анна", age: 25, profession: "Студентка", status: "Начинающий", avatar: "👩🏼", bio: "Не может завершить разрушительные отношения. Боится одиночества до тошноты. Полное слияние с партнером.", markers: ["ТОШНОТА", "ХОЛОД В ЖИВОТЕ", "КОМ В ГОРЛЕ"] },
-    { id: "c6", name: "Игорь", age: 45, profession: "Топ-менеджер", status: "VIP", avatar: "👨🏻‍💼", bio: "Достиг успеха, но внутри тотальная пустота. Онемение в животе и холод. Чувствует себя роботом без эмоций.", markers: ["ОНЕМЕНИЕ ТЕЛА", "ОТСУТСТВИЕ ВЗДОХА", "ТЯЖЕСТЬ В НОГАХ"] },
-    { id: "c7", name: "Ольга", age: 38, profession: "Врач", status: "Высокий", avatar: "👩🏻", bio: "Ипохондрия. Паника при малейшем физическом дискомфорте. Пытается контролировать биение сердца мыслью.", markers: ["ГОЛОВОКРУЖЕНИЕ", "ВАТНЫЕ НОГИ", "ЖАР В ЛИЦЕ"] },
-    { id: "c8", name: "Дмитрий", age: 29, profession: "Продавец", status: "Базовый", avatar: "🧔🏻", bio: "Боится встреч. Напряжение в скулах и зажим речи. Постоянно прокручивает в голове 'что обо мне подумают'.", markers: ["НАПРЯЖЕНИЕ СКУЛ", "ПОТЛИВОСТЬ", "БЕГАЮЩИЙ ВЗГЛЯД"] },
-    { id: "c9", name: "Мария", age: 33, profession: "Домохозяйка", status: "Средний", avatar: "👩‍🍼", bio: "Материнская вина. Ощущение, что она плохая мать. Не может вздохнуть от груза ожиданий общества.", markers: ["НЕХВАТКА ВОЗДУХА", "БОЛЬ В ПОЯСНИЦЕ", "ВЯЛОСТЬ"] },
-    { id: "c10", name: "Сергей", age: 50, profession: "Предприниматель", status: "Кризис", avatar: "👨🏻‍🦳", bio: "Банкротство бизнеса. Колоссальный стыд перед семьей. Чувствует себя 'старым и ненужным львом'.", markers: ["ЖАР В ЛИЦЕ", "ТЯЖЕСТЬ В ГРУДИ", "КАМЕННЫЙ ЖИВОТ"] },
-    { id: "c11", name: "Юлия", age: 27, profession: "Модель", status: "Высокий", avatar: "👩🏻", bio: "РПП. Ненавидит свое отражение. Постоянный контроль веса. Тело воспринимается как враждебный объект.", markers: ["УЗЕЛ В ЖЕЛУДКЕ", "ХОЛОД В РУКАХ", "СУХОСТЬ ВО РТУ"] },
-    { id: "c12", name: "Андрей", age: 35, profession: "Архитектор", status: "Средний", avatar: "👨🏿", bio: "Вспышки неконтролируемого гнева. Ощущение закипающего кипятка в груди. Боится разрушить всё вокруг.", markers: ["ПРИЛИВ ЖАРА", "СЖАТИЕ КУЛАКОВ", "КРАСНЫЕ ПЯТНА"] },
-    { id: "c13", name: "Наталья", age: 40, profession: "Учитель", status: "Базовый", avatar: "👩‍💼", bio: "Одиночество в толпе. Живет как за толстым стеклом. Потеря способности к глубокому контакту.", markers: ["ДАВЛЕНИЕ В УШАХ", "ТУМАН В ГЛАЗАХ", "ОТСТРАНЕННОСТЬ"] },
-    { id: "c14", name: "Павел", age: 22, profession: "Курьер", status: "Низкий", avatar: "👱🏻", bio: "Зависимость от мнения родителей. Не может принять решение. Ощущение, что за ним всегда следят.", markers: ["СЛАБОСТЬ В НОГАХ", "КОЛЮЧКИ В СПИНЕ", "ЗАЖИМ В ТАЗУ"] },
-    { id: "c15", name: "Екатерина", age: 36, profession: "HR-директор", status: "Высокий", avatar: "👩‍🏫", bio: "Выгорание. Перфекционизм. Жжение в глазах от истощения. Пытается 'выжать из себя остатки'.", markers: ["РЕЗЬ В ГЛАЗАХ", "ТЯЖЕЛЫЙ ЗАТЫЛОК", "СПАЗМ ДИАФРАГМЫ"] },
-    { id: "c16", name: "Александр", age: 44, profession: "Инженер", status: "Средний", avatar: "👨🏻", bio: "Застрял в горе. Чувствует вину перед ушедшим близким. Жизнь остановилась 3 года назад.", markers: ["КОМ В ГОРЛЕ", "СВИНЦОВАЯ ГРУДЬ", "ЗАМЕРЗАНИЕ"] },
-    { id: "c17", name: "Светлана", age: 30, profession: "Бьюти-мастер", status: "Базовый", avatar: "👩🏼", bio: "Низкая самооценка. Считает себя 'недостаточной' для любви. Постоянно извиняется за свое существование.", markers: ["СЖАТИЕ ТЕЛА", "ТИХИЙ СМЕХ", "ОПУЩЕННЫЕ ПЛЕЧИ"] },
-    { id: "c18", name: "Роман", age: 32, profession: "Аналитик", status: "Средний", avatar: "👨🏿‍💻", bio: "Игровая зависимость. Уход от реальности в виртуальный мир. Боится реальных чувств.", markers: ["ТУМАН В ГОЛОВЕ", "ОНЕМЕНИЕ ПАЛЬЦЕВ", "СУХОСТЬ ГЛАЗ"] },
-    { id: "c19", name: "Ирина", age: 48, profession: "Юрист", status: "Высокий", avatar: "👵🏼", bio: "Синдром пустого гнезда. Дети уехали, смысл жизни пропал. Ощущение ненужности.", markers: ["ПУСТОТА В ГРУДИ", "ХОЛОД В ДОМЕ", "КОМ В ГОРЛЕ"] },
-    { id: "c20", name: "Кирилл", age: 26, profession: "Дизайнер", status: "Начинающий", avatar: "👦🏻", bio: "Агорафобия. Боится выходить на открытые пространства. Мир кажется опасным и ярким.", markers: ["ДРОЖЬ В КОЛЕНЯХ", "ПОТЛИВОСТЬ", "РАШИРЕННЫЕ ЗРАЧКИ"] },
-    { id: "c21", name: "Татьяна", age: 55, profession: "Пенсионерка", status: "Базовый", avatar: "👩🏻‍🦱", bio: "Кризис старения. Ощущение, что время уходит впустую. Сожаления о несделанном.", markers: ["ТЯЖЕСТЬ В НОГАХ", "БОЛЬ В СЕРДЦЕ", "ВЯЛОСТЬ РУК"] },
-    { id: "c22", name: "Виктор", age: 39, profession: "Водитель", status: "Средний", avatar: "🧔", bio: "Переживает измену. Колючая проволока вокруг сердца. Не может больше доверять людям.", markers: ["КОЛЮЩАЯ БОЛЬ", "ЗАЖИМ В ГРУДИ", "ГНЕВ В ЧЕЛЮСТИ"] },
-    { id: "c23", name: "Алина", age: 24, profession: "Бариста", status: "Начинающий", avatar: "👩‍🎓", bio: "Не умеет говорить 'нет'. Чувствует, что все ею пользуются. Потеря собственного 'Я'.", markers: ["БЕССИЛИЕ", "МЯГКИЙ ПОЗВОНОЧНИК", "ТИХИЙ ГОЛОС"] },
-    { id: "c24", name: "Денис", age: 37, profession: "Охранник", status: "Базовый", avatar: "👨🏻", bio: "Навязчивые мысли о здоровье. Постоянные проверки. Страх внезапной смерти.", markers: ["ГИПЕРТОНУС", "РВАНЫЙ ПУЛЬС", "ЖАР В ШЕЕ"] },
-    { id: "c25", name: "Людмила", age: 60, profession: "Педагог", status: "Пенсия", avatar: "👵", bio: "Конфликт с невесткой. Чувствует себя ненужной и лишней в собственной семье.", markers: ["ЖАР В ГРУДИ", "ГОРЕЧЬ", "НАПРЯЖЕННАЯ СПИНА"] },
-    { id: "c26", name: "Максим", age: 21, profession: "Блогер", status: "Низкий", avatar: "👦🏼", bio: "Подростковый бунт против системы. Ничего не хочет делать. Скрытая депрессия под маской лени.", markers: ["ВАКУУМ", "ОТСУТСТВИЕ ФОКУСА", "ОПУЩЕННЫЙ ВЗГЛЯД"] },
-    { id: "c27", name: "Валерия", age: 31, profession: "Стилист", status: "Средний", avatar: "👩🏻‍🦰", bio: "Болезненная ревность. Постоянный поиск улик измены. Тотальный контроль партнера.", markers: ["ГОРЕЧЬ ВО РТУ", "КОЛЮЧКИ В ГЛАЗАХ", "СПАЗМ ЖИВОТА"] },
-    { id: "c28", name: "Станислав", age: 43, profession: "Адвокат", status: "Высокий", avatar: "👨🏻‍💼", bio: "Трудоголизм. Не умеет расслабляться без алкоголя. Тело воспринимается как инструмент.", markers: ["ЗАТЫЛОЧНЫЙ ЗАЖИМ", "КАМЕННЫЕ ПЛЕЧИ", "СУХОСТЬ В ГОРЛЕ"] },
-    { id: "c29", name: "Евгения", age: 29, profession: "Копирайтер", status: "Средний", avatar: "👩🏻", bio: "Страх перемен. Боится менять работу, даже если там плохо. Оцепенение перед выбором.", markers: ["ОЦЕПЕНЕНИЕ", "ХОЛОД В СТОПАХ", "СЖАТИЕ В СОЛНЕЧНОМ"] },
-    { id: "c30", name: "Константин", age: 35, profession: "Финансист", status: "Высокий", avatar: "👨🏻", bio: "Эмоциональная холодность. Не понимает, что чувствует. Мир кажется серым и плоским.", markers: ["ПЛАСТИКОВОЕ ТЕЛО", "ОТСУТСТВИЕ ОТКЛИКА", "ТИШИНА"] }
+  { 
+    id: "c1", name: "Виктория", age: 34, profession: "Маркетолог", 
+    photo: "https://api.dicebear.com/7.x/avataaars/svg?seed=Viktoriya&backgroundColor=transparent",
+    bio: "Парализующий саботаж при записи видео. Страх проявления зашкаливает.",
+    somatic: ["TIGHT THROAT", "SHALLOW BREATH"]
+  },
+  { 
+    id: "c2", name: "Артем", age: 28, profession: "IT-разработчик", 
+    photo: "https://api.dicebear.com/7.x/avataaars/svg?seed=Artem&backgroundColor=transparent",
+    bio: "Боюсь закончить масштабный заказ. Кажется, что результат будет бездарным.",
+    somatic: ["RACING HEART", "COLD HANDS"]
+  },
+  { 
+    id: "c3", name: "Елена", age: 42, profession: "Бухгалтер", 
+    photo: "https://api.dicebear.com/7.x/avataaars/svg?seed=Elena&backgroundColor=transparent",
+    bio: "Постоянное сжатие в груди и тревога за будущее.",
+    somatic: ["CHEST TIGHTNESS", "ANXIETY"]
+  },
+  { 
+    id: "c4", name: "Михаил", age: 31, profession: "Фрилансер", 
+    photo: "https://api.dicebear.com/7.x/avataaars/svg?seed=Mikhail&backgroundColor=transparent",
+    bio: "Сменил 5 профессий за 2 года. Нигде не находит признания.",
+    somatic: ["EMPTY SOLAR PLEXUS", "NO ENERGY"]
+  },
+  { 
+    id: "c5", name: "Анна", age: 25, profession: "Студентка", 
+    photo: "https://api.dicebear.com/7.x/avataaars/svg?seed=Anna&backgroundColor=transparent",
+    bio: "Не может завершить разрушительные отношения. Боится одиночества.",
+    somatic: ["COLLAR BONE PAIN", "WANT TO CURL UP"]
+  },
+  { 
+    id: "c6", name: "Игорь", age: 45, profession: "Топ-менеджер", 
+    photo: "https://api.dicebear.com/7.x/avataaars/svg?seed=Igor&backgroundColor=transparent",
+    bio: "Достиг успеха, но внутри тотальная пустота.",
+    somatic: ["NUMBNESS IN STOMACH", "COLD"]
+  },
+  { 
+    id: "c7", name: "Ольга", age: 38, profession: "Врач", 
+    photo: "https://api.dicebear.com/7.x/avataaars/svg?seed=Olga&backgroundColor=transparent",
+    bio: "Ипохондрия. Паника при малейшем физическом дискомфорте.",
+    somatic: ["TINGLING ALL OVER", "FEAR"]
+  },
+  { 
+    id: "c8", name: "Дмитрий", age: 29, profession: "Продавец", 
+    photo: "https://api.dicebear.com/7.x/avataaars/svg?seed=Dmitry&backgroundColor=transparent",
+    bio: "Боится встреч и публичных выступлений.",
+    somatic: ["JAW TENSION", "SPEECH BLOCK"]
+  },
+  { 
+    id: "c9", name: "Мария", age: 33, profession: "Домохозяйка", 
+    photo: "https://api.dicebear.com/7.x/avataaars/svg?seed=Maria&backgroundColor=transparent",
+    bio: "Материнская вина. Ощущение, что она плохая мать и жена.",
+    somatic: ["CONCRETE SLAB ON BACK", "CAN'T BREATHE"]
+  },
+  { 
+    id: "c10", name: "Сергей", age: 50, profession: "Предприниматель", 
+    photo: "https://api.dicebear.com/7.x/avataaars/svg?seed=Sergey&backgroundColor=transparent",
+    bio: "Банкротство бизнеса. Колоссальный стыд перед семьей.",
+    somatic: ["MELTING FEET", "HEAVY SHOULDERS"]
+  },
+  { 
+    id: "c11", name: "Юлия", age: 27, profession: "Модель", 
+    photo: "https://api.dicebear.com/7.x/avataaars/svg?seed=Yuliya&backgroundColor=transparent",
+    bio: "РПП. Ненавидит свое отражение. Постоянный контроль веса.",
+    somatic: ["HEAVINESS IN STOMACH", "SELF-LOATHING"]
+  },
+  { 
+    id: "c12", name: "Андрей", age: 35, profession: "Архитектор", 
+    photo: "https://api.dicebear.com/7.x/avataaars/svg?seed=Andrey&backgroundColor=transparent",
+    bio: "Вспышки неконтролируемого гнева на близких.",
+    somatic: ["BOILING IN CHEST", "SEEKING EXIT"]
+  },
+  { 
+    id: "c13", name: "Наталья", age: 40, profession: "Учитель", 
+    photo: "https://api.dicebear.com/7.x/avataaars/svg?seed=Natalya&backgroundColor=transparent",
+    bio: "Одиночество в толпе. Живет как за толстым стеклом.",
+    somatic: ["GLASS WALL", "LONELINESS"]
+  },
+  { 
+    id: "c14", name: "Павел", age: 22, profession: "Курьер", 
+    photo: "https://api.dicebear.com/7.x/avataaars/svg?seed=Pavel&backgroundColor=transparent",
+    bio: "Тотальная зависимость от мнения родителей.",
+    somatic: ["WATERY HANDS", "NO AIR"]
+  },
+  { 
+    id: "c15", name: "Екатерина", age: 36, profession: "HR-директор", 
+    photo: "https://api.dicebear.com/7.x/avataaars/svg?seed=Ekaterina&backgroundColor=transparent",
+    bio: "Профессиональное выгорание. Перфекционизм.",
+    somatic: ["BURNING EYES", "CAN'T RELAX"]
+  },
+  { 
+    id: "c16", name: "Александр", age: 44, profession: "Инженер", 
+    photo: "https://api.dicebear.com/7.x/avataaars/svg?seed=Alexander&backgroundColor=transparent",
+    bio: "Застрял в горе после утраты близкого.",
+    somatic: ["STONE IN STOMACH", "HEAVY"]
+  },
+  { 
+    id: "c17", name: "Светлана", age: 30, profession: "Бьюти-мастер", 
+    photo: "https://api.dicebear.com/7.x/avataaars/svg?seed=Svetlana&backgroundColor=transparent",
+    bio: "Низкая самооценка. Считает себя 'недостаточной'.",
+    somatic: ["COLD IN HEART", "CONSTANT COMPARISON"]
+  },
+  { 
+    id: "c18", name: "Роман", age: 32, profession: "Аналитик", 
+    photo: "https://api.dicebear.com/7.x/avataaars/svg?seed=Roman&backgroundColor=transparent",
+    bio: "Игровая зависимость. Уход от реальности.",
+    somatic: ["NECK STIFFNESS", "FEAR OF REALITY"]
+  },
+  { 
+    id: "c19", name: "Ирина", age: 48, profession: "Юрист", 
+    photo: "https://api.dicebear.com/7.x/avataaars/svg?seed=Irina&backgroundColor=transparent",
+    bio: "Синдром пустого гнезда. Дети выросли и уехали.",
+    somatic: ["DRAFT IN CHEST", "UNNEEDED"]
+  },
+  { 
+    id: "c20", name: "Кирилл", age: 26, profession: "Дизайнер", 
+    photo: "https://api.dicebear.com/7.x/avataaars/svg?seed=Kirill&backgroundColor=transparent",
+    bio: "Агорафобия. Боится выходить на открытые пространства.",
+    somatic: ["NUMBNESS IN FINGERTIPS", "PANIC"]
+  },
+  { 
+    id: "c21", name: "Татьяна", age: 55, profession: "Пенсионерка", 
+    photo: "https://api.dicebear.com/7.x/avataaars/svg?seed=Tatyana&backgroundColor=transparent",
+    bio: "Кризис старения. Ощущение, что время уходит впустую.",
+    somatic: ["HEAVINESS IN KNEES", "FEAR OF DEATH"]
+  },
+  { 
+    id: "c22", name: "Виктор", age: 39, profession: "Водитель", 
+    photo: "https://api.dicebear.com/7.x/avataaars/svg?seed=Viktor&backgroundColor=transparent",
+    bio: "Переживает измену жены. Не может спать и есть.",
+    somatic: ["BURNING COAL IN CHEST", "RAGE"]
+  },
+  { 
+    id: "c23", name: "Алина", age: 24, profession: "Бариста", 
+    photo: "https://api.dicebear.com/7.x/avataaars/svg?seed=Alina&backgroundColor=transparent",
+    bio: "Не умеет говорить 'нет'. Чувствует, что все ею пользуются.",
+    somatic: ["NECK TENSION", "HEADACHES"]
+  },
+  { 
+    id: "c24", name: "Денис", age: 37, profession: "Охранник", 
+    photo: "https://api.dicebear.com/7.x/avataaars/svg?seed=Denis&backgroundColor=transparent",
+    bio: "Навязчивые мысли о безопасности семьи.",
+    somatic: ["CONSTANT CONTROL", "EXHAUSTION"]
+  },
+  { 
+    id: "c25", name: "Людмила", age: 60, profession: "Педагог", 
+    photo: "https://api.dicebear.com/7.x/avataaars/svg?seed=Lyudmila&backgroundColor=transparent",
+    bio: "Конфликт с невесткой. Чувствует себя лишней в семье.",
+    somatic: ["BITTERNESS IN MOUTH", "LUMP IN THROAT"]
+  },
+  { 
+    id: "c26", name: "Максим", age: 21, profession: "Блогер", 
+    photo: "https://api.dicebear.com/7.x/avataaars/svg?seed=Maxim&backgroundColor=transparent",
+    bio: "Подростковый бунт против системы, затянувшийся во времени.",
+    somatic: ["VOID", "NO DESIRES"]
+  },
+  { 
+    id: "c27", name: "Валерия", age: 31, profession: "Стилист", 
+    photo: "https://api.dicebear.com/7.x/avataaars/svg?seed=Valeriya&backgroundColor=transparent",
+    bio: "Болезненная ревность. Постоянный поиск улик измены.",
+    somatic: ["HEAT IN BACK OF NECK", "MADNESS"]
+  },
+  { 
+    id: "c28", name: "Станислав", age: 43, profession: "Адвокат", 
+    photo: "https://api.dicebear.com/7.x/avataaars/svg?seed=Stanislav&backgroundColor=transparent",
+    bio: "Трудоголизм как способ убежать от проблем в семье.",
+    somatic: ["PULSATION IN TEMPLES", "CAN'T RELAX"]
+  },
+  { 
+    id: "c29", name: "Евгения", age: 29, profession: "Копирайтер", 
+    photo: "https://api.dicebear.com/7.x/avataaars/svg?seed=Evgeniya&backgroundColor=transparent",
+    bio: "Страх перемен. Боится менять работу, даже если там плохо.",
+    somatic: ["HANDS TIED", "CAPTIVE"]
+  },
+  { 
+    id: "c30", name: "Константин", age: 35, profession: "Финансист", 
+    photo: "https://api.dicebear.com/7.x/avataaars/svg?seed=Konstantin&backgroundColor=transparent",
+    bio: "Эмоциональная холодность. Не понимает, что чувствует.",
+    somatic: ["ROBOT", "NO EMPATHY"]
+  }
 ];
 
 const MODALITIES = {
-  mpt: { id: "mpt", name: "МПТ", full: "Мета-персональная терапия", desc: "Смена самоописания через возврат авторства (А. Волынский)." },
-  cbt: { id: "cbt", name: "КПТ", full: "Когнитивно-поведенческая терапия", desc: "Работа с автоматическими мыслями и убеждениями (А. Бек)." },
-  gestalt: { id: "gestalt", name: "ГЕШТАЛЬТ", full: "Гештальт-терапия", desc: "Осознавание на границе контакта 'Здесь и Сейчас' (Ф. Перлз)." },
-  eit: { id: "eit", name: "ЭОТ", full: "Эмоционально-образная терапия", desc: "Трансформация состояний через работу с образами (Н. Линде)." },
-  act: { id: "act", name: "АСТ", full: "Терапия принятия и ответственности", desc: "Психологическая гибкость и жизнь согласно ценностям." },
-  ta: { id: "ta", name: "ТА", full: "Транзактный анализ", desc: "Анализ эго-состояний Р-В-Д и сценариев (Э. Берн)." }
+  mpt: { id: "mpt", name: "MPT", color: "indigo", desc: "Мета-персональная терапия" },
+  cbt: { id: "cbt", name: "CBT", color: "emerald", desc: "Когнитивно-поведенческая терапия" },
+  gestalt: { id: "gestalt", name: "GESTALT", color: "purple", desc: "Гештальт-терапия" },
+  eit: { id: "eit", name: "EIT", color: "amber", desc: "Эмоционально-образная терапия" },
+  psychoanalysis: { id: "psychoanalysis", name: "PSYCHOANALYSIS", color: "rose", desc: "Классический психоанализ" },
+  ta: { id: "ta", name: "TA", color: "cyan", desc: "Транзактный анализ" }
 };
 
-// --- 3. QUANTUM STYLES ENGINE (CSS & ANIMATIONS) ---
+const SCREENS = {
+  loading: 'loading',
+  legal: 'legal',
+  terminal_dashboard: 'terminal_dashboard',
+  setup: 'setup',
+  chat: 'chat',
+  session_summary: 'session_summary',
+  client_hub: 'client_hub',
+  masters_gallery: 'masters_gallery',
+  profile: 'profile',
+  settings: 'settings',
+  pro_dashboard: 'pro_dashboard',
+  pdf_report: 'pdf_report',
+  waitlist: 'waitlist',
+  radar: 'radar'
+};
+
+// --- 2. ГЛОБАЛЬНЫЕ СТИЛИ (CSS) ---
+
 const GlobalStyles = () => (
   <style>{`
     @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&display=swap');
     @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
     
-    :root { 
-      --bg-dark: #020618;
-      --primary: #681fef;
-      --indigo-glow: #5F20EF;
-      --cyan-glow: #00D2FF;
-      --gold: #FFD700;
-      --glass: rgba(18, 16, 24, 0.85);
-      --slate-glass: rgba(30, 41, 59, 0.7);
-      --neon-shadow: 0 0 20px rgba(104, 31, 239, 0.5);
+    :root {
+      --bg-deep: #020617;
+      --bg-space: #020812;
+      --glass: rgba(15, 23, 42, 0.65);
+      --glass-light: rgba(30, 35, 50, 0.4);
+      --border: rgba(255, 255, 255, 0.1);
+      --primary: #6366f2;
+      --neon-blue: #00f2ff;
+      --neon-magenta: #ff00e5;
+      --neon-green: #39ff14;
+      --neon-gold: #ffa805;
+      --text-primary: #ffffff;
+      --text-secondary: #94a3b8;
     }
     
-    body { font-family: 'Manrope', sans-serif; background-color: var(--bg-dark); color: #fff; overflow: hidden; margin: 0; -webkit-tap-highlight-color: transparent; }
-    
-    /* Mesh Nebula Background */
-    .mesh-nebula {
-      position: fixed; inset: 0; z-index: -1;
-      background: radial-gradient(circle at 10% 20%, rgba(104, 31, 239, 0.12) 0%, transparent 40%),
-                  radial-gradient(circle at 90% 80%, rgba(0, 210, 255, 0.1) 0%, transparent 40%),
-                  radial-gradient(circle at 50% 50%, rgba(10, 10, 30, 1) 0%, rgba(2, 6, 23, 1) 100%);
+    body { 
+      font-family: 'Manrope', sans-serif; 
+      background-color: var(--bg-deep); 
+      color: var(--text-primary); 
+      overflow: hidden; 
+      margin: 0; 
+      -webkit-tap-highlight-color: transparent;
+      min-height: max(884px, 100dvh);
     }
 
-    /* Panels & Glassmorphism */
-    .glass-panel { background: var(--glass); backdrop-filter: blur(24px); border: 1px solid rgba(255, 255, 255, 0.08); }
-    .glass-card { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.05); }
+    /* Mesh Gradient Background */
+    .mesh-bg { 
+      position: fixed; 
+      inset: 0; 
+      z-index: -1; 
+      background: 
+        radial-gradient(circle at 20% 30%, rgba(99, 102, 242, 0.15) 0%, transparent 50%),
+        radial-gradient(circle at 80% 70%, rgba(255, 0, 229, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 50% 50%, rgba(2, 6, 23, 1) 0%, rgba(2, 6, 23, 1) 100%);
+    }
 
-    /* Scanline Terminal Effect */
+    /* Glass Card */
+    .glass-card {
+      background: var(--glass);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--border);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.8);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .glass-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.9);
+    }
+
+    /* Glow Effects */
+    .glow-blue { box-shadow: 0 0 15px rgba(0, 242, 255, 0.5); }
+    .glow-magenta { box-shadow: 0 0 15px rgba(255, 0, 229, 0.5); }
+    .glow-green { box-shadow: 0 0 15px rgba(57, 255, 20, 0.5); }
+    .glow-primary { box-shadow: 0 0 15px rgba(99, 102, 242, 0.5); }
+    .glow-gold { box-shadow: 0 0 15px rgba(255, 168, 5, 0.5); }
+
+    /* Shimmer Effect */
+    .shimmer {
+      position: relative;
+      overflow: hidden;
+    }
+    .shimmer::after {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: linear-gradient(45deg, transparent, rgba(255,255,255,0.05), transparent);
+      transform: rotate(45deg);
+      pointer-events: none;
+    }
+
+    /* Scanline Effect */
     .scanline {
-      background: linear-gradient(to bottom, transparent 50%, rgba(0, 210, 255, 0.03) 50%);
+      background: linear-gradient(to bottom, transparent 50%, rgba(0, 240, 255, 0.05) 50%);
       background-size: 100% 4px;
     }
 
-    /* Premium Shimmer Button */
+    /* Premium Shine */
     .premium-shine {
-      position: relative; overflow: hidden;
-      transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+      background: linear-gradient(135deg, #6366f2 0%, #7A6FF7 50%, #6366f2 100%);
+      position: relative;
+      overflow: hidden;
     }
     .premium-shine::after {
-      content: ""; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
-      background: linear-gradient(45deg, transparent, rgba(255,255,255,0.06), transparent);
-      transform: rotate(45deg); transition: 0.7s; pointer-events: none;
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: linear-gradient(
+        to right,
+        transparent,
+        rgba(255, 255, 255, 0.1) 45%,
+        rgba(255, 255, 255, 0.3) 50%,
+        rgba(255, 255, 255, 0.1) 55%,
+        transparent
+      );
+      transform: rotate(45deg);
     }
-    .premium-shine:active::after { left: 120%; }
-    .premium-shine:active { transform: scale(0.96); }
 
-    /* Outlined Text Typography */
-    .outlined-text { 
-      position: absolute; bottom: -4px; right: 10px; 
-      font-size: clamp(2rem, 8vw, 3rem); 
-      font-weight: 900; 
-      color: transparent; 
-      -webkit-text-stroke: 1px rgba(255, 255, 255, 0.06); 
-      pointer-events: none; text-transform: uppercase; line-height: 1; z-index: 0; 
+    /* Animations */
+    .animate-in { animation: fadeIn 0.6s cubic-bezier(0.23, 1, 0.32, 1) forwards; }
+    @keyframes fadeIn { 
+      from { opacity: 0; transform: translateY(20px); } 
+      to { opacity: 1; transform: translateY(0); } 
     }
 
-    .text-neon { text-shadow: 0 0 10px rgba(104, 31, 239, 0.6); }
-    .data-font { font-family: 'Space Grotesk', sans-serif; }
+    .animate-pulse { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
 
+    /* iOS Tab Bar */
+    .ios-tab-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(15, 23, 42, 0.7);
+      backdrop-filter: blur(25px);
+      border-top: 0.5px solid rgba(255, 255, 255, 0.1);
+      padding: 12px 20px 20px;
+      z-index: 100;
+      display: flex;
+      justify-content: space-around;
+      max-width: 400px;
+      margin: 0 auto;
+    }
+
+    /* Home Indicator */
+    .home-indicator {
+      height: 4px;
+      width: 128px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 9999px;
+      margin: 8px auto 0;
+    }
+
+    /* Snap Scroll */
+    .snap-x { scroll-snap-type: x mandatory; }
+    .snap-center { scroll-snap-align: center; }
+
+    /* Custom Scrollbar */
     .no-scrollbar::-webkit-scrollbar { display: none; }
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-    
-    @keyframes pulse-marker { 0%, 100% { transform: scale(1); opacity: 0.4; } 50% { transform: scale(1.4); opacity: 1; } }
-    .pulse-dot { animation: pulse-marker 2s infinite; }
-    
-    @keyframes typing-dot { 0%, 100% { opacity: 0.2; } 50% { opacity: 1; } }
-    .typing-dot { animation: typing-dot 1.5s infinite; }
 
-    .snap-carousel { scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; }
-    .snap-item { scroll-snap-align: center; }
+    /* Text Glow */
+    .text-glow { text-shadow: 0 0 10px rgba(99, 102, 242, 0.4); }
 
-    .grain-layer {
-      position: fixed; inset: 0; pointer-events: none; z-index: 50; opacity: 0.02;
-      background-image: url('https://www.transparenttextures.com/patterns/stardust.png');
-    }
-    
-    .screen-container { height: 100dvh; display: flex; flex-direction: column; overflow: hidden; position: relative; }
-    .content-area { flex: 1; overflow-y: auto; overflow-x: hidden; padding-bottom: 120px; }
-    
-    .user-bubble { background: linear-gradient(135deg, #4F1AAB 0%, #7F38E2 100%); }
-    .ai-bubble { background: #2f2938; border: 1px solid rgba(255, 255, 255, 0.05); }
-    .supervisor-card { background: rgba(245, 158, 11, 0.05); backdrop-filter: blur(12px); border: 1px solid #f59e0b; }
-    
-    @keyframes spin-slow { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-    .animate-spin-slow { animation: spin-slow 12s linear infinite; }
-
-    /* Custom scroll for chat */
-    .chat-scroll::-webkit-scrollbar { width: 4px; }
-    .chat-scroll::-webkit-scrollbar-track { background: transparent; }
-    .chat-scroll::-webkit-scrollbar-thumb { background: rgba(104, 31, 239, 0.2); border-radius: 10px; }
-    
-    /* Radar Chart Animation */
-    .radar-svg { filter: drop-shadow(0 0 20px rgba(104, 31, 239, 0.5)); transition: all 1s ease; }
-    
-    /* Mobile-First Layout Adjustments */
-    @media (max-width: 480px) {
-       .text-6xl { font-size: 3.5rem; }
-       .p-10 { padding: 1.5rem; }
-       .rounded-[5rem] { border-radius: 3.5rem; }
+    /* Material Symbols */
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
     }
   `}</style>
 );
 
-// --- 📊 COMPONENTS: RADAR, ANALYTICS, SOMATIC ---
-const RadarChart = ({ data }) => {
-    const size = 220, center = size/2, radius = 80;
-    const safe = data || { method: 85, empathy: 70, boundaries: 90, ethics: 80 };
-    const pts = [
-      { x: center, y: center - radius * (safe.method/100) },
-      { x: center + radius * (safe.empathy/100), y: center },
-      { x: center, y: center + radius * (safe.boundaries/100) },
-      { x: center - radius * (safe.ethics/100), y: center }
-    ];
-    const poly = pts.map((p, i) => `${i===0?'M':'L'} ${p.x} ${p.y}`).join(' ') + ' Z';
-    return (
-      <div className="relative my-8 flex items-center justify-center group">
-        <div className="absolute inset-0 bg-primary/10 blur-[60px] opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
-        <svg width={size} height={size} className="overflow-visible radar-svg relative z-10">
-          <circle cx={center} cy={center} r={radius} fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="1.5"/>
-          <circle cx={center} cy={center} r={radius/1.5} fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="1"/>
-          <circle cx={center} cy={center} r={radius/3} fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="1"/>
-          {/* Оси */}
-          <line x1={center} y1={center-radius} x2={center} y2={center+radius} stroke="rgba(255,255,255,0.1)" />
-          <line x1={center-radius} y1={center} x2={center+radius} y2={center} stroke="rgba(255,255,255,0.1)" />
-          
-          <path d={poly} fill="rgba(104, 31, 239, 0.35)" stroke="var(--primary)" strokeWidth="4" strokeLinejoin="round" className="transition-all duration-1000"/>
-          
-          <text x={center} y={center-radius-20} textAnchor="middle" fontSize="11" fill="rgba(255,255,255,0.6)" className="data-font font-black tracking-widest uppercase">Метод</text>
-          <text x={center+radius+18} y={center+5} textAnchor="start" fontSize="11" fill="rgba(255,255,255,0.6)" className="data-font font-black tracking-widest uppercase">Эмпатия</text>
-          <text x={center} y={center+radius+30} textAnchor="middle" fontSize="11" fill="rgba(255,255,255,0.6)" className="data-font font-black tracking-widest uppercase">Границы</text>
-          <text x={center-radius-18} y={center+5} textAnchor="end" fontSize="11" fill="rgba(255,255,255,0.6)" className="data-font font-black tracking-widest uppercase">Этика</text>
-        </svg>
-      </div>
-    );
+// --- 3. UI КОМПОНЕНТЫ ---
+
+const TopAppBar = ({ onBack, title, onSettings, settingsIcon = 'settings' }) => (
+  <header className="flex items-center p-6 pb-2 justify-between animate-in">
+    <button 
+      onClick={onBack}
+      className="text-white flex size-10 shrink-0 items-center justify-center glass-card rounded-full cursor-pointer active:scale-95 transition-transform"
+    >
+      <span className="material-symbols-outlined text-xl">arrow_back_ios_new</span>
+    </button>
+    <h2 className="text-white text-lg font-bold leading-tight tracking-[-0.02em] flex-1 text-center">
+      {title}
+    </h2>
+    <div className="flex size-10 items-center justify-center">
+      {onSettings ? (
+        <button 
+          onClick={onSettings}
+          className="flex items-center justify-center glass-card rounded-full size-10 text-white transition-colors hover:bg-white/10 active:scale-95"
+        >
+          <span className="material-symbols-outlined text-xl">{settingsIcon}</span>
+        </button>
+      ) : (
+        <div className="size-10" />
+      )}
+    </div>
+  </header>
+);
+
+const BottomNavigation = ({ screen, setScreen }) => {
+  const items = [
+    { id: SCREENS.terminal_dashboard, icon: 'terminal', label: 'Терминал' },
+    { id: SCREENS.setup, icon: 'psychology', label: 'Тренинг' },
+    { id: SCREENS.masters_gallery, icon: 'leaderboard', label: 'Мастера' },
+    { id: SCREENS.profile, icon: 'person', label: 'Профиль' }
+  ];
+
+  return (
+    <nav className="ios-tab-bar">
+      {items.map(item => {
+        const isActive = screen === item.id;
+        return (
+          <button 
+            key={item.id}
+            onClick={() => setScreen(item.id)}
+            className={`flex flex-col items-center gap-1 transition-all duration-300 ${
+              isActive ? 'text-primary -translate-y-2' : 'text-white/40 hover:text-white/70'
+            }`}
+          >
+            <div className="relative">
+              <span className="material-symbols-outlined !text-2xl">{item.icon}</span>
+              {isActive && (
+                <div className="absolute -inset-4 bg-primary/20 rounded-full blur-xl -z-10 animate-pulse" />
+              )}
+            </div>
+            <span className={`text-[10px] font-bold tracking-widest uppercase ${
+              isActive ? 'opacity-100' : 'opacity-40'
+            }`}>
+              {item.label}
+            </span>
+          </button>
+        );
+      })}
+    </nav>
+  );
 };
 
-// --- 🚀 ГЛАВНЫЙ МОНОЛИТ ПРИЛОЖЕНИЯ ---
-export default function App() {
-  // --- CORE UI STATES ---
-  const [screen, setScreen] = useState('loading');
-  const [bootProgress, setBootProgress] = useState(0);
-  const [role, setRole] = useState(null); 
-  const [hasAcceptedTerms, setHasAcceptedTerms] = useState(false);
-  
-  // --- SESSION FLOW STATES ---
-  const [selectedClientId, setSelectedClientId] = useState('c1');
-  const [selectedModality, setSelectedModality] = useState('mpt');
-  const [difficulty, setDifficulty] = useState(2); 
-  const [messages, setMessages] = useState([]);
-  const [inputText, setInputText] = useState('');
-  const [isTyping, setIsTyping] = useState(false);
-  const [gems, setGems] = useState(14);
-  const [psychologists, setPsychologists] = useState([]);
-  const [userProfile, setUserProfile] = useState({ 
-    name: '', experience: 0, price: 0, photoUrl: null, videoUrl: null, methods: '' 
-  });
-  const [sessionAnalytics, setSessionAnalytics] = useState(null);
-
-  const chatEndRef = useRef(null);
-  const tg = window.Telegram?.WebApp;
-  const userId = tg?.initDataUnsafe?.user?.id?.toString() || 'master_operator_x';
-
-  // --- REUSABLE HELPERS ---
-  const triggerHaptic = useCallback((style = 'medium') => { 
-    if(tg?.HapticFeedback) tg.HapticFeedback.impactOccurred(style); 
-  }, [tg]);
-
-  const unlockAudio = () => { 
-    const audio = new Audio("data:audio/wav;base64,UklGRigAAABXQVZFRm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAA==");
-    audio.play().catch(()=>{}); 
+const ProgressGlowBar = ({ value, color }) => {
+  const colorMap = {
+    blue: 'bg-neon-blue glow-blue',
+    magenta: 'bg-neon-magenta glow-magenta',
+    green: 'bg-neon-green glow-green',
+    primary: 'bg-primary glow-primary',
+    gold: 'bg-neon-gold glow-gold'
   };
 
-  // --- SYSTEM BOOT SEQUENCE ---
-  useEffect(() => {
-    if (tg) { tg.ready(); tg.expand(); tg.setHeaderColor('#020618'); }
-    
-    const interval = setInterval(() => {
-      setBootProgress(prev => {
-        if (prev >= 100) {
-          clearInterval(interval);
-          setTimeout(() => {
-            const accepted = localStorage.getItem('connectum_v25_legal');
-            if (accepted) { setHasAcceptedTerms(true); setScreen('hub'); }
-            else { setScreen('legal'); }
-          }, 800);
-          return 100;
-        }
-        // Нелинейная загрузка для реалистичности
-        const jump = prev < 30 ? 5 : prev < 70 ? 12 : 3;
-        return prev + Math.floor(Math.random() * jump) + 1;
-      });
-    }, 180);
-    return () => clearInterval(interval);
-  }, [tg]);
+  return (
+    <div className="h-2.5 w-full rounded-full bg-white/5 overflow-hidden">
+      <div 
+        className={`h-full rounded-full ${colorMap[color]} transition-all duration-1000`}
+        style={{ width: `${value}%` }}
+      />
+    </div>
+  );
+};
 
-  // Скролл чата
+const MetricCard = ({ label, value, color, icon }) => (
+  <div className="glass-card p-5 rounded-2xl flex flex-col gap-3 group transition-transform hover:scale-[1.02]">
+    <div className="flex gap-6 justify-between items-end">
+      <div className="flex flex-col">
+        <span className={`text-${color} text-[10px] font-bold uppercase tracking-widest opacity-70`}>
+          {label}
+        </span>
+        <p className="text-white text-lg font-bold leading-none tracking-tight">
+          {value}%
+        </p>
+      </div>
+    </div>
+    <ProgressGlowBar value={value} color={color} />
+    <div className="flex items-center gap-2">
+      <span className={`material-symbols-outlined text-${color} text-xs`}>{icon}</span>
+      <p className="text-white/50 text-[11px] font-medium leading-normal tracking-tight uppercase">
+        {color === 'blue' ? 'Неоновая синяя свечение' :
+         color === 'magenta' ? 'Неоновая пурпурная свечение' :
+         color === 'green' ? 'Неоновая зеленая свечение' :
+         'Основное глубокое свечение'}
+      </p>
+    </div>
+  </div>
+);
+
+const ClientCard = ({ client, selected, onClick }) => (
+  <div 
+    className={`snap-center flex h-full flex-col gap-4 min-w-[280px] cursor-pointer transition-all duration-300 ${
+      selected ? 'scale-105' : 'opacity-80 hover:opacity-100'
+    }`}
+    onClick={onClick}
+  >
+    <div className={`relative w-full aspect-[4/5] rounded-2xl overflow-hidden border-2 ${
+      selected ? 'border-primary glow-primary' : 'border-white/10'
+    } group`}>
+      <div className="absolute inset-0 bg-center bg-cover scanline opacity-80" 
+           style={{backgroundImage: `url("https://api.dicebear.com/7.x/avataaars/svg?seed=${client.name}&backgroundColor=transparent")`}} />
+      <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent" />
+      
+      {/* Somatic Markers */}
+      <div className="absolute top-4 left-4 flex flex-col gap-2">
+        {client.somatic.slice(0, 2).map((marker, i) => (
+          <div key={i} className="glass-card px-2 py-1 rounded text-[9px] font-mono text-neon-blue flex items-center gap-1">
+            <span className="w-1.5 h-1.5 rounded-full bg-neon-blue animate-pulse" />
+            {marker}
+          </div>
+        ))}
+      </div>
+      
+      {/* Info */}
+      <div className="absolute bottom-4 left-4 right-4">
+        <p className="text-lg font-bold tracking-tight text-white uppercase">{client.name}</p>
+        <p className="text-xs text-white/50 tracking-widest uppercase">{client.profession} • {client.age}Л</p>
+      </div>
+      
+      {/* Selection Indicator */}
+      {selected && (
+        <div className="absolute top-4 right-4 bg-primary text-background-dark text-[10px] font-black px-2 py-1 rounded-full shadow-lg">
+          ВЫБРАН
+        </div>
+      )}
+    </div>
+  </div>
+);
+
+const ModalityButton = ({ modality, selected, onClick }) => (
+  <button 
+    onClick={onClick}
+    className={`h-10 shrink-0 px-5 rounded-lg border transition-all duration-300 ${
+      selected 
+        ? 'bg-primary border-primary ring-2 ring-primary/20 text-white shadow-lg shadow-primary/30'
+        : 'bg-white/5 border-white/10 text-white/60 hover:bg-white/10 hover:border-white/20'
+    }`}
+  >
+    <span className="text-xs font-bold tracking-widest">{modality.name}</span>
+  </button>
+);
+
+// --- 4. ЭКРАНЫ ---
+
+// 1. LOADING SCREEN
+const LoadingScreen = ({ onLoaded }) => {
   useEffect(() => {
-    if (chatEndRef.current) {
-        chatEndRef.current.scrollIntoView({ behavior: "smooth" });
-    }
+    const timer = setTimeout(() => {
+      onLoaded();
+    }, 2500);
+    return () => clearTimeout(timer);
+  }, [onLoaded]);
+
+  return (
+    <div className="h-screen flex flex-col items-center justify-center bg-[#020617] relative overflow-hidden">
+      <GlobalStyles />
+      <div className="mesh-bg" />
+      
+      {/* 3D Infinity Logo */}
+      <div className="relative w-48 h-48 flex items-center justify-center perspective-1000">
+        <div className="absolute inset-0 bg-primary/20 blur-[60px] rounded-full animate-pulse" />
+        <div className="relative floating-infinity drop-shadow-[0_0_30px_rgba(95,32,239,0.6)]">
+          <svg className="text-white" fill="none" height="80" viewBox="0 0 160 80" width="160" xmlns="http://www.w3.org/2000/svg">
+            <path d="M40 20C20 20 20 60 40 60C50 60 60 50 80 40C100 30 110 20 120 20C140 20 140 60 120 60C110 60 100 50 80 40C60 30 50 20 40 20Z" 
+                  stroke="url(#paint0_linear)" strokeLinecap="round" strokeLinejoin="round" strokeWidth="6" />
+            <defs>
+              <linearGradient id="paint0_linear" x1="0" y1="40" x2="160" y2="40" gradientUnits="userSpaceOnUse">
+                <stop stopColor="#5F20EF" />
+                <stop offset="0.5" stopColor="#00D2FF" />
+                <stop offset="1" stopColor="#5F20EF" />
+              </linearGradient>
+            </defs>
+          </svg>
+          <div className="absolute top-4 right-8 w-1 h-1 bg-cyan-spark rounded-full blur-[1px]" />
+        </div>
+      </div>
+
+      {/* Typography */}
+      <div className="text-center mt-8">
+        <h1 className="text-white text-5xl font-extrabold tracking-tighter leading-none mb-4 text-glow">
+          CONNECTUM
+        </h1>
+        <p className="text-indigo-glow/80 text-[10px] font-bold tracking-[0.4em] uppercase ml-[0.4em]">
+          PRO PLATINUM
+        </p>
+      </div>
+
+      {/* Loading Bar */}
+      <div className="fixed bottom-16 w-64 flex flex-col gap-3">
+        <div className="relative h-[2px] w-full bg-white/10 rounded-full overflow-hidden">
+          <div className="absolute left-0 top-0 h-full bg-gradient-to-r from-transparent via-primary to-indigo-glow animate-pulse" style={{width: '65%'}}>
+            <div className="absolute right-0 top-1/2 -translate-y-1/2 w-4 h-4 bg-white rounded-full loading-glow-head blur-[4px] animate-pulse" />
+          </div>
+        </div>
+        <div className="flex justify-between items-center opacity-40">
+          <span className="text-[10px] text-white font-medium tracking-widest uppercase">Initializing...</span>
+          <span className="text-[10px] text-white font-medium">65%</span>
+        </div>
+      </div>
+
+      {/* Slogan */}
+      <div className="fixed bottom-8 text-center">
+        <p className="text-white/50 text-xs font-light tracking-[0.05em]">
+          Синергия мастерства и доверия
+        </p>
+      </div>
+
+      {/* Texture Overlay */}
+      <div className="fixed inset-0 z-20 pointer-events-none opacity-[0.03]" 
+           style={{backgroundImage: "url('https://www.transparenttextures.com/patterns/stardust.png')"}} />
+    </div>
+  );
+};
+
+// 2. LEGAL SCREEN
+const LegalScreen = ({ onAccept }) => {
+  const [agreed, setAgreed] = useState(false);
+
+  return (
+    <div className="h-screen flex flex-col items-center justify-center p-6 text-center animate-in">
+      <GlobalStyles />
+      <div className="mesh-bg" />
+      
+      <div className="glass-card p-12 rounded-[4rem] max-w-sm border-t border-white/10 shadow-5xl animate-in">
+        <div className="w-24 h-24 bg-indigo-500/10 rounded-[3rem] flex items-center justify-center mx-auto mb-12 shadow-inner">
+          <span className="material-symbols-outlined text-5xl text-indigo-400">user</span>
+        </div>
+        <h2 className="text-3xl font-black mb-6 uppercase tracking-tight text-white leading-none">
+          Соглашение
+        </h2>
+        <p className="text-[13px] text-slate-400 mb-6 leading-relaxed font-medium">
+          Входя в Connectum Master Edition, вы подтверждаете совершеннолетие и согласны на обработку данных для обучения ИИ.
+        </p>
+        
+        <label className="flex items-start gap-4 cursor-pointer text-left mb-8">
+          <input 
+            type="checkbox" 
+            checked={agreed}
+            onChange={(e) => setAgreed(e.target.checked)}
+            className="mt-1 h-5 w-5 rounded border-white/20 bg-transparent text-primary focus:ring-primary focus:outline-none appearance-none border-2 checked:border-primary transition-all cursor-pointer"
+          />
+          <span className="text-[11px] font-bold text-white/60 leading-snug">
+            Я подтверждаю, что мне исполнилось 18 лет и я согласен с условиями использования
+          </span>
+        </label>
+
+        <button 
+          onClick={() => agreed && onAccept()}
+          className={`w-full py-6 rounded-[2.2rem] text-[11px] font-black uppercase tracking-widest text-white transition-all ${
+            agreed 
+              ? 'btn-platinum active:scale-95 shadow-3xl'
+              : 'bg-white/10 opacity-50 cursor-not-allowed'
+          }`}
+          disabled={!agreed}
+        >
+          Принять и Войти
+        </button>
+      </div>
+    </div>
+  );
+};
+
+// 3. TERMINAL DASHBOARD
+const TerminalDashboard = ({ setScreen, diamonds, isSubscribed }) => {
+  return (
+    <div className="h-screen flex flex-col bg-[#020617] overflow-hidden">
+      <GlobalStyles />
+      <div className="mesh-bg" />
+      
+      {/* Header */}
+      <header className="sticky top-0 z-50 p-4 glass-card rounded-b-2xl border-b border-white/5">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 rounded-full bg-platinum-glow shadow-[0_0_8px_#6C26E6] animate-pulse" />
+            <h2 className="text-white text-xs font-extrabold uppercase tracking-[0.2em] opacity-80">
+              Connectum Pro Platinum
+            </h2>
+          </div>
+          <div className="flex items-center gap-2 bg-indigo-500/15 px-5 py-2.5 rounded-2xl border border-indigo-500/25 shadow-lg">
+            <span className="text-[13px] font-black text-indigo-300 tracking-tighter">{diamonds}</span>
+            <span className="material-symbols-outlined text-indigo-400 text-sm">diamond</span>
+          </div>
+        </div>
+      </header>
+
+      {/* Main Content */}
+      <main className="flex-1 px-6 py-4 flex flex-col gap-6 overflow-y-auto no-scrollbar pb-32">
+        {/* Central Infinity Hero */}
+        <div className="relative flex items-center justify-center py-8">
+          <div className="absolute w-[280px] h-[280px] bg-primary/10 rounded-full blur-[80px]" />
+          <button className="relative group transition-transform duration-500 hover:scale-105 active:scale-95">
+            <div className="flex items-center justify-center p-12 glass-card rounded-full border-primary/30 glow-primary">
+              <span className="material-symbols-outlined text-[120px] text-primary" style={{fontVariationSettings: "'FILL' 1, 'wght' 200"}}>
+                all_inclusive
+              </span>
+            </div>
+          </button>
+        </div>
+
+        {/* Title */}
+        <div className="text-center">
+          <h1 className="text-white text-5xl font-black tracking-tighter leading-none mb-2 text-glow">
+            PLATINUM HUB
+          </h1>
+          <p className="text-white/40 text-sm font-medium tracking-widest uppercase">
+            Transformation Terminal
+          </p>
+        </div>
+
+        {/* Action Buttons */}
+        <div className="w-full max-w-[400px] mx-auto flex flex-col gap-4">
+          <button 
+            onClick={() => setScreen(SCREENS.setup)}
+            className="shimmer glass-card flex items-center justify-between w-full h-[84px] px-8 rounded-2xl group transition-all duration-300 active:bg-white/10 active:border-white/20"
+          >
+            <div className="flex flex-col items-start">
+              <span className="text-white text-lg font-bold tracking-tight">Psychologists B2B</span>
+              <span className="text-white/40 text-[10px] uppercase tracking-widest font-semibold">Enterprise Protocol</span>
+            </div>
+            <span className="material-symbols-outlined text-white/40 group-hover:text-primary group-hover:translate-x-1 transition-all">
+              arrow_forward_ios
+            </span>
+          </button>
+          
+          <button 
+            onClick={() => setScreen(SCREENS.client_hub)}
+            className="shimmer glass-card flex items-center justify-between w-full h-[84px] px-8 rounded-2xl group transition-all duration-300 active:bg-white/10 active:border-white/20"
+          >
+            <div className="flex flex-col items-start">
+              <span className="text-white text-lg font-bold tracking-tight">Clients B2C</span>
+              <span className="text-white/40 text-[10px] uppercase tracking-widest font-semibold">Individual Session</span>
+            </div>
+            <span className="material-symbols-outlined text-white/40 group-hover:text-primary group-hover:translate-x-1 transition-all">
+              arrow_forward_ios
+            </span>
+          </button>
+        </div>
+
+        {/* Quick Links */}
+        <div className="grid grid-cols-2 gap-4 max-w-[400px] mx-auto">
+          <button 
+            onClick={() => setScreen(SCREENS.waitlist)}
+            className="glass-card p-4 rounded-xl flex flex-col items-center gap-2 hover:bg-white/10 transition-colors"
+          >
+            <span className="material-symbols-outlined text-neon-gold text-3xl">radio</span>
+            <span className="text-white/60 text-[10px] font-bold uppercase tracking-widest">Канал</span>
+          </button>
+          <button 
+            onClick={() => setScreen(SCREENS.waitlist)}
+            className="glass-card p-4 rounded-xl flex flex-col items-center gap-2 hover:bg-white/10 transition-colors"
+          >
+            <span className="material-symbols-outlined text-primary text-3xl">support_agent</span>
+            <span className="text-white/60 text-[10px] font-bold uppercase tracking-widest">Поддержка</span>
+          </button>
+        </div>
+      </main>
+
+      <BottomNavigation screen={SCREENS.terminal_dashboard} setScreen={setScreen} />
+    </div>
+  );
+};
+
+// 4. SETUP SCREEN (Тренажер)
+const SetupScreen = ({ 
+  setScreen, 
+  diamonds, 
+  isSubscribed, 
+  selectedModality, 
+  setSelectedModality,
+  selectedClientId,
+  setSelectedClientId,
+  difficulty,
+  setDifficulty,
+  clientPool,
+  startSession
+}) => {
+  const currentClient = clientPool.find(c => c.id === selectedClientId) || clientPool[0];
+
+  return (
+    <div className="h-screen flex flex-col animate-in overflow-hidden">
+      <GlobalStyles />
+      <div className="mesh-bg" />
+      
+      {/* Header */}
+      <header className="sticky top-0 z-50 p-4 glass-card rounded-b-2xl border-b border-white/5">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="size-10 rounded-full border border-primary/50 p-0.5">
+              <div className="w-full h-full rounded-full bg-center bg-cover" 
+                   style={{backgroundImage: 'url("https://api.dicebear.com/7.x/avataaars/svg?seed=psychologist&backgroundColor=transparent")'}} />
+            </div>
+            <div>
+              <h2 className="text-xs uppercase tracking-widest text-primary font-bold">Доступ к Терминалу</h2>
+              <p className="text-sm font-medium">Connectum Pro Platinum</p>
+            </div>
+          </div>
+          <div className="bg-primary/20 px-3 py-1.5 rounded-lg border border-primary/30 flex items-center gap-2">
+            <span className="text-xs font-bold tracking-tighter text-neon-gold">КВЕСТЫ +12</span>
+            <span className="material-symbols-outlined text-neon-gold text-sm">diamond</span>
+          </div>
+        </div>
+      </header>
+
+      {/* Main Content */}
+      <main className="flex-1 overflow-y-auto no-scrollbar pb-32">
+        {/* Tariffs Section */}
+        <section className="mt-4">
+          <div className="px-6 flex items-center justify-between mb-4">
+            <h3 className="text-[10px] font-black tracking-[0.3em] text-white/40 uppercase">Тарифы</h3>
+            <span className="material-symbols-outlined text-xs text-neon-gold">payments</span>
+          </div>
+          <div className="px-6 grid grid-cols-2 gap-4">
+            {/* Test Drive */}
+            <div className="glass-card p-4 rounded-xl border border-white/10 hover:border-primary/30 transition-all">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-[10px] font-bold text-white/60 uppercase tracking-widest">Тест-драйв</span>
+                <span className="text-lg font-black text-neon-gold">490₽</span>
+              </div>
+              <p className="text-[10px] text-white/40 leading-relaxed mb-3">
+                3 дня PRO функционала. Попробуйте все возможности.
+              </p>
+              <button className="w-full py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-xs font-bold transition-colors">
+                Активировать
+              </button>
+            </div>
+            
+            {/* PRO */}
+            <div className="glass-card p-4 rounded-xl border border-primary/30 glow-primary relative overflow-hidden">
+              <div className="absolute -top-2 -right-2 bg-primary text-background-dark text-[8px] font-black px-2 py-0.5 rounded-full shadow-lg">
+                POPULAR
+              </div>
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-[10px] font-bold text-primary uppercase tracking-widest">PRO</span>
+                <span className="text-lg font-black text-primary">2990₽</span>
+              </div>
+              <p className="text-[10px] text-white/40 leading-relaxed mb-3">
+                1 месяц бесконечных сессий + PDF отчеты + Витрина
+              </p>
+              <button className="w-full py-2 bg-primary hover:bg-primary/80 rounded-lg text-xs font-bold transition-colors">
+                Активировать
+              </button>
+            </div>
+          </div>
+        </section>
+
+        {/* Modality Section */}
+        <section className="mt-8">
+          <div className="px-6 flex items-center justify-between mb-4">
+            <h3 className="text-[10px] font-black tracking-[0.3em] text-white/40 uppercase">Метод терапии</h3>
+            <span className="material-symbols-outlined text-xs text-neon-blue">settings_input_component</span>
+          </div>
+          <div className="flex gap-3 px-6 overflow-x-auto pb-2 no-scrollbar">
+            {Object.values(MODALITIES).map(mod => (
+              <ModalityButton
+                key={mod.id}
+                modality={mod}
+                selected={selectedModality === mod.id}
+                onClick={() => setSelectedModality(mod.id)}
+              />
+            ))}
+          </div>
+        </section>
+
+        {/* Client Selection */}
+        <section className="mt-8">
+          <div className="px-6 mb-4 flex items-center justify-between">
+            <h3 className="text-[10px] font-black tracking-[0.3em] text-white/40 uppercase">Выбор клиента</h3>
+            <span className="text-[10px] text-neon-blue font-mono">{clientPool.length} КЕЙСОВ</span>
+          </div>
+          <div className="flex overflow-x-auto snap-x snap-mandatory no-scrollbar">
+            <div className="flex items-stretch px-6 gap-4">
+              {clientPool.map(client => (
+                <ClientCard
+                  key={client.id}
+                  client={client}
+                  selected={selectedClientId === client.id}
+                  onClick={() => setSelectedClientId(client.id)}
+                />
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Difficulty Selection */}
+        <section className="mt-8 px-6">
+          <h3 className="text-[10px] font-black tracking-[0.3em] text-white/40 uppercase mb-4">Сложность симуляции</h3>
+          <div className="grid grid-cols-3 gap-3">
+            {[1, 2, 3].map(lvl => (
+              <button
+                key={lvl}
+                onClick={() => setDifficulty(lvl)}
+                className={`glass-card py-3 rounded-xl border transition-all ${
+                  difficulty === lvl 
+                    ? 'border-primary/40 bg-primary/10 ring-2 ring-primary/20'
+                    : 'border-white/5 hover:bg-white/5'
+                }`}
+              >
+                <span className={`block text-[10px] font-bold mb-1 ${
+                  difficulty === lvl ? 'text-primary' : 'text-white/30'
+                }`}>
+                  УРОВЕНЬ 0{lvl}
+                </span>
+                <span className={`block text-xs font-medium ${
+                  difficulty === lvl ? 'text-white' : 'text-white/60'
+                }`}>
+                  {lvl === 1 ? 'НОВИЧОК' : lvl === 2 ? 'ПРОДВИНУТЫЙ' : 'ЭКСПЕРТ'}
+                </span>
+              </button>
+            ))}
+          </div>
+        </section>
+      </main>
+
+      {/* Bottom Navigation */}
+      <BottomNavigation screen={SCREENS.setup} setScreen={setScreen} />
+      
+      {/* Fixed Footer Action */}
+      <div className="fixed bottom-0 left-0 right-0 p-6 z-50">
+        <div className="absolute inset-0 bg-gradient-to-t from-background-dark via-background-dark/90 to-transparent -z-10" />
+        <button 
+          onClick={startSession}
+          className="premium-shine w-full h-16 rounded-2xl flex items-center justify-between px-8 shadow-[0_0_30px_rgba(89,24,201,0.4)] border border-primary/50 group active:scale-[0.98] transition-transform"
+        >
+          <div className="flex items-center gap-3">
+            <span className="material-symbols-outlined text-white text-2xl group-hover:rotate-12 transition-transform">psychology</span>
+            <span className="text-lg font-bold tracking-tight text-white">НАЧАТЬ ТРЕНИРОВКУ</span>
+          </div>
+          <div className="flex items-center gap-2 bg-black/20 px-4 py-1.5 rounded-lg border border-white/10">
+            <span className="text-sm font-bold text-neon-gold">💎 {isSubscribed ? '∞' : '1'}</span>
+            <span className="material-symbols-outlined text-xs text-neon-gold">bolt</span>
+          </div>
+        </button>
+      </div>
+
+      {/* Background Tech Detail */}
+      <div className="fixed top-1/2 left-0 -translate-y-1/2 -rotate-90 origin-left ml-2 pointer-events-none opacity-20">
+        <span className="text-[8px] font-mono tracking-[0.5em] text-white uppercase leading-none whitespace-nowrap">
+          CONNECTUM PLATINUM TERMINAL v4.2 // NEURAL SYNC ACTIVE // [OK]
+        </span>
+      </div>
+    </div>
+  );
+};
+
+// 5. CHAT SCREEN (Психолог)
+const ChatScreen = ({ 
+  setScreen, 
+  messages, 
+  setMessages, 
+  inputText, 
+  setInputText, 
+  isTyping, 
+  setIsTyping,
+  selectedModality,
+  selectedClientId,
+  difficulty,
+  finishSession
+}) => {
+  const chatEndRef = useRef(null);
+  const tg = window.Telegram?.WebApp;
+  const userId = useMemo(() => tg?.initDataUnsafe?.user?.id?.toString() || 'dev_platinum_master', [tg]);
+  const [isRecording, setIsRecording] = useState(false);
+  const [recordingTime, setRecordingTime] = useState(0);
+  const recognitionRef = useRef(null);
+
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isTyping]);
 
-  // Загрузка витрины
+  // Voice Recognition Setup
   useEffect(() => {
-    if(screen === 'aggregator') {
-      triggerHaptic('light');
-      fetch('/api/aggregator').then(r=>r.json()).then(setPsychologists).catch(()=>{});
-    }
-  }, [screen, triggerHaptic]);
+    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      recognitionRef.current = new SpeechRecognition();
+      recognitionRef.current.continuous = false;
+      recognitionRef.current.interimResults = false;
+      recognitionRef.current.lang = 'ru-RU';
 
-  // --- API HANDLERS ---
+      recognitionRef.current.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        setInputText(transcript);
+        setIsRecording(false);
+        setRecordingTime(0);
+      };
+
+      recognitionRef.current.onerror = (event) => {
+        console.error('Speech recognition error:', event.error);
+        setIsRecording(false);
+        setRecordingTime(0);
+      };
+
+      recognitionRef.current.onend = () => {
+        setIsRecording(false);
+        setRecordingTime(0);
+      };
+    }
+  }, []);
+
+  // Recording timer
+  useEffect(() => {
+    let interval;
+    if (isRecording) {
+      interval = setInterval(() => {
+        setRecordingTime(prev => prev + 1);
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [isRecording]);
+
+  const toggleVoiceInput = () => {
+    if (!recognitionRef.current) {
+      alert('Голосовой ввод не поддерживается в вашем браузере');
+      return;
+    }
+
+    if (isRecording) {
+      recognitionRef.current.stop();
+    } else {
+      recognitionRef.current.start();
+      setIsRecording(true);
+      setRecordingTime(0);
+    }
+  };
+
   const handleSend = async (text = inputText, isInitial = false, action = 'chat', flow = null) => {
-    if (isInitial) unlockAudio();
     if (!text && !isInitial) return;
     
     if (!isInitial && action === 'chat') {
-        triggerHaptic('light');
-        setMessages(p => [...p, { role: 'user', content: text, timestamp: Date.now() }]);
+      setMessages(p => [...p, { role: 'user', content: text }]);
     }
     
     setInputText(''); 
     setIsTyping(true);
-    
+
     try {
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
-          userId, message: text, modalityId: selectedModality, action, 
-          selectedClientId, role, flow, difficulty, 
-          history: messages.slice(-12) 
+          userId, 
+          message: text, 
+          modalityId: selectedModality, 
+          action: action || '', 
+          selectedClientId: selectedClientId || 'c1', 
+          role: 'psychologist', 
+          flow: flow || '', 
+          difficulty: Number(difficulty),
+          history: messages
+            .filter(m => m.role !== 'hint')
+            .map(m => ({ role: m.role, content: m.content }))
+            .slice(-12) 
         })
       });
       
       const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Server Error");
       
       if(action === 'get_hint') {
-          triggerHaptic('heavy');
-          setMessages(p => [...p, { role: 'hint', content: data.hint, data: data.analysis }]);
+        setMessages(p => [...p, { role: 'hint', content: data.hint }]);
       } else if(data.content) {
-          setMessages(p => [...p, { role: 'ai', content: data.content, voice: data.voice }]);
-          if(data.voice) {
-             const audio = new Audio(`data:audio/mp3;base64,${data.voice}`);
-             audio.play().catch(e => console.error("Voice playback error", e));
-          }
+        setMessages(p => [...p, { role: 'ai', content: data.content, voice: data.voice }]);
+        if(data.voice) {
+          const audio = new Audio(`data:audio/mp3;base64,${data.voice}`);
+          audio.play().catch(e => console.warn("Audio play blocked", e));
+        }
       }
     } catch(e) { 
-        setMessages(p => [...p, { role: 'ai', content: "🛑 **КРИТИЧЕСКАЯ ОШИБКА:** Потеряна связь с Квантовым Ядром. Попробуйте снова." }]);
+      console.error(e.message);
+    } finally { 
+      setIsTyping(false); 
     }
-    setIsTyping(false);
   };
-
-  const handleFinish = async () => {
-    if (!confirm("Завершить квантовую синхронизацию и сформировать финальный отчет?")) return;
-    triggerHaptic('heavy');
-    setIsTyping(true);
-    try {
-        const res = await fetch('/api/finish', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ userId, history: messages, role, modalityId: selectedModality })
-        });
-        const data = await res.json();
-        setSessionAnalytics(data.analytics);
-        setScreen('report');
-    } catch(e) { 
-        console.error("Analysis formation failed", e);
-        setScreen('hub'); 
-    }
-    setIsTyping(false);
-  };
-
-  const handleProfileUpdate = async () => {
-    triggerHaptic('medium');
-    try {
-        await fetch('/api/profile', {
-          method: 'POST',
-          headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({ userId, profile: userProfile })
-        });
-        tg?.showPopup({ title: "Успех", message: "Ваша нейронная карта обновлена в системе." });
-        setScreen('hub');
-    } catch(e) { alert("Ошибка сохранения данных"); }
-  };
-
-  const currentClientData = useMemo(() => 
-    CLIENT_DATABASE.find(c => c.id === selectedClientId) || CLIENT_DATABASE[0]
-  , [selectedClientId]);
-
-  // --- RENDER SCREEN 1: OS BOOT (LOADING) ---
-  if (screen === 'loading') return (
-    <div className="screen-container bg-[#020617] items-center justify-between py-20 px-10 text-center">
-      <GlobalStyles /><div className="mesh-nebula" />
-      <div className="flex-1" />
-      
-      <div className="relative z-10 flex flex-col items-center gap-16">
-        <div className="relative w-80 h-80 flex items-center justify-center">
-          <div className="absolute inset-0 bg-primary/20 blur-[130px] rounded-full animate-pulse" />
-          <div className="relative transform hover:scale-105 transition-transform duration-[3000ms]">
-            <Icons.Infinity className="w-64 h-32 drop-shadow-[0_0_60px_rgba(104,31,239,1)]" />
-            <div className="absolute top-10 right-16 size-4 bg-[#00D2FF] rounded-full animate-pulse shadow-[0_0_30px_#00D2FF] border-2 border-white/40" />
-          </div>
-        </div>
-        <div className="text-center space-y-6">
-          <h1 className="text-white text-7xl font-black tracking-tighter leading-none italic uppercase text-glow drop-shadow-2xl">Коннектум</h1>
-          <div className="flex items-center justify-center gap-6">
-             <div className="h-[1.5px] w-12 bg-gradient-to-r from-transparent to-primary" />
-             <p className="text-cyan-glow text-[14px] font-black tracking-[0.8em] uppercase opacity-90 data-font">Quantum Sync v25</p>
-             <div className="h-[1.5px] w-12 bg-gradient-to-l from-transparent to-primary" />
-          </div>
-        </div>
-      </div>
-
-      <div className="relative z-10 w-full max-w-sm mx-auto space-y-16">
-        <div className="flex flex-col gap-6 text-left font-mono text-[10px] text-white/20 uppercase tracking-[0.3em] leading-relaxed border-l-2 border-white/5 pl-8 italic">
-           <p className={`transition-all duration-1000 transform translate-x-${bootProgress > 20 ? '0' : '-6'} ${bootProgress > 20 ? 'opacity-100' : 'opacity-0'}`}>- INITIALIZING QUANTUM_CORE_2.5... [DONE]</p>
-           <p className={`transition-all duration-1000 transform translate-x-${bootProgress > 45 ? '0' : '-6'} ${bootProgress > 45 ? 'opacity-100' : 'opacity-0'}`}>- SYNCING NEURAL_LINK: MPT_VOLYNSKI... [DONE]</p>
-           <p className={`transition-all duration-1000 transform translate-x-${bootProgress > 75 ? '0' : '-6'} ${bootProgress > 75 ? 'opacity-100' : 'opacity-0'}`}>- ESTABLISHED CONNECTION: GEMINI_LIVE_AUDIO... [ACTIVE]</p>
-        </div>
-        <div className="w-full flex flex-col gap-5">
-          <div className="relative h-[4px] w-full bg-white/5 rounded-full overflow-hidden shadow-[inset_0_2px_10px_rgba(0,0,0,0.8)]">
-            <div className="absolute left-0 top-0 h-full bg-gradient-to-r from-primary via-white to-cyan-glow transition-all duration-500 shadow-[0_0_30px_#fff]" style={{ width: `${bootProgress}%` }}>
-               <div className="absolute right-0 top-1/2 -translate-y-1/2 size-7 bg-white rounded-full shadow-[0_0_20px_#fff] blur-[4px] border-4 border-primary/20" />
-            </div>
-          </div>
-          <div className="flex justify-between items-center opacity-40 text-[12px] font-black tracking-widest uppercase data-font">
-            <span className="animate-pulse">Loading Neuro-Matrix...</span><span className="tabular-nums">{bootProgress}%</span>
-          </div>
-        </div>
-        <p className="text-white/20 text-[12px] font-bold tracking-[0.5em] uppercase italic opacity-40">Синергия мастерства и доверия</p>
-      </div>
-    </div>
-  );
 
   return (
-    <div className="screen-container bg-[#020618] text-white antialiased overflow-hidden">
-      <GlobalStyles /><div className="mesh-nebula" /><div className="grain-layer" />
+    <div className="h-screen flex flex-col bg-[#1a1f28] relative overflow-hidden">
+      <GlobalStyles />
+      
+      {/* TopAppBar */}
+      <header className="flex items-center bg-background-dark/80 backdrop-blur-md p-4 pb-2 justify-between border-b border-white/5 z-20">
+        <button 
+          onClick={() => setScreen(SCREENS.setup)}
+          className="flex size-12 shrink-0 items-center justify-start cursor-pointer"
+        >
+          <span className="material-symbols-outlined text-white">chevron_left</span>
+        </button>
+        <div className="flex flex-col items-center flex-1">
+          <h2 className="text-white text-lg font-bold leading-tight tracking-[-0.015em] font-mono">29:57</h2>
+          <span className="text-[10px] text-[#a99db8] font-bold tracking-widest uppercase">
+            ID: PX-992 <span className="text-[#39FF14] animate-pulse">●</span>
+          </span>
+        </div>
+        <div className="flex w-12 items-center justify-end">
+          <button className="flex size-10 items-center justify-center rounded-full bg-white/5 hover:bg-white/10 transition-colors">
+            <span className="material-symbols-outlined text-white text-[20px]">info</span>
+          </button>
+        </div>
+      </header>
 
-      {/* HEADER: TERMINAL ACCESS BAR (ULTRA PREMIUM STITCH) */}
-      {!['loading', 'legal', 'chat'].includes(screen) && (
-        <header className="sticky top-0 z-50 p-6">
-          <div className="glass-panel rounded-[2.5rem] flex items-center justify-between p-4 border-white/15 shadow-[0_30px_60px_rgba(0,0,0,0.9)] relative overflow-hidden group">
-            <div className="absolute inset-0 bg-gradient-to-r from-primary/10 via-transparent to-cyan-glow/10 opacity-40" />
-            <div className="flex items-center gap-6 relative z-10">
-              <div className="size-16 rounded-3xl border-2 border-primary/50 p-1.5 shadow-[0_0_30px_rgba(104,31,239,0.6)] overflow-hidden relative active:scale-95 transition-transform cursor-pointer group/avatar" onClick={()=>setScreen('profile')}>
-                <div className="w-full h-full rounded-[1.2rem] bg-slate-900 flex items-center justify-center text-4xl group-hover/avatar:scale-110 transition-transform duration-500">
-                   {userProfile.photoUrl ? <img src={userProfile.photoUrl} className="w-full h-full object-cover" /> : '👤'}
-                </div>
-                <div className="absolute inset-0 bg-primary/10 animate-pulse pointer-events-none" />
-              </div>
-              <div className="flex flex-col">
-                <h2 className="text-[12px] uppercase tracking-[0.5em] text-primary font-black data-font leading-none opacity-80">Terminal Access</h2>
-                <p className="text-md font-black text-white uppercase tracking-tighter mt-2.5 leading-none flex items-center gap-3">
-                   Коннектум v25.0
-                   <span className="size-2 bg-emerald-500 rounded-full animate-pulse shadow-[0_0_12px_#10b981]" />
-                </p>
+      {/* Main Chat Area */}
+      <main className="flex-1 overflow-y-auto custom-scrollbar p-4 space-y-6 pb-40 no-scrollbar">
+        {/* Section Header */}
+        <div className="flex flex-col items-center py-2">
+          <div className="h-px w-full bg-gradient-to-r from-transparent via-white/10 to-transparent mb-4" />
+          <h4 className="text-[#a99db8] text-[11px] font-bold leading-normal tracking-[0.2em] uppercase">
+            Сессия начата: 09:00 — Терминал активен
+          </h4>
+        </div>
+
+        {/* Messages */}
+        {messages.map((m, i) => (
+          <div key={i} className={`flex items-end gap-3 max-w-[85%] ${m.role === 'user' ? 'ml-auto justify-end' : ''}`}>
+            {m.role !== 'user' && (
+              <div className="bg-center bg-no-repeat aspect-square bg-cover rounded-full w-8 shrink-0 border border-white/10"
+                   style={{backgroundImage: `url("https://api.dicebear.com/7.x/avataaars/svg?seed=${selectedClientId}&backgroundColor=transparent")`}} />
+            )}
+            <div className={`flex flex-col gap-1 ${m.role === 'user' ? 'items-end' : 'items-start'}`}>
+              {m.role === 'user' && (
+                <p className="text-[#a99db8] text-[11px] font-bold leading-normal mr-1">СТАЖИР ПСИХОЛОГ</p>
+              )}
+              {m.role === 'ai' && (
+                <p className="text-[#a99db8] text-[11px] font-bold leading-normal ml-1">КЛИЕНТ (AI_NODE_01)</p>
+              )}
+              {m.role === 'hint' && (
+                <p className="text-supervisor-orange text-[11px] font-bold leading-tight uppercase tracking-widest">Совет супервизора</p>
+              )}
+              
+              <div className={`text-sm font-normal leading-relaxed rounded-xl px-4 py-3 shadow-lg ${
+                m.role === 'user' 
+                  ? 'psych-bubble text-white' 
+                  : m.role === 'hint'
+                  ? 'supervisor-card text-white border-l-4 border-supervisor-orange'
+                  : 'client-bubble text-slate-100'
+              }`}>
+                {m.content}
               </div>
             </div>
-            <button onClick={()=>{ triggerHaptic(); setScreen('store'); }} className="bg-primary/20 px-8 py-3.5 rounded-[1.5rem] border border-primary/40 flex items-center gap-5 active:scale-90 transition-all shadow-3xl group hover:border-primary">
-              <span className="text-xl font-black text-gold data-font tabular-nums tracking-tighter leading-none group-hover:text-white transition-colors">{gems}</span>
-              <Icons.Diamond className="size-7 drop-shadow-[0_0_12px_#FFD700] group-hover:scale-110 transition-transform" />
-            </button>
+            {m.role === 'user' && (
+              <div className="bg-center bg-no-repeat aspect-square bg-cover rounded-full w-8 shrink-0 border border-primary/50"
+                   style={{backgroundImage: 'url("https://api.dicebear.com/7.x/avataaars/svg?seed=psychologist&backgroundColor=transparent")'}} />
+            )}
           </div>
-        </header>
-      )}
+        ))}
 
-      <main className="content-area no-scrollbar">
-        
-        {/* SCREEN 2: ACCESS PROTOCOL (LEGAL LOCK) */}
-        {screen === 'legal' && (
-          <div className="h-full flex flex-col items-center justify-center p-12 text-center animate-in fade-in duration-1000">
-             <div className="glass-panel p-14 rounded-[6rem] max-w-sm border-t-2 border-white/20 shadow-[0_100px_200px_rgba(0,0,0,1)] relative overflow-hidden">
-                 <div className="absolute top-0 left-0 w-full h-2.5 bg-gradient-to-r from-transparent via-primary to-transparent shadow-[0_0_50px_var(--primary)] animate-pulse" />
-                 <Icons.Infinity className="w-40 h-20 mx-auto mb-14 opacity-100 drop-shadow-[0_0_40px_var(--primary)] transform hover:rotate-12 transition-transform duration-1000" />
-                 <h2 className="text-5xl font-black mb-12 text-white uppercase tracking-tighter italic text-neon leading-none drop-shadow-2xl text-center">PROTOCOL<br/>ACCESS</h2>
-                 <div className="space-y-10 text-[14px] text-white/50 mb-16 leading-relaxed font-black uppercase tracking-widest text-center">
-                    <p className="border-b border-white/5 pb-8 flex items-center justify-center gap-4 transition-colors hover:text-white group">
-                        <Icons.Check className="size-5 text-primary group-hover:scale-125 transition-transform" /> 
-                        Вам исполнилось 18 лет
-                    </p>
-                    <p className="border-b border-white/5 pb-8 flex items-center justify-center gap-4 transition-colors hover:text-white group">
-                        <Icons.Check className="size-5 text-primary group-hover:scale-125 transition-transform" /> 
-                        Вы принимаете ИИ-анализ
-                    </p>
-                    <p className="pb-4 flex items-center justify-center gap-4 transition-colors hover:text-white group">
-                        <Icons.Check className="size-5 text-primary group-hover:scale-125 transition-transform" /> 
-                        Контур Безопасности Активен
-                    </p>
-                 </div>
-                 <button onClick={acceptLegal} className="premium-shine w-full py-10 bg-primary rounded-[3rem] text-[17px] font-black uppercase tracking-[1em] text-white shadow-[0_50px_100px_rgba(104,31,239,0.7)] active:scale-95 transition-all transform hover:scale-105 border-t border-white/40">АКТИВИРОВАТЬ</button>
-             </div>
-          </div>
-        )}
-
-        {/* SCREEN 3: COMMAND HUB (MAIN GATE) - THE HERO SCREEN */}
-        {screen === 'hub' && (
-          <div className="p-10 space-y-16 animate-in fade-in duration-1000 overflow-y-auto no-scrollbar pb-20">
-             <div className="mt-8 flex flex-col items-center text-center relative">
-                <div className="absolute -top-16 left-1/2 -translate-x-1/2 text-[18rem] font-black text-white/5 select-none pointer-events-none data-font italic uppercase leading-none tracking-tighter opacity-10">CORE</div>
-                <div className="relative group transition-transform duration-1000 hover:scale-105 active:scale-95 mb-16">
-                  <div className="absolute inset-0 bg-primary/30 rounded-full blur-[140px] animate-pulse" />
-                  <div className="flex items-center justify-center size-64 glass-panel rounded-full border-primary/50 shadow-[0_0_100px_rgba(104,31,239,0.7)] ring-4 ring-white/5 relative overflow-hidden backdrop-blur-[60px]">
-                    <Icons.AllInclusive className="size-40 text-primary relative z-10 transition-transform duration-1000 group-hover:rotate-12 group-hover:scale-110" />
-                    <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/15 to-transparent shimmer" />
-                  </div>
-                  {/* Floating Particles Around Hero */}
-                  <div className="absolute -top-4 -right-4 size-4 bg-cyan-glow rounded-full blur-sm animate-bounce shadow-[0_0_15px_#00D2FF]" />
-                  <div className="absolute -bottom-6 -left-4 size-3 bg-primary rounded-full blur-sm animate-pulse shadow-[0_0_15px_#681fef]" />
-                </div>
-                <h1 className="text-7xl font-black uppercase tracking-tighter leading-none text-neon italic text-glow text-center uppercase drop-shadow-[0_20px_40px_rgba(0,0,0,0.8)]">COMMAND<br/>HUB</h1>
-                <p className="text-[14px] font-black text-white/30 uppercase tracking-[1em] mt-10 data-font leading-none ml-4">Universal AI Neural Link v25.0</p>
-             </div>
-
-             <div className="flex flex-col gap-12 max-w-sm mx-auto pt-10">
-                {/* ROLE: PSYCHOLOGIST (B2B) */}
-                <button onClick={() => { triggerHaptic(); setRole('psychologist'); setScreen('setup'); }} className="glass-panel premium-shine group relative min-h-[220px] rounded-[5rem] p-14 flex flex-col justify-center text-left border-primary/40 active:scale-[0.97] transition-all duration-1000 overflow-hidden shadow-[0_60px_100px_rgba(104,31,239,0.3)] border-t border-white/15">
-                    <div className="absolute top-10 right-12 opacity-20 group-hover:opacity-100 group-hover:rotate-12 transition-all duration-1000 scale-[1.8]">
-                        <Icons.Commander className="size-28 text-primary" />
-                    </div>
-                    <div className="outlined-text tracking-tighter opacity-10">MASTERY</div>
-                    <div className="relative z-10">
-                        <div className="flex items-center gap-3 mb-6">
-                           <div className="size-2 bg-primary rounded-full animate-pulse" />
-                           <span className="text-[12px] font-black uppercase tracking-[0.6em] text-primary data-font leading-none">B2B_TRAINER_CORE</span>
-                        </div>
-                        <h3 className="text-5xl font-black text-white uppercase tracking-tight italic leading-none text-glow">Я Психолог</h3>
-                        <p className="text-[14px] text-white/50 mt-6 font-black uppercase tracking-[0.3em] leading-none opacity-60 italic">Тренажер • Рост • Рейтинг</p>
-                    </div>
-                </button>
-
-                {/* ROLE: CLIENT (B2C) */}
-                <button onClick={() => { triggerHaptic(); setRole('client'); setScreen('client_hub'); }} className="glass-panel premium-shine group relative min-h-[220px] rounded-[5rem] p-14 flex flex-col justify-center text-left border-cyan-glow/40 active:scale-[0.97] transition-all duration-1000 overflow-hidden shadow-[0_60px_100px_rgba(0,210,255,0.25)] border-t border-white/15">
-                    <div className="absolute top-10 right-12 opacity-20 group-hover:opacity-100 group-hover:rotate-12 transition-all duration-1000 scale-[1.8]">
-                        <Icons.Pilot className="size-28 text-cyan-glow" />
-                    </div>
-                    <div className="outlined-text tracking-tighter opacity-10">TRUST</div>
-                    <div className="relative z-10">
-                        <div className="flex items-center gap-3 mb-6">
-                           <div className="size-2 bg-cyan-glow rounded-full animate-pulse" />
-                           <span className="text-[12px] font-black uppercase tracking-[0.6em] text-cyan-glow data-font leading-none">B2C_PILOT_NAV</span>
-                        </div>
-                        <h3 className="text-5xl font-black text-white uppercase tracking-tight italic leading-none text-glow">Я Клиент</h3>
-                        <p className="text-[14px] text-white/50 mt-6 font-black uppercase tracking-[0.3em] leading-none opacity-60 italic">ИИ-Помощь • Диагностика</p>
-                    </div>
-                </button>
-             </div>
-
-             {/* Footer Tertiary Links */}
-             <div className="grid grid-cols-2 gap-8 max-w-sm mx-auto pt-16 pb-12">
-                <a href="https://t.me/psy_connectum" target="_blank" className="glass-panel p-10 rounded-[2.5rem] flex flex-col items-center gap-5 hover:bg-white/10 transition-all group active:scale-95 border-white/10 shadow-3xl">
-                    <div className="p-4 bg-white/5 rounded-2xl group-hover:bg-primary/20 transition-colors">
-                       <Icons.Radio className="size-10 text-white/40 group-hover:text-primary transition-colors" />
-                    </div>
-                    <span className="text-[12px] font-black uppercase tracking-[0.4em] text-white/40 group-hover:text-white transition-colors">Канал</span>
-                </a>
-                <a href="https://t.me/lazalex81" target="_blank" className="glass-panel p-10 rounded-[2.5rem] flex flex-col items-center gap-5 hover:bg-white/10 transition-all group active:scale-95 border-white/10 shadow-3xl">
-                    <div className="p-4 bg-white/5 rounded-2xl group-hover:bg-cyan-glow/20 transition-colors">
-                       <Icons.Support className="size-10 text-white/40 group-hover:text-cyan-glow transition-colors" />
-                    </div>
-                    <span className="text-[12px] font-black uppercase tracking-[0.4em] text-white/40 group-hover:text-white transition-colors">Сервис</span>
-                </a>
-             </div>
-          </div>
-        )}
-
-        {/* SCREEN 4: TRAINING LAB (B2B SETUP) - THE STITCH MASTERPIECE */}
-        {screen === 'setup' && (
-          <div className="p-8 space-y-20 animate-in slide-in-from-right no-scrollbar pb-60">
-            
-            {/* ТАРИФЫ (PREMIUM VERTICAL GRID) */}
-            <section className="mt-6 flex gap-8 px-2">
-               <div onClick={()=>{ triggerHaptic(); setScreen('store'); }} className="flex-1 glass-panel p-10 rounded-[4rem] border-orange-500/30 active:scale-95 transition-all group shadow-4xl relative overflow-hidden border-t border-white/10">
-                  <div className="absolute inset-0 bg-orange-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
-                  <div className="flex items-center gap-3 mb-6">
-                    <div className="size-1.5 bg-orange-400 rounded-full animate-pulse" />
-                    <span className="text-[11px] font-black uppercase text-orange-400 tracking-[0.5em] data-font block leading-none">Starter</span>
-                  </div>
-                  <div className="flex items-end gap-4">
-                    <p className="text-6xl font-black data-font tracking-tighter leading-none text-glow">490₽</p>
-                    <span className="text-[12px] text-white/20 mb-2 font-black uppercase tracking-widest leading-none">/ 5 SESS</span>
-                  </div>
-               </div>
-               <div onClick={()=>{ triggerHaptic(); setScreen('store'); }} className="flex-1 glass-panel p-10 rounded-[4rem] border-primary shadow-[0_0_80px_rgba(104,31,239,0.4)] relative overflow-hidden active:scale-95 transition-all group border-t border-white/20">
-                  <div className="absolute inset-0 bg-primary/10 opacity-20 group-hover:opacity-40 transition-opacity" />
-                  <div className="absolute -top-1 -right-1 p-5 bg-primary text-[12px] font-black rounded-bl-[2.5rem] shadow-3xl z-20 flex items-center gap-2">👑 PRO</div>
-                  <div className="flex items-center gap-3 mb-6">
-                    <div className="size-1.5 bg-primary rounded-full animate-pulse shadow-[0_0_10px_var(--primary)]" />
-                    <span className="text-[11px] font-black uppercase text-primary tracking-[0.5em] data-font block leading-none">Unlimited</span>
-                  </div>
-                  <div className="flex items-end gap-4">
-                    <p className="text-6xl font-black data-font tracking-tighter leading-none text-glow">2990₽</p>
-                    <span className="text-[12px] text-white/20 mb-2 font-black uppercase tracking-widest leading-none">/ MO</span>
-                  </div>
-               </div>
-            </section>
-
-            {/* ВЫБОР ШКОЛЫ (HORIZONTAL SNAP SCROLL) */}
-            <section>
-              <div className="px-4 flex items-center justify-between mb-10">
-                <div className="flex flex-col">
-                    <h3 className="text-[16px] font-black tracking-[0.6em] text-white/40 uppercase italic leading-none">Школа Терапии</h3>
-                    <span className="text-[11px] text-primary data-font uppercase mt-3 font-black tracking-[0.5em] leading-none">Framework Selector Module</span>
-                </div>
-                <div className="size-16 glass-panel rounded-3xl flex items-center justify-center shadow-3xl border-white/10 group active:scale-90 transition-transform cursor-pointer">
-                    <Icons.Settings className="size-8 text-primary/80 animate-spin-slow" />
-                </div>
-              </div>
-              <div className="flex gap-6 overflow-x-auto pb-8 no-scrollbar snap-carousel px-4">
-                {Object.keys(MODALITIES).map(k => (
-                  <button key={k} onClick={() => { triggerHaptic('light'); setSelectedModality(k); }} className={`flex h-20 shrink-0 items-center justify-center snap-item rounded-[2rem] px-14 border-2 transition-all duration-1000 relative overflow-hidden group ${selectedModality === k ? 'bg-primary border-primary shadow-[0_0_60px_rgba(104,31,239,0.7)] text-white scale-110 z-10' : 'glass-panel border-white/10 text-white/30 hover:text-white/60 hover:border-white/20'}`}>
-                    <div className={`absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity`} />
-                    <div className="flex flex-col items-center gap-2 relative z-10">
-                        <span className="text-lg font-black tracking-[0.5em] uppercase data-font leading-none">{MODALITIES[k].name}</span>
-                        {selectedModality === k && <span className="text-[8px] font-black text-white/40 uppercase tracking-widest animate-pulse">Sync Active</span>}
-                    </div>
-                    {selectedModality === k && <div className="absolute top-2 right-4 size-2 bg-white rounded-full animate-pulse shadow-[0_0_15px_#fff]" />}
-                  </button>
-                ))}
-              </div>
-            </section>
-
-            {/* КАРУСЕЛЬ КЛИЕНТОВ (STITCH UI - FULL SCALE) */}
-            <section>
-              <div className="px-4 mb-12 flex items-center justify-between">
-                <div className="flex flex-col">
-                    <h3 className="text-[16px] font-black tracking-[0.6em] text-white/40 uppercase italic leading-none">Симуляция Клиента</h3>
-                    <span className="text-cyan-glow text-[12px] font-black tracking-[0.5em] uppercase data-font animate-pulse leading-none mt-3.5">30 Active Humanoid Prototypes Ready</span>
-                </div>
-                <div className="size-5 bg-cyan-glow rounded-full shadow-[0_0_30px_#00D2FF] pulse-dot border-4 border-white/10" />
-              </div>
-              
-              <div className="flex overflow-x-auto snap-carousel no-scrollbar pb-20 px-4">
-                <div className="flex items-stretch gap-12">
-                  {CLIENT_DATABASE.map(c => (
-                    <div key={c.id} onClick={() => { triggerHaptic('light'); setSelectedClientId(c.id); }} className={`snap-item flex flex-col gap-10 min-w-[380px] transition-all duration-1000 ${selectedClientId === c.id ? 'scale-105 opacity-100' : 'scale-90 opacity-10 grayscale blur-[4px]'}`}>
-                      <div className={`relative w-full aspect-[4/5] rounded-[7rem] overflow-hidden border-[6px] transition-all duration-1000 shadow-[0_80px_160px_rgba(0,0,0,1)] ${selectedClientId === c.id ? 'border-primary shadow-primary/40' : 'border-white/5'}`}>
-                        
-                        {/* Аватар-Голограмма (High Detail) */}
-                        <div className="absolute inset-0 bg-[#0c0c1e] flex items-center justify-center text-[18rem] scanline select-none opacity-95 transition-all duration-1000 group-hover:scale-110">
-                            {c.avatar}
-                            {/* Фоновые технические слои */}
-                            <div className="absolute inset-0 bg-gradient-to-tr from-primary/20 via-transparent to-cyan-glow/20 mix-blend-overlay animate-pulse" />
-                            <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-10" />
-                        </div>
-                        
-                        {/* Затемняющий градиент (Слоистый) */}
-                        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent opacity-100" />
-                        <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-[#020618] to-transparent" />
-                        
-                        {/* СОМАТИЧЕСКИЕ МАРКЕРЫ (STITCH UI - FLOATING NEON TAGS) */}
-                        <div className="absolute top-16 left-16 flex flex-col gap-8 z-30">
-                          {(c.markers || ["NEURAL_BLOCK"]).map((m, idx) => (
-                            <div key={idx} className="glass-panel px-9 py-4 rounded-[1.5rem] text-[14px] font-black text-cyan-glow flex items-center gap-6 backdrop-blur-[60px] border-white/20 shadow-4xl animate-in slide-in-from-left duration-1000 border-t border-white/30">
-                              <div className="size-4 bg-cyan-glow rounded-full pulse-dot shadow-[0_0_35px_#00D2FF]" />
-                              <span className="tracking-[0.5em] uppercase leading-none italic text-glow">{m}</span>
-                            </div>
-                          ))}
-                        </div>
-
-                        {/* Инфо-блок внизу карточки (Premium Typography) */}
-                        <div className="absolute bottom-16 left-16 right-16 text-left z-30 transform transition-transform duration-1000">
-                          <p className="text-7xl font-black tracking-tighter text-white uppercase italic leading-none drop-shadow-[0_20px_40px_rgba(0,0,0,1)] text-glow">{c.name}</p>
-                          <div className="h-2 w-32 bg-primary mt-10 rounded-full shadow-[0_0_25px_var(--primary)] animate-pulse" />
-                          <div className="flex items-center gap-8 mt-10">
-                              <div className="flex flex-col">
-                                 <span className="text-[10px] font-black text-white/30 uppercase tracking-[0.5em] mb-2 data-font">Profession</span>
-                                 <span className="text-[18px] text-white/80 tracking-[0.4em] font-black uppercase data-font leading-none">{c.profession}</span>
-                              </div>
-                              <div className="w-px h-10 bg-white/10" />
-                              <div className="flex flex-col">
-                                 <span className="text-[10px] font-black text-white/30 uppercase tracking-[0.5em] mb-2 data-font">Sync_Age</span>
-                                 <span className="text-[18px] text-white/80 tracking-[0.4em] font-black uppercase data-font leading-none">{c.age} YRS</span>
-                              </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-              
-              {/* BIO CARD (DETAILED QUANTUM PANEL) */}
-              <div className="px-4">
-                <div className="glass-panel p-16 rounded-[6rem] border-l-[20px] border-primary shadow-[0_80px_160px_rgba(0,0,0,0.8)] relative overflow-hidden group border-t border-white/10">
-                  <div className="absolute -right-24 -top-16 text-[22rem] opacity-5 select-none font-black italic data-font tracking-tighter group-hover:scale-105 transition-transform duration-[3000ms] uppercase leading-none pointer-events-none">SUBJECT</div>
-                  <div className="flex items-center justify-between mb-12 relative z-10">
-                    <div className="flex items-center gap-6">
-                        <div className="size-4 bg-primary rounded-full animate-pulse shadow-[0_0_20px_var(--primary)] border-2 border-white/40" />
-                        <span className="text-[14px] font-black text-white/40 uppercase tracking-[1em] leading-none">Phenomenological Profile Matrix</span>
-                    </div>
-                    <span className="text-[10px] text-primary font-black data-font uppercase tracking-widest opacity-40">Encrypted_v2.5</span>
-                  </div>
-                  <p className="text-2xl text-slate-100 italic leading-relaxed font-medium relative z-10 drop-shadow-2xl">"{currentClientData.bio}"</p>
-                  <div className="mt-14 flex flex-col gap-6 opacity-30">
-                     <div className="flex items-center gap-4">
-                        <div className="h-px flex-1 bg-gradient-to-r from-transparent via-white to-transparent" />
-                        <span className="text-[10px] font-black uppercase tracking-[0.8em] data-font">End of Session Input Data</span>
-                        <div className="h-px flex-1 bg-gradient-to-r from-transparent via-white to-transparent" />
-                     </div>
-                  </div>
-                </div>
-              </div>
-            </section>
-
-            {/* ВЫБОР СЛОЖНОСТИ (MATRIX UI - QUANTUM SCALE) */}
-            <section className="px-4 pb-20">
-              <div className="flex flex-col mb-12 px-4">
-                  <h3 className="text-[16px] font-black tracking-[0.6em] text-white/40 uppercase italic leading-none text-center">Интенсивность Сопротивления</h3>
-                  <div className="flex items-center justify-center gap-4 mt-6">
-                     <div className="h-px w-20 bg-white/5" />
-                     <span className="text-[11px] text-white/20 data-font uppercase font-black tracking-[0.6em]">Resonance Calibration Level</span>
-                     <div className="h-px w-20 bg-white/5" />
-                  </div>
-              </div>
-              <div className="grid grid-cols-3 gap-10 px-4">
-                {[1, 2, 3].map(lvl => (
-                  <button key={lvl} onClick={() => { triggerHaptic('light'); setDifficulty(lvl); }} className={`glass-panel py-12 rounded-[3.5rem] flex flex-col items-center transition-all duration-1000 shadow-4xl relative overflow-hidden group ${difficulty === lvl ? (lvl===1?'border-emerald-500 bg-emerald-500/10 shadow-[0_0_60px_rgba(16,185,129,0.4)] scale-110':lvl===2?'border-blue-500 bg-blue-500/10 shadow-[0_0_60px_rgba(59,130,246,0.4)] scale-110':'border-rose-500 bg-rose-500/10 shadow-[0_0_60px_rgba(244,63,94,0.4)] scale-110') : 'border-white/5 opacity-20 hover:opacity-100 hover:border-white/20 hover:scale-105'}`}>
-                    <div className={`absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity`} />
-                    <span className={`text-[14px] font-black mb-6 data-font tracking-[0.5em] relative z-10 leading-none ${difficulty === lvl ? 'opacity-100' : 'opacity-30'}`}>LVL 0{lvl}</span>
-                    <span className="text-[18px] font-black uppercase tracking-[0.3em] relative z-10 italic leading-none">{lvl===1?'Легко':lvl===2?'Норма':'Хард'}</span>
-                    {difficulty === lvl && <div className="absolute top-4 right-6 size-2.5 bg-white rounded-full animate-pulse shadow-[0_0_20px_#fff] border border-white/50" />}
-                    <div className={`absolute bottom-0 left-0 h-1.5 bg-current transition-all duration-1000 ${difficulty === lvl ? 'w-full' : 'w-0'}`} />
-                  </button>
-                ))}
-              </div>
-            </section>
-
-            {/* КНОПКА ЗАПУСКА (THE ULTIMATE ACTION) */}
-            <div className="fixed bottom-0 left-0 right-0 p-14 z-50 pointer-events-none">
-              <div className="max-w-2xl mx-auto pointer-events-auto">
-                <button onClick={() => { triggerHaptic('heavy'); setScreen('chat'); handleSend('Здравствуйте', true); }} className="premium-shine w-full bg-primary h-32 rounded-[5rem] flex items-center justify-between px-20 shadow-[0_0_120px_rgba(104,31,239,0.8)] border-t-2 border-white/40 active:scale-[0.94] transition-all transform duration-700 group relative overflow-hidden">
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
-                  <div className="flex items-center gap-10 relative z-10">
-                    <div className="p-6 bg-white/15 rounded-[2.5rem] shadow-3xl ring-2 ring-white/30 group-hover:scale-110 transition-transform duration-700"><Icons.Bolt className="size-12 text-white animate-pulse" /></div>
-                    <div className="flex flex-col items-start">
-                        <span className="text-4xl font-black tracking-tighter text-white uppercase italic leading-none drop-shadow-2xl">Начать сессию</span>
-                        <span className="text-[12px] font-black text-white/40 uppercase tracking-[0.5em] mt-3 leading-none">Initiate Neural Link</span>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-8 bg-black/60 px-10 py-5 rounded-[3rem] border-2 border-white/20 shadow-4xl relative z-10 transform group-hover:translate-x-2 transition-transform duration-700">
-                    <span className="text-3xl font-black text-gold data-font tabular-nums tracking-tighter leading-none shadow-gold">1</span>
-                    <Icons.Diamond className="size-10 text-gold drop-shadow-[0_0_15px_#FFD700] animate-pulse" />
-                  </div>
-                </button>
-              </div>
+        {/* Typing Indicator */}
+        {isTyping && (
+          <div className="flex gap-2.5 p-6 bg-slate-800/70 rounded-[2.5rem] w-fit border border-white/5 shadow-3xl bubble-ai">
+            <div className="loader-dots flex gap-2.5">
+              <div className="w-2 h-2 bg-white/40 rounded-full animate-pulse" />
+              <div className="w-2 h-2 bg-white/40 rounded-full animate-pulse" style={{animationDelay: '0.15s'}} />
+              <div className="w-2 h-2 bg-white/40 rounded-full animate-pulse" style={{animationDelay: '0.3s'}} />
             </div>
           </div>
         )}
-
-        {/* SCREEN: CLIENT HUB (PILOT B2C) - THE SUPREME NAVIGATOR */}
-        {screen === 'client_hub' && (
-           <div className="p-10 space-y-20 animate-in slide-in-from-left pb-60">
-              <div className="flex flex-col items-center text-center px-4 relative mt-8">
-                  <div className="absolute -top-20 left-1/2 -translate-x-1/2 text-[20rem] font-black text-white/5 select-none pointer-events-none data-font italic uppercase leading-none tracking-tighter opacity-10">NAV</div>
-                  <h2 className="text-8xl font-black uppercase tracking-tighter italic text-neon text-glow leading-none drop-shadow-[0_20px_60px_rgba(0,0,0,1)] text-center">PILOT<br/>HUB</h2>
-                  <div className="mt-12 flex items-center gap-6 bg-cyan-glow/10 px-10 py-3 rounded-full border-2 border-cyan-glow/40 shadow-[0_0_30px_rgba(0,210,255,0.2)]">
-                    <Icons.Pilot className="size-7 text-cyan-glow animate-pulse" />
-                    <span className="text-[14px] font-black uppercase tracking-[0.8em] text-cyan-glow data-font ml-2">Universal AI Navigator</span>
-                  </div>
-              </div>
-              
-              {/* ПЛАТИНУМ ТАРИФ (PILOT SIDE - ULTIMATE DETAIL) */}
-              <div className="glass-panel p-16 rounded-[6rem] border-primary/50 relative overflow-hidden group premium-shine shadow-[0_80px_160px_rgba(0,0,0,1)] border-t border-white/20 transform hover:scale-[1.02] transition-all duration-1000">
-                  <div className="absolute -right-24 -top-20 text-[22rem] font-black text-white/5 select-none pointer-events-none italic tracking-tighter leading-none uppercase transform -rotate-12 group-hover:rotate-0 transition-transform duration-[2000ms]">ULTRA</div>
-                  <div className="relative z-20">
-                      <div className="flex items-center gap-5 mb-10">
-                        <Icons.Bolt className="size-8 text-primary animate-pulse shadow-[0_0_20px_var(--primary)]" />
-                        <span className="text-[14px] font-black uppercase tracking-[0.8em] text-primary data-font">Premium Sync Active</span>
-                      </div>
-                      <h4 className="text-6xl font-black italic uppercase tracking-tighter text-white leading-tight drop-shadow-2xl">Тариф<br/>Платинум</h4>
-                      <p className="text-xl text-white/50 mt-12 leading-relaxed font-medium max-w-[500px]">Ваш личный интегральный ИИ-терапевт 24/7. Построение многомерной «Карты Осознанности», глубокое квантовое сканирование боли и моментальный доступ к ТОП-1% мастеров системы.</p>
-                      <div className="mt-16 flex items-center justify-between bg-black/80 p-12 rounded-[5rem] border-4 border-white/5 shadow-[inset_0_20px_60px_rgba(0,0,0,1)]">
-                          <div className="flex flex-col gap-4">
-                              <span className="text-6xl font-black text-white data-font tabular-nums tracking-tighter leading-none text-glow shadow-white">1990₽</span>
-                              <span className="text-[13px] text-white/30 uppercase tracking-[0.5em] font-black mt-2 ml-1">Единоразовый взнос</span>
-                          </div>
-                          <button onClick={()=>{ triggerHaptic('heavy'); setScreen('store'); }} className="premium-shine bg-primary px-16 py-9 rounded-[3rem] text-[16px] font-black uppercase tracking-[1em] shadow-[0_40px_80px_rgba(104,31,239,0.8)] active:scale-95 transition-all transform hover:scale-110 border-t-2 border-white/40">АКТИВИРОВАТЬ</button>
-                      </div>
-                  </div>
-              </div>
-
-              {/* СПИСОК УСЛУГ (PILOT CENTER - THE TRIAD) */}
-              <div className="grid gap-12">
-                  {[
-                    {id: 'diagnostics', icon: <Icons.Diagnosis/>, title: "ИИ-Диагностика", sub: "Интегральный квантовый сканер боли", color: "primary", msg: "Начать диагностику", flow: "diagnostics", badge: "CORE_SCAN"},
-                    {id: 'therapy', icon: <Icons.Sparkles/>, title: "ИИ-Терапевт", sub: "Поддержка в моменте (Все школы)", color: "cyan-glow", msg: "Мне нужна помощь", flow: "therapy", badge: "ADAPTIVE_LINK"},
-                    {id: 'aggregator', icon: <Icons.Market/>, title: "Живой Мастер", sub: "Верифицированные мастера системы", color: "white/10", msg: null, flow: null, badge: "HUMAN_SYNC"}
-                  ].map(btn => (
-                    <button key={btn.id} onClick={() => { 
-                        if(btn.id==='aggregator') setScreen('aggregator'); 
-                        else { triggerHaptic(); setScreen('chat'); handleSend(btn.msg, true, 'chat', btn.flow); }
-                    }} className={`glass-panel p-14 rounded-[5rem] flex items-center gap-14 active:scale-[0.98] transition-all duration-1000 border-l-[20px] border-${btn.color} group shadow-[0_60px_100px_rgba(0,0,0,0.6)] relative overflow-hidden border-t border-white/10 hover:translate-x-4`}>
-                        <div className="absolute right-0 top-0 text-[12rem] opacity-5 font-black italic data-font pointer-events-none uppercase tracking-tighter transform rotate-12 group-hover:rotate-0 transition-transform duration-1000">{btn.id.slice(0,3)}</div>
-                        <div className={`size-32 bg-white/5 rounded-[4rem] border-2 border-white/10 flex items-center justify-center group-hover:rotate-12 transition-transform relative z-10 shadow-inner group-hover:scale-110 duration-700 ${btn.id==='diagnostics'?'text-primary shadow-primary/20':btn.id==='therapy'?'text-cyan-glow shadow-cyan-glow/20':'text-white/40'}`}>
-                            {React.cloneElement(btn.icon, { className: "size-16" })}
-                        </div>
-                        <div className="text-left flex-1 relative z-10">
-                            <div className="flex items-center gap-4 mb-6 opacity-40">
-                               <div className="size-2 bg-white rounded-full animate-pulse" />
-                               <span className="text-[12px] font-black uppercase tracking-[0.6em] data-font">{btn.badge}</span>
-                            </div>
-                            <h4 className="text-4xl font-black uppercase tracking-tighter text-white italic leading-none group-hover:text-neon transition-colors duration-700">{btn.title}</h4>
-                            <p className="text-[15px] font-black text-white/30 uppercase mt-6 tracking-[0.3em] leading-relaxed max-w-[300px]">{btn.sub}</p>
-                        </div>
-                    </button>
-                  ))}
-              </div>
-              <div className="h-60" />
-           </div>
-        )}
-
-        {/* SCREEN: STORE (QUANTUM PAY TERMINAL - THE ULTIMATE SHOP) */}
-        {screen === 'store' && (
-           <div className="p-12 space-y-20 animate-in zoom-in duration-1000 pb-60 text-left">
-              <div className="flex flex-col sm:flex-row justify-between items-center px-6 mt-10 gap-10 relative">
-                  <div className="absolute -top-20 left-0 text-[15rem] font-black text-white/5 select-none pointer-events-none data-font italic uppercase leading-none tracking-tighter opacity-10">PAY</div>
-                  <div className="flex flex-col text-center sm:text-left relative z-10">
-                    <h2 className="text-7xl font-black uppercase tracking-tighter italic text-neon text-glow leading-none uppercase drop-shadow-2xl">CONNECTUM<br/>PAY</h2>
-                    <span className="text-[14px] text-white/20 data-font uppercase mt-8 font-black tracking-[1em] leading-none ml-2">Verified Financial Protocol v.S2</span>
-                  </div>
-                  <div className="p-12 glass-panel rounded-[4rem] border-white/20 shadow-[0_0_100px_rgba(255,215,0,0.2)] active:scale-90 transition-all transform hover:rotate-6 duration-1000 relative z-10">
-                    <Icons.Diamond className="size-20 text-gold animate-pulse drop-shadow-[0_0_20px_#FFD700]" />
-                  </div>
-              </div>
-
-              <div className="space-y-16 max-w-2xl mx-auto">
-                  {[
-                    {id: 'test', title: 'Test-Drive', price: '490₽', desc: '5 сессий глубокой тренировки мастерства + полный методический аудит каждого ответа от ИИ-Супервизора.', color: 'orange-500', gemsVal: '5', label: 'Initial Entry Pass', icon: '🔋'},
-                    {id: 'pro', title: 'PRO Terminal', price: '2990₽', desc: 'Безлимит на месяц + Золотые PDF сертификаты + Приоритетное размещение в Витрине Элиты (Rank Boost).', color: 'primary', gemsVal: 'UNLIMITED', hot: true, label: 'Expansion Mode 2.0', icon: '⚡'},
-                    {id: 'client', title: 'Pilot Platinum', price: '1990₽', desc: 'Безлимитный ИИ-терапевт + Квантовая Карта Осознанности + Доступ к закрытому клубу мастеров.', color: 'cyan-glow', gemsVal: 'ULTRA_VOICE', label: 'B2C Navigator', icon: '🚀'}
-                  ].map(t => (
-                    <div key={t.id} className={`glass-panel p-16 rounded-[6rem] relative overflow-hidden group premium-shine shadow-[0_100px_200px_rgba(0,0,0,0.8)] border-t-2 border-white/10 transition-all duration-1000 ${t.hot ? 'border-primary/60 glow-primary scale-105 my-20 z-20 ring-4 ring-primary/10' : 'opacity-80 hover:opacity-100 hover:scale-[1.03]'}`}>
-                        {t.hot && <div className="absolute top-0 left-1/2 -translate-x-1/2 bg-primary text-background-dark text-[14px] font-black px-16 py-4 rounded-b-[3rem] uppercase tracking-[0.6em] shadow-[0_20px_40px_rgba(0,0,0,0.8)] z-30 leading-none animate-pulse">MOST POPULAR CHOICE</div>}
-                        
-                        <div className="flex justify-between items-start mb-16 relative z-10">
-                            <div className={`size-32 bg-white/5 rounded-[4rem] border-2 border-white/10 flex items-center justify-center group-hover:scale-110 transition-all duration-1000 shadow-[inset_0_10px_30px_rgba(0,0,0,0.5)] ${t.id==='pro'?'text-primary':t.id==='client'?'text-cyan-glow':'text-orange-400'}`}>
-                               <span className="text-[5rem] drop-shadow-[0_20px_40px_rgba(0,0,0,0.8)]">{t.icon}</span>
-                            </div>
-                            <div className="text-right">
-                               <span className="block text-[15px] font-black text-white/20 uppercase tracking-[0.8em] mb-6 data-font leading-none">{t.label}</span>
-                               <div className="text-7xl font-black data-font italic tracking-tighter text-glow drop-shadow-[0_20px_40px_rgba(0,0,0,0.8)]">{t.price}</div>
-                               <span className="text-[12px] text-white/30 uppercase mt-4 block font-black tracking-[0.4em] italic">Ready for instant sync</span>
-                            </div>
-                        </div>
-                        
-                        <div className="relative z-10 border-b border-white/5 pb-16 mb-16">
-                            <h3 className="text-5xl font-black uppercase tracking-tighter text-white mb-8 italic leading-none group-hover:text-neon transition-colors duration-1000 text-glow">{t.title}</h3>
-                            <p className="text-2xl text-white/50 leading-relaxed font-medium max-w-[500px] italic">"{t.desc}"</p>
-                        </div>
-                        
-                        <div className="flex flex-col gap-6 relative z-10">
-                           <button onClick={()=>triggerHaptic('heavy')} className={`premium-shine w-full py-12 rounded-[3.5rem] font-black text-[20px] uppercase tracking-[1em] shadow-[0_50px_100px_rgba(0,0,0,0.6)] transition-all active:scale-[0.94] border-t-2 border-white/30 transform relative group/btn ${t.id==='pro' ? 'bg-primary text-white shadow-primary/40' : 'bg-white/5 text-white/80 hover:bg-white/10'}`}>
-                              <span className="relative z-10 drop-shadow-2xl">АКТИВИРОВАТЬ</span>
-                              <div className="absolute inset-0 bg-white/5 opacity-0 group-hover/btn:opacity-100 transition-opacity" />
-                           </button>
-                           <div className="flex items-center justify-center gap-5 opacity-30 mt-4">
-                              <div className="h-px w-10 bg-white" />
-                              <span className="text-[10px] font-black uppercase tracking-[0.6em] data-font">End of tier data</span>
-                              <div className="h-px w-10 bg-white" />
-                           </div>
-                        </div>
-                        
-                        <div className="absolute -left-16 -bottom-16 text-[20rem] font-black text-white/5 select-none pointer-events-none data-font italic uppercase leading-none tracking-tighter transform rotate-12 group-hover:rotate-0 transition-transform duration-[2000ms]">{t.id.slice(0,3)}</div>
-                    </div>
-                  ))}
-
-                  {/* WAITLIST IN-STORE CTA */}
-                  <div className="pt-20 pb-20 px-4">
-                    <div className="glass-panel p-16 rounded-[6rem] border-4 border-dashed border-white/10 relative overflow-hidden group hover:border-primary/50 transition-all duration-1000 shadow-4xl cursor-pointer" onClick={()=>setScreen('waitlist')}>
-                      <div className="flex flex-col sm:flex-row items-center gap-12 relative z-10 text-center sm:text-left">
-                        <div className="size-28 rounded-full bg-rose-500/10 border-4 border-rose-500/30 flex items-center justify-center shadow-3xl group-hover:scale-110 transition-transform duration-700">
-                          <Icons.Support className="size-14 text-rose-400 animate-pulse" />
-                        </div>
-                        <div className="flex-1">
-                          <h4 className="text-4xl font-black tracking-tighter text-white italic uppercase leading-none text-glow">Ошибка оплаты?</h4>
-                          <p className="text-xl text-white/30 uppercase mt-6 tracking-[0.4em] font-black leading-none data-font">Manual Gate Authorization Required</p>
-                        </div>
-                      </div>
-                      <div className="mt-16 w-full py-10 bg-white/5 hover:bg-white/10 border-2 border-white/15 rounded-[3.5rem] text-[15px] font-black uppercase tracking-[0.8em] transition-all text-white/40 hover:text-white shadow-4xl relative z-10 text-center">
-                          JOIN_WAITLIST_PROTOCOL_001
-                      </div>
-                      <div className="absolute inset-0 bg-gradient-to-br from-rose-500/10 via-transparent to-primary/10 opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
-                    </div>
-                  </div>
-              </div>
-              <div className="h-60" />
-           </div>
-        )}
-
-        {/* SCREEN 6: NEURAL CHAT INTERFACE (THE FULL EXPERIENCE) */}
-        {screen === 'chat' && (
-          <div className="h-full flex flex-col relative animate-in fade-in duration-700">
-              <header className="px-10 py-8 border-b-2 border-white/10 flex justify-between items-center bg-[#020618]/98 backdrop-blur-[80px] z-[40] shadow-[0_30px_100px_rgba(0,0,0,1)] relative overflow-hidden">
-                 <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-transparent to-cyan-glow/5 opacity-50" />
-                 <div className="flex items-center gap-8 relative z-10">
-                    <div className="relative">
-                       <div className="size-5 bg-emerald-500 rounded-full animate-pulse shadow-[0_0_35px_#10b981] border-2 border-white/50" />
-                       <div className="absolute inset-0 size-5 bg-emerald-500 rounded-full blur-xl animate-ping opacity-30" />
-                    </div>
-                    <div className="flex flex-col">
-                        <span className="text-[12px] font-black uppercase text-white/30 data-font tracking-[0.6em] leading-none mb-3">Quantum Neural Link: [STABLE]</span>
-                        <div className="flex items-center gap-4">
-                           <Icons.Bolt className="size-4 text-emerald-400" />
-                           <span className="text-4xl font-black data-font leading-none tracking-tighter uppercase italic text-neon drop-shadow-2xl">TIME: 29:59</span>
-                        </div>
-                    </div>
-                 </div>
-                 <button onClick={()=>{ if(confirm("ВНИМАНИЕ: Прервать квантовую синхронизацию? Прогресс будет удален.")) setScreen('hub'); }} className="px-12 py-4 glass-panel rounded-full text-[13px] font-black uppercase tracking-[0.6em] text-white/40 hover:text-rose-500 hover:border-rose-500/50 transition-all active:scale-[0.85] border-white/20 shadow-4xl backdrop-blur-xl group">
-                    <span className="relative z-10">ABORT_SYNC</span>
-                    <div className="absolute inset-0 bg-rose-600/5 opacity-0 group-hover:opacity-100 transition-opacity" />
-                 </button>
-              </header>
-
-              <div className="flex-1 overflow-y-auto p-12 space-y-16 no-scrollbar pb-[400px] text-left scanline relative z-10 chat-scroll">
-                  <div className="flex flex-col items-center py-10 opacity-30 animate-pulse">
-                     <div className="h-px w-full bg-gradient-to-r from-transparent via-white/40 to-transparent mb-10 shadow-3xl" />
-                     <span className="text-[13px] font-black uppercase tracking-[1.5em] data-font text-white text-center">SESSION_LAYER_PROTOCOL_ACTIVE_v25</span>
-                     <div className="flex gap-4 mt-8">
-                        {[1,2,3,4].map(i=><div key={i} className="size-1.5 bg-white/40 rounded-full" />)}
-                     </div>
-                  </div>
-
-                  {messages.map((m, i) => (
-                      <div key={i} className={`flex flex-col ${m.role==='user'?'items-end ml-24':'items-start mr-24'} animate-in slide-in-from-bottom duration-1000 relative group`}>
-                          {m.role === 'hint' ? (
-                              <div className="glass-panel p-16 rounded-[5rem] border-l-[20px] border-amber-500 max-w-[95%] shadow-[0_80px_150px_rgba(0,0,0,1)] my-12 relative overflow-hidden animate-in zoom-in duration-700">
-                                  <div className="absolute top-0 right-0 p-12 text-[15rem] opacity-5 font-black italic data-font pointer-events-none select-none uppercase leading-none">HINT</div>
-                                  <div className="flex items-center gap-8 mb-10 relative z-10">
-                                      <div className="size-20 bg-amber-500/20 rounded-[2.5rem] flex items-center justify-center text-6xl shadow-inner border-2 border-amber-500/30 group-hover:scale-110 transition-transform duration-700">💡</div>
-                                      <div className="flex flex-col">
-                                         <h5 className="text-[18px] font-black text-amber-500 uppercase tracking-[0.6em] leading-none text-glow">Supervisor Insight</h5>
-                                         <span className="text-[11px] text-white/30 uppercase mt-4 font-black data-font tracking-[0.5em] italic">Methodological Guidance Node</span>
-                                      </div>
-                                  </div>
-                                  <p className="text-[22px] text-amber-50/90 font-medium italic leading-relaxed border-t-2 border-white/5 pt-12 shadow-inner relative z-10 selection:bg-amber-500/40">"{m.content}"</p>
-                                  <div className="absolute bottom-4 right-10 opacity-20"><Icons.Infinity className="size-8 text-amber-500" /></div>
-                              </div>
-                          ) : (
-                              <div className={`p-10 rounded-[4rem] text-[20px] leading-relaxed font-medium shadow-[0_40px_80px_rgba(0,0,0,0.6)] transition-all relative overflow-hidden group hover:scale-[1.01] duration-700 ${m.role==='user'?'user-bubble text-white rounded-br-none shadow-primary/40 border-t border-white/20':'ai-bubble text-white/95 rounded-bl-none shadow-black/90 border-t border-white/5'}`}>
-                                  {m.role === 'ai' && <div className="absolute inset-0 scanline opacity-20 pointer-events-none" />}
-                                  <div className="relative z-10 drop-shadow-xl" dangerouslySetInnerHTML={{__html: marked.parse(m.content||"")}} />
-                                  <div className="absolute bottom-2 right-6 opacity-0 group-hover:opacity-10 transition-opacity"><Icons.AllInclusive className="size-5" /></div>
-                              </div>
-                          )}
-                          {m.voice && <div className="mt-6 flex items-center gap-5 opacity-40 px-10 group-hover:opacity-100 transition-opacity">
-                              <div className="flex gap-2 items-center">
-                                 <div className="size-2 bg-cyan-glow rounded-full animate-bounce shadow-[0_0_15px_#00D2FF]" />
-                                 <div className="size-2 bg-cyan-glow rounded-full animate-bounce [animation-delay:200ms] shadow-[0_0_15px_#00D2FF]" />
-                                 <div className="size-2 bg-cyan-glow rounded-full animate-bounce [animation-delay:400ms] shadow-[0_0_15px_#00D2FF]" />
-                              </div>
-                              <span className="text-[11px] font-black uppercase tracking-[0.6em] data-font text-cyan-glow animate-pulse">Audio Neural Stream: v2.5 Synchronized</span>
-                          </div>}
-                      </div>
-                  ))}
-                  {isTyping && <div className="flex gap-6 p-12 glass-panel rounded-full w-fit animate-pulse border-white/10 ml-12 shadow-[0_30px_60px_rgba(0,0,0,0.8)] relative overflow-hidden">
-                      <div className="absolute inset-0 bg-primary/5" />
-                      <div className="size-5 bg-primary rounded-full typing-dot shadow-[0_0_20px_var(--primary)]" />
-                      <div className="size-5 bg-cyan-glow rounded-full typing-dot [animation-delay:200ms] shadow-[0_0_20px_#00D2FF]" />
-                      <div className="size-5 bg-primary rounded-full typing-dot [animation-delay:400ms] shadow-[0_0_20px_var(--primary)]" />
-                  </div>}
-                  <div ref={chatEndRef} className="h-40" />
-              </div>
-              
-              {/* CHAT FOOTER (QUANTUM UI MASTER) */}
-              <footer className="absolute bottom-0 w-full p-12 bg-slate-950/99 backdrop-blur-[100px] border-t-2 border-white/10 z-[50] shadow-[0_-60px_150px_rgba(0,0,0,1)]">
-                  <div className="flex gap-8 mb-14 max-w-4xl mx-auto">
-                      {role === 'psychologist' && <button onClick={()=>handleSend("Дай совет по методике", false, 'get_hint')} className="glass-panel premium-shine flex-1 py-10 rounded-[3rem] text-[15px] font-black uppercase text-amber-500 flex items-center justify-center gap-6 active:scale-[0.94] transition-all shadow-4xl border-amber-500/40 group relative overflow-hidden">
-                        <div className="absolute inset-0 bg-amber-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
-                        <Icons.Sparkles className="size-10 group-hover:rotate-12 transition-transform shadow-amber-500/50 relative z-10"/> 
-                        <span className="relative z-10 tracking-[0.6em]">ПОДСКАЗКА</span>
-                      </button>}
-                      <button onClick={handleFinish} className="glass-panel premium-shine flex-1 py-10 rounded-[3rem] text-[15px] font-black uppercase text-cyan-glow flex items-center justify-center gap-6 active:scale-[0.94] transition-all shadow-4xl border-cyan-glow/40 group relative overflow-hidden">
-                        <div className="absolute inset-0 bg-cyan-glow/5 opacity-0 group-hover:opacity-100 transition-opacity" />
-                        <Icons.Check className="size-10 group-hover:scale-110 transition-transform shadow-cyan-glow/50 relative z-10"/> 
-                        <span className="relative z-10 tracking-[0.6em]">ФИНИШ</span>
-                      </button>
-                  </div>
-                  <div className="flex items-center gap-10 bg-white/5 border-2 border-white/20 rounded-[6rem] p-4 pr-10 focus-within:ring-8 ring-primary/30 transition-all shadow-[inset_0_15px_60px_rgba(0,0,0,0.8)] relative overflow-hidden group max-w-4xl mx-auto">
-                      <div className="absolute inset-0 bg-primary/5 opacity-0 group-focus-within:opacity-100 transition-opacity pointer-events-none" />
-                      <div className="flex items-center gap-4 ml-8 opacity-20 group-focus-within:opacity-100 transition-opacity duration-1000">
-                         <Icons.Radio className="size-12 text-white/50 animate-pulse cursor-pointer hover:text-cyan-glow transition-colors" />
-                         <div className="h-10 w-[2px] bg-white/10" />
-                      </div>
-                      <textarea value={inputText} onChange={e=>setInputText(e.target.value)} rows={1} className="flex-1 bg-transparent border-none outline-none text-[24px] px-10 py-8 text-white placeholder:text-white/10 resize-none font-bold no-scrollbar relative z-10 selection:bg-primary/40" placeholder="Ввод нейро-интервенции..." onKeyDown={e => { if(e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); }}} />
-                      <button onClick={()=>handleSend()} className="size-24 bg-primary rounded-[3.5rem] flex items-center justify-center shadow-[0_20px_60px_rgba(104,31,239,0.7)] active:scale-[0.8] transition-all transform relative z-10 hover:scale-110 shadow-primary/60 group/send">
-                         <Icons.Send className="size-12 text-white transform group-hover/send:rotate-12 transition-transform duration-500" />
-                      </button>
-                  </div>
-                  <div className="mt-8 flex justify-center opacity-20"><span className="text-[9px] font-black uppercase tracking-[1em] data-font">Secure Input Encryption Node_v25 [ENABLED]</span></div>
-              </footer>
-          </div>
-        )}
-
-        {/* SCREEN: REPORT (THE FINAL KNOWLEDGE SYNTHESIS) */}
-        {screen === 'report' && sessionAnalytics && (
-          <div className="p-12 space-y-16 animate-in zoom-in duration-1000 text-center pb-60">
-              <div className="relative inline-block mb-12">
-                <div className="absolute inset-0 bg-primary/30 blur-[150px] animate-pulse" />
-                <Icons.Infinity className="w-80 h-40 mx-auto drop-shadow-[0_0_80px_rgba(104,31,239,1)] relative z-10 transform hover:scale-110 transition-transform duration-1000" />
-              </div>
-              <h2 className="text-8xl font-black uppercase tracking-tighter italic text-neon text-glow leading-none drop-shadow-[0_40px_80px_rgba(0,0,0,1)] uppercase">ИТОГ<br/>СИНТЕЗА</h2>
-              
-              <div className="glass-panel p-16 rounded-[6rem] border-primary/50 relative overflow-hidden shadow-[0_100px_200px_rgba(0,0,0,0.9)] text-left border-t-2 border-white/10 backdrop-blur-[60px]">
-                  <div className="absolute top-0 left-0 w-full h-3 bg-gradient-to-r from-primary via-white to-primary shadow-[0_0_50px_var(--primary)]" />
-                  <div className="flex justify-between items-center mb-16 relative z-10">
-                     <p className="text-[14px] font-black text-primary uppercase tracking-[0.8em] data-font">Quantum Analytic Protocol v25.0</p>
-                     <div className="px-6 py-2 glass-panel rounded-full border-white/10 shadow-2xl"><span className="text-[12px] text-white/40 font-black data-font uppercase tracking-widest leading-none">NODE_ID: {userId.slice(-12)}</span></div>
-                  </div>
-                  
-                  {role === 'psychologist' ? (
-                      <div className="space-y-16">
-                        <div className="bg-slate-950/40 p-12 rounded-[5rem] border-2 border-white/5 shadow-inner">
-                           <RadarChart data={sessionAnalytics} />
-                        </div>
-                        <div className="space-y-10">
-                            <div className="glass-panel p-14 rounded-[4rem] border border-white/10 shadow-4xl relative overflow-hidden group hover:border-primary/40 transition-colors duration-1000">
-                                <div className="absolute -right-16 -bottom-10 text-[15rem] opacity-5 font-black data-font italic pointer-events-none select-none uppercase tracking-tighter group-hover:scale-110 transition-transform duration-[3000ms]">AUDIT</div>
-                                <div className="flex items-center gap-6 mb-8 relative z-10">
-                                   <div className="size-1.5 bg-primary rounded-full animate-pulse shadow-[0_0_10px_var(--primary)]" />
-                                   <span className="text-[14px] font-black text-white/40 uppercase block data-font tracking-[0.8em]">Синтез Супервизора</span>
-                                </div>
-                                <p className="text-2xl italic leading-relaxed text-slate-100 font-medium relative z-10 drop-shadow-2xl selection:bg-primary/40">"{sessionAnalytics.expert_comment}"</p>
-                                <div className="mt-10 flex gap-6 opacity-20 relative z-10">
-                                   <div className="h-px flex-1 bg-white" />
-                                   <Icons.AllInclusive className="size-5" />
-                                   <div className="h-px flex-1 bg-white" />
-                                </div>
-                            </div>
-                            <button className="premium-shine w-full py-12 bg-primary/20 border-2 border-primary/40 rounded-[3.5rem] text-[18px] font-black uppercase tracking-[0.8em] text-white shadow-[0_40px_80px_rgba(104,31,239,0.6)] flex items-center justify-center gap-8 hover:scale-[1.03] active:scale-95 transition-all transform border-t-2 border-white/20">
-                                СКАЧАТЬ ЗОЛОТОЙ СЕРТИФИКАТ <Icons.Bolt className="size-10 text-gold animate-bounce filter drop-shadow-[0_0_10px_#ffd700]"/>
-                            </button>
-                        </div>
-                      </div>
-                  ) : (
-                      <div className="space-y-12">
-                          <div className="glass-panel p-16 rounded-[5rem] border-l-[24px] border-primary shadow-[0_80px_160px_rgba(0,0,0,0.8)] relative overflow-hidden group hover:border-primary/60 transition-all duration-1000 border-t border-white/10">
-                              <div className="absolute top-0 right-0 p-14 text-[20rem] opacity-5 font-black italic data-font pointer-events-none select-none uppercase leading-none transform -rotate-12 group-hover:rotate-0 transition-transform duration-[3000ms]">CORE</div>
-                              <div className="flex items-center gap-5 mb-10 relative z-10">
-                                 <Icons.Sparkles className="size-8 text-primary animate-pulse" />
-                                 <h5 className="text-[18px] font-black uppercase text-primary mb-0 tracking-[0.8em] leading-none text-glow italic">Главный инсайт</h5>
-                              </div>
-                              <p className="text-4xl font-bold text-white leading-tight italic relative z-10 drop-shadow-2xl selection:bg-primary/40 uppercase tracking-tighter">"{sessionAnalytics.insight}"</p>
-                          </div>
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-10">
-                              <div className="glass-panel p-12 rounded-[4rem] border border-white/10 shadow-3xl transform hover:-translate-y-2 transition-all duration-700 bg-white/5 border-t-2 border-white/20">
-                                  <h5 className="text-[13px] font-black uppercase text-white/30 mb-8 tracking-[0.5em] leading-none text-center">Телесный фокус</h5>
-                                  <p className="text-xl font-black text-white leading-snug text-center uppercase tracking-tight italic drop-shadow-lg">{sessionAnalytics.body_focus}</p>
-                              </div>
-                              <div className="glass-panel p-12 rounded-[4rem] border border-white/10 shadow-3xl transform hover:-translate-y-2 transition-all duration-700 bg-white/5 border-t-2 border-white/20">
-                                  <h5 className="text-[13px] font-black uppercase text-white/30 mb-8 tracking-[0.5em] leading-none text-center">Первый шаг</h5>
-                                  <p className="text-xl font-black text-white leading-snug text-center uppercase tracking-tight italic drop-shadow-lg">{sessionAnalytics.action_step}</p>
-                              </div>
-                          </div>
-                          <div className="pt-10 border-t-2 border-white/5 opacity-50 text-center">
-                             <p className="text-2xl text-white/50 italic px-20 leading-relaxed font-black tracking-tight uppercase">"{sessionAnalytics.support_message}"</p>
-                          </div>
-                      </div>
-                  )}
-                  
-                  <button onClick={()=>setScreen('hub')} className="w-full mt-16 py-10 bg-primary rounded-[4rem] text-[18px] font-black uppercase tracking-[1em] shadow-[0_50px_100px_rgba(104,31,239,0.7)] active:scale-[0.95] transition-all transform hover:-translate-y-3 border-t-2 border-white/40 relative overflow-hidden group">
-                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/15 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
-                      <span className="relative z-10 drop-shadow-2xl">ВЕРНУТЬСЯ В КОМАНДНЫЙ ЦЕНТР</span>
-                  </button>
-              </div>
-          </div>
-        )}
-
-        {/* SCREEN: AGGREGATOR (ELITE MARKETPLACE - THE ULTIMATE LIST) */}
-        {screen === 'aggregator' && (
-           <div className="p-10 space-y-24 animate-in slide-in-from-bottom pb-60 text-left">
-              <div className="flex flex-col sm:flex-row justify-between items-end px-4 mt-12 gap-10">
-                  <div className="flex flex-col">
-                    <h2 className="text-8xl font-black uppercase tracking-tighter italic text-neon text-glow leading-none uppercase drop-shadow-2xl">ВИТРИНА</h2>
-                    <span className="text-[16px] font-black text-primary uppercase tracking-[1.5em] mt-10 ml-4 data-font leading-none italic">Market Hierarchy v2.0</span>
-                  </div>
-                  <div className="flex flex-col items-end gap-5 opacity-40 group">
-                    <div className="flex items-center gap-3">
-                       <span className="size-2 bg-emerald-500 rounded-full animate-ping" />
-                       <span className="text-[12px] font-black data-font uppercase tracking-widest">Active mastery units: 1,402</span>
-                    </div>
-                    <div className="h-1 w-40 bg-gradient-to-r from-transparent to-white rounded-full opacity-20" />
-                  </div>
-              </div>
-
-              {/* ТОП-1 МАСТЕР (THE GOLDEN PODIUM UNIT) */}
-              <div className="flex flex-col gap-16 mb-20 px-2">
-                 <div className="glass-panel p-16 rounded-[7rem] border-t-8 border-gold/70 relative overflow-hidden group premium-shine shadow-[0_120px_250px_rgba(0,0,0,1)] border-white/10 scale-105 z-30 transition-all duration-1000 transform hover:scale-[1.07]">
-                    <div className="absolute inset-0 bg-gold/10 opacity-30 group-hover:opacity-50 transition-opacity" />
-                    <div className="absolute -top-10 -right-10 p-16 opacity-30 group-hover:scale-125 transition-transform duration-[2000ms] transform -rotate-12 group-hover:rotate-0"><Icons.Trophy className="size-56 text-gold filter drop-shadow-[0_0_60px_#ffa805]" /></div>
-                    <div className="flex flex-col lg:flex-row items-center lg:items-start gap-20 relative z-20">
-                        <div className="relative group/avatar-pro">
-                            <div className="absolute inset-0 bg-gold/20 rounded-full blur-[100px] animate-pulse" />
-                            <div className="size-60 rounded-full border-[16px] border-gold p-3 shadow-[0_0_100px_rgba(255,168,5,0.7)] bg-[#0c0c1e] group-hover/avatar-pro:rotate-12 transition-transform duration-[3000ms] ring-[12px] ring-white/5 relative z-10 overflow-hidden">
-                                <div className="w-full h-full rounded-full bg-slate-900 flex items-center justify-center text-[10rem] shadow-[inset_0_20px_60px_rgba(0,0,0,0.9)] border-4 border-white/10 overflow-hidden relative">
-                                    👨🏼‍⚕️
-                                    <div className="absolute inset-0 bg-gradient-to-tr from-gold/20 via-transparent to-transparent opacity-60" />
-                                </div>
-                            </div>
-                            <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 bg-gold text-background-dark text-[18px] font-black px-12 py-3 rounded-full shadow-[0_40px_80px_rgba(255,168,5,0.6)] tracking-[0.8em] z-20 animate-pulse italic border-4 border-background-dark">RANK_01</div>
-                        </div>
-                        <div className="flex-1 text-center lg:text-left mt-8 lg:mt-0 pt-4">
-                            <div className="flex items-center justify-center lg:justify-start gap-5 mb-8 opacity-60">
-                               <Icons.Bolt className="size-5 text-gold" />
-                               <span className="text-[12px] font-black uppercase tracking-[1em] data-font text-gold">Elite Platinum Master</span>
-                            </div>
-                            <h2 className="text-7xl font-black uppercase tracking-tighter text-white italic text-glow leading-none drop-shadow-2xl">Мастер Юлиан</h2>
-                            <p className="text-[15px] font-black tracking-[1em] text-primary uppercase mt-10 data-font opacity-90 leading-none">ID: CNCT-ULTRA-PREMIUM-001</p>
-                            <div className="flex flex-wrap justify-center lg:justify-start gap-16 mt-14">
-                                <div className="flex flex-col gap-4 text-center lg:text-left"><p className="text-[13px] text-white/30 uppercase tracking-[0.6em] font-black leading-none">Transformed Lives</p><p className="text-6xl font-black data-font italic tracking-tighter leading-none shadow-white">1,204</p></div>
-                                <div className="w-px h-20 bg-white/10 hidden lg:block" />
-                                <div className="flex flex-col gap-4 text-center lg:text-left"><p className="text-[13px] text-white/30 uppercase tracking-[0.6em] font-black leading-none">Mastery IQ Score</p><p className="text-6xl font-black text-gold data-font italic tracking-tighter leading-none filter drop-shadow-[0_0_20px_rgba(255,215,0,0.6)]">9.99</p></div>
-                            </div>
-                        </div>
-                    </div>
-                    <div className="mt-20 pt-16 border-t-2 border-white/10 flex flex-col sm:flex-row items-center justify-between relative z-20 gap-12 bg-black/40 p-10 rounded-[4rem] shadow-inner">
-                       <div className="flex flex-col gap-4 text-center sm:text-left">
-                          <span className="text-[15px] font-black text-white/40 uppercase tracking-[0.5em] italic">Platinum Session Rate</span>
-                          <div className="flex items-end justify-center sm:justify-start gap-3">
-                             <span className="text-6xl font-black data-font text-white drop-shadow-2xl tabular-nums">4500₽</span>
-                             <span className="text-xl text-white/20 font-black data-font italic mb-1">/ 50 MIN</span>
-                          </div>
-                       </div>
-                       <button onClick={()=>triggerHaptic('heavy')} className="bg-gold text-background-dark px-24 py-10 rounded-[4rem] font-black text-[18px] uppercase tracking-[1em] shadow-[0_40px_100px_rgba(255,168,5,0.7)] hover:bg-white transition-all transform hover:scale-[1.08] active:scale-90 leading-none border-t-4 border-white/50 group/btn-podium relative overflow-hidden">
-                           <span className="relative z-10 drop-shadow-xl">РЕЗЕРВИРОВАТЬ</span>
-                           <div className="absolute inset-0 bg-white/20 -translate-x-full group-hover/btn-podium:translate-x-full transition-transform duration-1000" />
-                       </button>
-                    </div>
-                 </div>
-              </div>
-
-              {/* ОБЩИЙ СПИСОК (THE PRO ARCHIVE) */}
-              <div className="space-y-20 px-2 pb-20">
-                  {psychologists.length === 0 ? (
-                      <div className="text-center py-60 opacity-10 italic uppercase tracking-[1.5em] text-[15px] animate-pulse font-black data-font leading-none">SCANNING_FOR_ACTIVE_COGNITIVE_NODES...</div>
-                  ) : psychologists.map((p, idx) => (
-                      <div key={idx} className={`glass-panel p-16 rounded-[7rem] relative overflow-hidden group premium-shine shadow-[0_80px_160px_rgba(0,0,0,0.8)] border-t-2 border-white/10 transition-all duration-1000 transform hover:translate-y-[-10px] ${p.isVip ? 'border-primary ring-4 ring-primary/10 scale-[1.02] shadow-primary/20' : 'border-white/5 opacity-90 hover:opacity-100'}`}>
-                          {p.isVip && <div className="absolute top-0 right-0 bg-primary text-background-dark text-[14px] font-black px-16 py-6 rounded-bl-[4rem] uppercase tracking-[0.8em] shadow-4xl z-30 animate-pulse border-b border-l border-white/20">VIP ELITE UNIT</div>}
-                          
-                          <div className="flex flex-col lg:flex-row gap-16 items-center lg:items-start mb-16 relative z-10">
-                              <div className="size-56 rounded-[5rem] bg-[#0c0c1e] flex items-center justify-center text-9xl overflow-hidden shadow-[inset_0_20px_50px_rgba(0,0,0,1)] border-4 border-white/10 group-hover:scale-105 transition-transform duration-[2000ms] transform group-hover:rotate-3 shadow-2xl">
-                                  {p.photoUrl ? <img src={p.photoUrl} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-1000" /> : '👨🏻'}
-                              </div>
-                              <div className="flex-1 pt-6 text-center lg:text-left">
-                                  <div className="flex items-center justify-center lg:justify-start gap-5 mb-6 opacity-50">
-                                     <div className="size-3 bg-primary rounded-full shadow-[0_0_15px_var(--primary)]" />
-                                     <span className="text-[13px] font-black uppercase tracking-[1em] data-font">Certified Neural Master</span>
-                                  </div>
-                                  <h4 className="text-6xl font-black uppercase tracking-tighter italic leading-none text-glow drop-shadow-2xl group-hover:text-neon transition-colors duration-1000">{p.name || 'Мастер Коннектум'}</h4>
-                                  <div className="flex flex-wrap justify-center lg:justify-start gap-8 mt-12">
-                                      <div className="bg-white/5 px-10 py-4 rounded-full border border-white/10 shadow-3xl hover:bg-white/10 transition-all">
-                                         <span className="text-[14px] font-black uppercase text-white/50 tracking-[0.4em]">СТАЖ: {p.experience || 0} ЛЕТ</span>
-                                      </div>
-                                      <div className="bg-primary/10 px-10 py-4 rounded-full border border-primary/30 shadow-3xl hover:bg-primary/20 transition-all">
-                                         <span className="text-[14px] font-black uppercase text-primary tracking-[0.4em]">SKILL_IQ: {p.skillRating || 70}%</span>
-                                      </div>
-                                  </div>
-                              </div>
-                          </div>
-                          
-                          {/* SKILL RADAR MINI SECTION */}
-                          <div className="py-16 border-y-2 border-white/5 bg-[#080816] rounded-[6rem] my-10 backdrop-blur-[100px] relative overflow-hidden group-hover:shadow-[inset_0_0_100px_rgba(104,31,239,0.15)] transition-all duration-[2000ms]">
-                             <div className="absolute inset-0 scanline opacity-20 pointer-events-none" />
-                             <RadarChart data={p.analysis} />
-                             <div className="mt-12 flex justify-center gap-16 text-[10px] font-black text-white/15 uppercase tracking-[1em] data-font">
-                                <span className="hover:text-primary transition-colors">Core_Accuracy</span>
-                                <span className="hover:text-cyan-glow transition-colors">Empathy_Flux</span>
-                                <span className="hover:text-primary transition-colors">Boundary_Lock</span>
-                             </div>
-                          </div>
-                          
-                          <div className="mt-16 flex flex-col lg:flex-row justify-between items-center px-10 gap-12 relative z-10">
-                              <div className="flex flex-col text-center lg:text-left gap-4">
-                                  <span className="text-[16px] font-black text-white/30 uppercase tracking-[1em] data-font leading-none italic">Standard Rate</span>
-                                  <div className="flex items-end justify-center lg:justify-start gap-4 mt-2">
-                                     <p className="text-6xl font-black text-white italic leading-none data-font tabular-nums tracking-tighter drop-shadow-2xl shadow-white">{p.price || 0}₽</p>
-                                     <span className="text-[15px] font-black text-white/20 uppercase mb-2 data-font italic tracking-widest">/ SESSION</span>
-                                  </div>
-                              </div>
-                              <button onClick={()=>triggerHaptic('heavy')} className="premium-shine bg-primary px-24 py-10 rounded-[4rem] text-[18px] font-black uppercase tracking-[1.5em] shadow-[0_60px_120px_rgba(104,31,239,0.6)] active:scale-[0.92] transition-all transform hover:scale-[1.05] border-t-4 border-white/30 w-full lg:w-auto relative overflow-hidden group/btn-book">
-                                  <span className="relative z-10">ЗАПИСАТЬСЯ</span>
-                                  <div className="absolute inset-0 bg-white/10 opacity-0 group-hover/btn-book:opacity-100 transition-opacity" />
-                                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover/btn-book:translate-x-full transition-transform duration-1000" />
-                              </button>
-                          </div>
-                          <div className="absolute -left-20 -bottom-20 text-[25rem] font-black text-white/5 select-none pointer-events-none data-font italic uppercase leading-none tracking-tighter opacity-20">MASTER</div>
-                      </div>
-                  ))}
-              </div>
-           </div>
-        )}
-
-        {/* SCREEN 7: COGNITIVE SYNC (MASTER PROFILE & QUESTS) - THE DEEPEST MODULE */}
-        {screen === 'profile' && (
-           <div className="p-12 space-y-24 animate-in slide-in-from-bottom pb-64 text-left">
-              <div className="flex flex-col sm:flex-row justify-between items-end px-4 mt-10 gap-10">
-                  <div className="flex flex-col">
-                    <h2 className="text-8xl font-black uppercase tracking-tighter italic leading-none text-neon text-glow uppercase drop-shadow-2xl">PROFILE</h2>
-                    <div className="mt-8 flex items-center gap-5 bg-primary/10 px-8 py-3 rounded-full border-2 border-primary/40 shadow-[0_0_40px_rgba(104,31,239,0.3)]">
-                       <div className="size-3 bg-primary rounded-full animate-pulse shadow-[0_0_15px_#681fef] border-2 border-white/40" />
-                       <span className="text-[12px] font-black uppercase text-primary tracking-[1em] data-font ml-2 leading-none">Sync_Status: [ONLINE]</span>
-                    </div>
-                  </div>
-                  <div className="flex flex-col items-center sm:items-end gap-3 opacity-30">
-                    <span className="text-[11px] text-white font-black data-font uppercase tracking-widest leading-none">Terminal_Node_ID</span>
-                    <span className="text-[14px] text-white font-bold data-font leading-none tracking-tighter select-all italic">{userId}</span>
-                  </div>
-              </div>
-
-              {/* AVATAR UPLOAD (ULTRA PREMIUM STITCH STYLE) */}
-              <div className="flex flex-col items-center relative">
-                 <div className="absolute -top-16 text-[25rem] font-black text-white/5 select-none pointer-events-none data-font italic uppercase leading-none tracking-tighter opacity-10">MATRIX</div>
-                 <div className="relative group cursor-pointer mt-10" onClick={()=>document.getElementById('photo-final-v25').click()}>
-                    <div className="absolute inset-0 bg-primary blur-[150px] opacity-30 group-hover:opacity-70 transition-opacity rounded-full animate-pulse" />
-                    <div className="relative size-80 rounded-[8rem] border-[16px] border-primary p-4 bg-background-dark shadow-[0_0_150px_rgba(104,31,239,0.8)] ring-[16px] ring-white/5 transform group-hover:rotate-6 transition-all duration-[2000ms] group-hover:scale-105 active:scale-95">
-                       <div className="w-full h-full rounded-[6.5rem] bg-[#0c0c1e] flex items-center justify-center text-[12rem] overflow-hidden relative shadow-[inset_0_30px_100px_rgba(0,0,0,1)] border-8 border-white/15 group-hover:border-white/30 transition-colors">
-                          {userProfile.photoUrl ? <img src={userProfile.photoUrl} className="w-full h-full object-cover scale-110 group-hover:scale-100 transition-transform duration-[2000ms]" /> : '👨🏻'}
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-60 group-hover:opacity-100 transition-opacity" />
-                          <div className="absolute inset-0 bg-black/80 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-8 backdrop-blur-xl group-hover:scale-110 transition-transform duration-1000">
-                             <div className="size-24 rounded-full bg-primary/20 flex items-center justify-center border-4 border-primary shadow-2xl animate-bounce">
-                                <Icons.Camera className="size-12 text-white" />
-                             </div>
-                             <span className="text-[16px] font-black uppercase tracking-[1em] text-white drop-shadow-2xl">Modify_DNA</span>
-                          </div>
-                       </div>
-                       <div className="absolute -bottom-4 right-4 size-16 bg-gold rounded-[2rem] flex items-center justify-center shadow-4xl border-4 border-background-dark animate-bounce">
-                          <Icons.Bolt className="size-8 text-background-dark" />
-                       </div>
-                    </div>
-                    <input id="photo-final-v25" type="file" className="hidden" accept="image/*" onChange={(e)=>{
-                        const file = e.target.files[0];
-                        if(file){
-                          const reader = new FileReader();
-                          reader.onloadend = () => {
-                             setUserProfile({...userProfile, photoUrl: reader.result});
-                             triggerHaptic('heavy');
-                          };
-                          reader.readAsDataURL(file);
-                        }
-                    }} />
-                 </div>
-                 <h3 className="mt-20 text-6xl font-black uppercase italic tracking-tighter text-glow text-center leading-none drop-shadow-2xl selection:bg-primary/40">{userProfile.name || 'МАСТЕР_ОПЕРАТОР'}</h3>
-                 <div className="mt-8 glass-panel px-12 py-3 rounded-full border-primary/40 flex items-center gap-6 shadow-[0_20px_40px_rgba(0,0,0,0.5)]">
-                    <span className="text-[12px] font-black text-primary uppercase tracking-[1.5em] ml-4 leading-none">Cyber_Verified Specialist</span>
-                    <div className="size-3 bg-emerald-400 rounded-full shadow-[0_0_15px_#34d399]" />
-                 </div>
-              </div>
-
-              {/* VIDEO INTRO MODULE (PREMIUM) */}
-              <div className="px-4 pt-10">
-                 <div className="flex items-center justify-between mb-12 border-b-2 border-white/5 pb-8">
-                    <div className="flex flex-col gap-2">
-                        <h4 className="text-4xl font-black uppercase italic leading-none text-glow">Видеопсихография</h4>
-                        <span className="text-[12px] text-white/30 uppercase tracking-[0.5em] font-black data-font">Identity Dynamic Pitch Module 1.0</span>
-                    </div>
-                    <div className="p-5 glass-panel rounded-3xl shadow-xl"><Icons.Support className="size-8 text-primary/40" /></div>
-                 </div>
-                 <VideoRecorder onUpload={(url)=>{
-                    setUserProfile({...userProfile, videoUrl: url});
-                    triggerHaptic('heavy');
-                 }} />
-              </div>
-
-              {/* EDITABLE FORM (TOTAL CONTROL) */}
-              <div className="space-y-16 pt-20 border-t-2 border-white/10 px-4 relative overflow-hidden">
-                 <div className="absolute -left-20 top-0 text-[18rem] font-black text-white/5 select-none pointer-events-none data-font italic uppercase leading-none tracking-tighter opacity-10">DATA</div>
-                 
-                 <div className="space-y-6 relative z-10">
-                    <label className="text-[15px] font-black text-white/30 uppercase tracking-[1em] ml-14 leading-none block italic shadow-inner">Public_Identity_Label</label>
-                    <div className="relative group">
-                       <input type="text" value={userProfile.name} onChange={e=>setUserProfile({...userProfile, name: e.target.value})} className="w-full p-12 glass-panel rounded-[5rem] outline-none focus:border-primary transition-all duration-700 text-3xl font-black shadow-[0_30px_80px_rgba(0,0,0,0.7)] text-glow placeholder:text-white/5 border-white/15 focus:scale-[1.02] pr-40" placeholder="Системное имя..." />
-                       <div className="absolute right-14 top-1/2 -translate-y-1/2 text-white/10 text-6xl data-font italic font-black uppercase pointer-events-none select-none tracking-tighter">NAME</div>
-                    </div>
-                 </div>
-
-                 <div className="grid grid-cols-1 md:grid-cols-2 gap-12 px-2 relative z-10">
-                    <div className="space-y-6">
-                        <label className="text-[15px] font-black text-white/30 uppercase tracking-[1em] ml-14 leading-none block italic">Experience_Link</label>
-                        <div className="relative group">
-                           <input type="number" value={userProfile.experience} onChange={e=>setUserProfile({...userProfile, experience: Number(e.target.value)})} className="w-full p-12 glass-panel rounded-[5rem] outline-none text-4xl font-black data-font shadow-[0_30px_80px_rgba(0,0,0,0.7)] focus:border-primary transition-all text-center tabular-nums border-white/15 focus:scale-[1.05]" />
-                           <div className="absolute left-10 top-1/2 -translate-y-1/2 text-white/10 text-4xl data-font italic font-black uppercase pointer-events-none select-none tracking-tighter">EXP</div>
-                           <div className="absolute right-10 top-1/2 -translate-y-1/2 text-white/20 text-xl font-black data-font uppercase pointer-events-none select-none">YRS</div>
-                        </div>
-                    </div>
-                    <div className="space-y-6">
-                        <label className="text-[15px] font-black text-white/30 uppercase tracking-[1em] ml-14 leading-none block italic">Currency_Rate</label>
-                        <div className="relative group">
-                           <input type="number" value={userProfile.price} onChange={e=>setUserProfile({...userProfile, price: Number(e.target.value)})} className="w-full p-12 glass-panel rounded-[5rem] outline-none text-4xl font-black data-font shadow-[0_30px_80px_rgba(0,0,0,0.7)] focus:border-primary transition-all text-center tabular-nums border-white/15 focus:scale-[1.05]" />
-                           <div className="absolute left-10 top-1/2 -translate-y-1/2 text-white/10 text-4xl data-font italic font-black uppercase pointer-events-none select-none tracking-tighter">RUB</div>
-                           <div className="absolute right-10 top-1/2 -translate-y-1/2 text-white/20 text-xl font-black data-font uppercase pointer-events-none select-none">/ 50m</div>
-                        </div>
-                    </div>
-                 </div>
-              </div>
-
-              {/* QUEST HUB (THE ULTIMATE GAMIFICATION ENGINE) */}
-              <div className="glass-panel p-20 rounded-[8rem] border-emerald-500/50 relative overflow-hidden shadow-[0_100px_200px_rgba(0,0,0,1)] mt-16 group/quest">
-                 <div className="absolute -right-24 -top-16 text-[25rem] font-black text-white/5 select-none pointer-events-none data-font italic uppercase leading-none tracking-tighter group-hover/quest:scale-105 transition-transform duration-[3000ms]">QUEST</div>
-                 <div className="flex flex-col sm:flex-row items-center justify-between mb-20 gap-10">
-                    <div className="flex flex-col text-center sm:text-left">
-                        <h4 className="text-6xl font-black uppercase tracking-tighter italic leading-none text-glow uppercase">ХАБ КВЕСТОВ</h4>
-                        <p className="text-[15px] text-emerald-400 data-font uppercase mt-6 font-black tracking-[1em] leading-relaxed">Neural Growth System level_2.5.4</p>
-                    </div>
-                    <div className="p-12 glass-panel rounded-[4rem] shadow-[0_0_80px_rgba(52,211,153,0.4)] bg-emerald-500/10 border-emerald-500/30 ring-4 ring-white/5 animate-pulse">
-                        <Icons.Bolt className="size-20 text-emerald-400 drop-shadow-[0_0_20px_#34d399]" />
-                    </div>
-                 </div>
-
-                 <div className="space-y-10">
-                    {[
-                        {title: "Фото Профиля", reward: "+1 💎", icon: "📸", active: !!userProfile.photoUrl, desc: "Биометрическая верификация личности в системе", code: "DNA_SCAN"},
-                        {title: "Видео-Визитка", reward: "+3 💎", icon: "🎥", active: !!userProfile.videoUrl, desc: "60-секундный квантовый питч компетенций", code: "MOTION_SYNC"},
-                        {title: "Пригласи Коллегу", reward: "+3 💎", icon: "🤝", active: false, desc: "Масштабирование нейронной сети Коннектум", code: "LINK_EXPANSION"}
-                    ].map((q, i) => (
-                        <div key={i} className={`flex flex-col sm:flex-row items-center justify-between p-14 rounded-[4.5rem] border-2 transition-all duration-1000 relative overflow-hidden group/quest-item shadow-4xl ${q.active ? 'bg-emerald-500/10 border-emerald-500/50 scale-100' : 'bg-white/5 border-white/10 opacity-60 hover:opacity-100 hover:border-white/30 hover:scale-[1.02]'} gap-10 sm:gap-4`}>
-                           {q.active && <div className="absolute inset-0 bg-emerald-500/5 animate-pulse" />}
-                           <div className="flex flex-col sm:flex-row items-center gap-12 relative z-10 text-center sm:text-left">
-                                <div className="size-32 bg-slate-900/60 rounded-[2.5rem] border-2 border-white/10 flex items-center justify-center shadow-2xl transition-all duration-1000 group-hover/quest-item:rotate-6">
-                                   <span className="text-[6rem] drop-shadow-[0_20px_40px_rgba(0,0,0,1)] grayscale group-hover/quest-item:grayscale-0 transition-all duration-1000">{q.icon}</span>
-                                </div>
-                                <div className="flex flex-col">
-                                    <div className="flex items-center justify-center sm:justify-start gap-4 mb-4 opacity-40">
-                                       <div className="size-2 bg-white rounded-full" />
-                                       <span className="text-[10px] font-black uppercase tracking-[0.5em] data-font">{q.code}</span>
-                                    </div>
-                                    <span className="text-4xl font-black uppercase tracking-tighter leading-none text-white italic group-hover/quest-item:text-emerald-400 transition-colors duration-700">{q.title}</span>
-                                    <span className="text-md text-white/30 uppercase mt-5 font-black tracking-widest leading-relaxed max-w-[350px]">{q.desc}</span>
-                                    {q.active && (
-                                       <div className="mt-8 flex items-center justify-center sm:justify-start gap-4 animate-in fade-in duration-1000">
-                                          <div className="bg-emerald-500/20 px-6 py-2 rounded-full border border-emerald-500/50 shadow-xl">
-                                             <span className="text-[10px] font-black text-emerald-400 uppercase tracking-[0.8em] leading-none flex items-center gap-3 ml-2">COMPLETED <Icons.Check className="size-4" /></span>
-                                          </div>
-                                       </div>
-                                    )}
-                                </div>
-                           </div>
-                           <div className="flex flex-col items-center sm:items-end gap-6 relative z-10">
-                             <div className="bg-primary/20 px-12 py-4 rounded-[1.8rem] border-2 border-primary/40 shadow-inner group-hover/quest-item:scale-110 transition-transform duration-700">
-                                <span className="text-3xl font-black text-primary data-font tabular-nums tracking-tighter drop-shadow-lg">{q.reward}</span>
-                             </div>
-                             {q.active && <div className="size-6 bg-emerald-400 rounded-full shadow-[0_0_50px_#34d399] animate-pulse ring-8 ring-emerald-500/10" />}
-                           </div>
-                        </div>
-                    ))}
-                 </div>
-              </div>
-
-              {/* FINAL SAVE ACTION (QUANTUM MEGA BUTTON) */}
-              <div className="pt-20">
-                  <button onClick={handleProfileUpdate} className="premium-shine w-full py-12 bg-primary rounded-[5rem] text-[20px] font-black uppercase tracking-[1.2em] shadow-[0_60px_150px_rgba(104,31,239,0.7)] active:scale-[0.92] transition-all transform hover:-translate-y-4 border-t-4 border-white/40 relative overflow-hidden group/final-save">
-                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover/final-save:translate-x-full transition-transform duration-[1500ms]" />
-                      <span className="relative z-10 drop-shadow-[0_10px_20px_rgba(0,0,0,1)] flex items-center justify-center gap-8">
-                         <Icons.Infinity className="size-8 text-white/50" />
-                         СОХРАНИТЬ СИСТЕМУ
-                         <Icons.Infinity className="size-8 text-white/50" />
-                      </span>
-                  </button>
-                  <div className="mt-12 flex flex-col items-center gap-4 opacity-20 group">
-                     <p className="text-center text-[12px] font-black text-white uppercase tracking-[1em] data-font leading-none">Global Synchronization Loop</p>
-                     <div className="h-1.5 w-64 bg-white/10 rounded-full overflow-hidden">
-                        <div className="h-full w-1/3 bg-white animate-pulse" />
-                     </div>
-                  </div>
-              </div>
-              <div className="h-60" />
-           </div>
-        )}
-
-        {/* SCREEN 12: WAITLIST (MANUAL GATE) */}
-        {screen === 'waitlist' && (
-          <div className="h-full flex flex-col items-center justify-center p-12 text-center animate-in zoom-in duration-1000">
-             <div className="glass-panel p-16 rounded-[6rem] max-w-sm border-t-4 border-rose-500/40 shadow-[0_100px_200px_rgba(0,0,0,1)] relative overflow-hidden border-white/5 backdrop-blur-[100px]">
-                 <div className="absolute top-0 left-0 w-full h-3 bg-rose-600 shadow-[0_0_50px_rgba(225,29,72,0.5)] animate-pulse" />
-                 <div className="size-28 bg-rose-500/10 rounded-full flex items-center justify-center mx-auto mb-12 border-4 border-rose-500/30 shadow-4xl group">
-                    <Icons.Support className="size-14 text-rose-500 group-hover:scale-110 transition-transform duration-700" />
-                 </div>
-                 <h2 className="text-5xl font-black mb-10 text-white uppercase tracking-tighter italic text-glow leading-none">WAITLIST<br/>PROTOCOL</h2>
-                 <p className="text-lg text-white/40 mb-16 leading-relaxed font-black uppercase tracking-widest text-center italic">
-                    Прямые платежи временно отключены для калибровки шлюзов. Оставьте заявку, и мы активируем ваш доступ вручную через 24 часа.
-                 </p>
-                 <button onClick={()=>{ triggerHaptic(); setScreen('hub'); }} className="premium-shine w-full py-10 bg-rose-600 rounded-[3.5rem] text-[15px] font-black uppercase tracking-[0.8em] text-white shadow-[0_40px_80px_rgba(225,29,72,0.5)] active:scale-95 transition-all transform hover:scale-105 border-t-2 border-white/30">ПОДТВЕРДИТЬ УЧАСТИЕ</button>
-             </div>
-          </div>
-        )}
-
+        <div ref={chatEndRef} />
       </main>
 
-      {/* NAVIGATION BAR (QUANTUM DOCK - THE ABSOLUTE PINNACLE) */}
-      {hasAcceptedTerms && role !== null && !['loading', 'legal', 'chat'].includes(screen) && (
-        <nav className="h-[135px] glass-panel border-t-2 border-white/10 flex justify-around items-center px-12 pb-16 z-[100] shadow-[0_-50px_150px_rgba(0,0,0,1)] relative overflow-hidden backdrop-blur-[120px]">
-            <div className="absolute inset-0 bg-gradient-to-t from-primary/10 via-transparent to-transparent opacity-60" />
-            <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
-            
-            {[
-                {id: 'hub', icon: <Icons.AllInclusive/>, label: 'ХАБ', shortcut: '01'},
-                {id: 'setup', icon: <Icons.Commander/>, label: 'ЛАБ', shortcut: '02'},
-                {id: 'client_hub', icon: <Icons.Pilot/>, label: 'ПИЛОТ', shortcut: '03'},
-                {id: 'aggregator', icon: <Icons.Market/>, label: 'МАРКЕТ', shortcut: '04'},
-                {id: 'profile', icon: <Icons.User/>, label: 'СИНК', shortcut: '05'}
-            ].map(item => (
-                <button key={item.id} onClick={()=>{ triggerHaptic('light'); setScreen(item.id); }} className={`flex flex-col items-center gap-5 transition-all duration-700 relative group active:scale-90 ${screen===item.id ? 'text-primary -translate-y-12 scale-[2.2]' : 'text-white/10 hover:text-white/40 hover:scale-110'}`}>
-                    <div className="relative">
-                      {React.cloneElement(item.icon, { className: `size-7 transition-all duration-1000 ${screen===item.id ? 'drop-shadow-[0_0_35px_rgba(104,31,239,1)]' : ''}` })}
-                      {screen===item.id && <div className="absolute -inset-10 bg-primary/20 rounded-full blur-[60px] animate-pulse -z-10" />}
-                    </div>
-                    {screen === item.id && (
-                        <div className="flex flex-col items-center animate-in fade-in zoom-in duration-1000">
-                           <span className="text-[6px] font-black uppercase tracking-[0.4em] data-font opacity-100 absolute -bottom-6 whitespace-nowrap shadow-2xl bg-background-dark/95 px-3 py-1 rounded-full border border-white/10">{item.label}</span>
-                        </div>
-                    )}
-                    {screen===item.id && <div className="w-2.5 h-2.5 bg-primary rounded-full shadow-[0_0_20px_rgba(104,31,239,1)] animate-bounce mt-3 border-2 border-white/50" />}
-                    {!screen.includes(item.id) && <span className="text-[7px] font-black opacity-20 data-font mt-2 group-hover:opacity-100 transition-opacity">{item.shortcut}</span>}
-                </button>
-            ))}
-        </nav>
-      )}
+      {/* Glassmorphic Footer */}
+      <footer className="fixed bottom-0 left-0 right-0 glass-footer p-4 pb-8 z-30">
+        <div className="max-w-md mx-auto flex flex-col gap-4">
+          {/* Action Buttons */}
+          <div className="flex gap-3">
+            <button 
+              onClick={() => handleSend("Проанализируй ситуацию и дай профессиональный совет супервизора", false, 'get_hint')}
+              className="flex-1 flex items-center justify-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg py-3 text-sm font-bold transition-all active:scale-95"
+            >
+              <span className="text-red-500">🆘</span> Помощь
+            </button>
+            <button 
+              onClick={finishSession}
+              className="flex-1 flex items-center justify-center gap-2 bg-primary hover:bg-primary/80 rounded-lg py-3 text-sm font-bold shadow-lg shadow-primary/20 transition-all active:scale-95"
+            >
+              <span className="material-symbols-outlined text-[18px]">check_circle</span> Завершить
+            </button>
+          </div>
 
-      {/* BACKGROUND DECORATIVE TERMINAL TEXT (ULTRA QUANTUM DETAIL) */}
-      <div className="fixed top-1/2 left-0 -translate-y-1/2 -rotate-90 origin-left ml-4 pointer-events-none opacity-[0.04] z-0 select-none hidden sm:block">
-          <span className="text-[20px] font-mono tracking-[4em] text-white uppercase leading-none whitespace-nowrap data-font font-black italic opacity-80">CONNECTUM TERMINAL v25.0 // QUANTUM CORE INITIALIZED // [OK] // NEURAL_LINK: [ULTRA_STABLE] // PSY_SYNC_CORE: 9.999 // ENCRYPTION: AES_QUANTUM_256 // SYNC_PORT: 3000 // STATUS: MASTER_ACTIVE</span>
-      </div>
-      
-      {/* MOBILE DECOR */}
-      <div className="fixed bottom-4 left-6 pointer-events-none opacity-10 z-0 sm:hidden">
-          <span className="text-[8px] font-mono tracking-[1em] text-white uppercase data-font font-black">SYNC_CORE: 9.999 [OK]</span>
-      </div>
+          {/* Terminal Input */}
+          <div className="relative flex items-center">
+            <input 
+              value={inputText}
+              onChange={(e) => setInputText(e.target.value)}
+              onKeyDown={(e) => { if(e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); }}}
+              className="w-full bg-white/5 border border-white/10 rounded-lg py-3 px-4 text-sm focus:ring-1 focus:ring-primary focus:border-primary outline-none text-white placeholder:text-white/20" 
+              placeholder="Введите ответ..." 
+              type="text"
+            />
+            <button 
+              onClick={toggleVoiceInput}
+              className={`absolute right-12 p-2 transition-colors ${
+                isRecording ? 'text-red-500 animate-pulse' : 'text-white/40 hover:text-white'
+              }`}
+              title={isRecording ? `Запись... ${recordingTime}с` : 'Голосовой ввод'}
+            >
+              <span className="material-symbols-outlined">{isRecording ? 'mic' : 'mic_off'}</span>
+            </button>
+            <button 
+              onClick={() => handleSend()}
+              className="absolute right-2 p-2 text-primary"
+            >
+              <span className="material-symbols-outlined">send</span>
+            </button>
+          </div>
+        </div>
+      </footer>
+
+      {/* Background Scanline Effect */}
+      <div className="pointer-events-none fixed inset-0 z-50 opacity-[0.03]" 
+           style={{background: "linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06))", backgroundSize: "100% 4px, 3px 100%"}} />
     </div>
   );
+};
+
+// 6. SESSION SUMMARY SCREEN
+const SessionSummaryScreen = ({ setScreen, sessionMetrics, isSubscribed }) => {
+  return (
+    <div className="h-screen flex flex-col bg-[#020617] overflow-hidden">
+      <GlobalStyles />
+      <div className="mesh-bg" />
+      
+      <TopAppBar 
+        onBack={() => setScreen(SCREENS.terminal_dashboard)}
+        title="Итог сессии"
+        onSettings={() => setScreen(SCREENS.settings)}
+        settingsIcon="settings"
+      />
+
+      <main className="flex-1 px-6 py-4 flex flex-col gap-6 overflow-y-auto no-scrollbar">
+        {/* Master ID Stamp */}
+        <div className="flex flex-col items-center justify-center py-4 relative">
+          <div className="absolute inset-0 flex items-center justify-center opacity-20 pointer-events-none">
+            <div className="w-full h-[1px] bg-gradient-to-r from-transparent via-primary to-transparent" />
+          </div>
+          <div className="glass-card px-4 py-1.5 rounded-full border border-primary/30 z-10">
+            <h4 className="text-primary text-[10px] font-black leading-normal tracking-[0.2em] uppercase">
+              ID МАСТЕРА: CNCT-992-PX
+            </h4>
+          </div>
+          <p className="text-white/40 text-[11px] mt-2 font-medium tracking-tight">
+            ТЕРМИНАЛ // ГЛУБОКОЕ КОСМОС
+          </p>
+        </div>
+
+        {/* Performance Metrics */}
+        <div className="grid grid-cols-1 gap-4">
+          <MetricCard label="Метрика 01" value={sessionMetrics?.technique || 85} color="blue" icon="auto_awesome" />
+          <MetricCard label="Метрика 02" value={sessionMetrics?.empathy || 92} color="magenta" icon="favorite" />
+          <MetricCard label="Метрика 03" value={sessionMetrics?.structure || 78} color="green" icon="account_tree" />
+          <MetricCard label="Метрика 04" value={sessionMetrics?.ethics || 96} color="primary" icon="verified_user" />
+        </div>
+
+        {/* Insight Text */}
+        <div className="py-4 border-t border-white/5 mt-2">
+          <p className="text-white/70 text-sm leading-relaxed tracking-tight">
+            <span className="text-white font-bold">Аналитический вывод:</span> {sessionMetrics?.insight || "Клиент продемонстрировал исключительную эмоциональную резонансность. Рекомендуется увеличить структурную сложность для соответствия высоким баллам эмпатии."}
+          </p>
+        </div>
+
+        {/* CTA Section */}
+        <div className="mt-auto pt-6 pb-10 flex flex-col gap-4">
+          {!isSubscribed && (
+            <button 
+              onClick={() => setScreen(SCREENS.pro_dashboard)}
+              className="premium-shine w-full py-5 rounded-2xl flex items-center justify-center gap-3 shadow-[0_20px_40px_rgba(99,102,242,0.3)] transition-all active:scale-95 group"
+            >
+              <span className="text-xl">💎</span>
+              <span className="text-white font-extrabold tracking-tight">PRO для PDF отчета</span>
+              <span className="material-symbols-outlined text-white/50 text-lg group-hover:translate-x-1 transition-transform">arrow_forward</span>
+            </button>
+          )}
+          <button 
+            onClick={() => setScreen(SCREENS.terminal_dashboard)}
+            className="w-full py-4 text-white/40 font-bold text-xs uppercase tracking-widest hover:text-white transition-colors"
+          >
+            Вернуться в Терминал
+          </button>
+        </div>
+      </main>
+
+      <div className="home-indicator" />
+    </div>
+  );
+};
+
+// 7. CLIENT HUB SCREEN (B2C - Super Premium)
+const ClientHubScreen = ({ setScreen, handleSend, diamonds, isSubscribed }) => {
+  return (
+    <div className="h-screen flex flex-col bg-[#020617] overflow-hidden">
+      <GlobalStyles />
+      <div className="mesh-bg" />
+      
+      {/* Header with Diamonds */}
+      <header className="sticky top-0 z-50 p-4 glass-card rounded-b-2xl border-b border-white/5">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="size-10 rounded-full border border-primary/50 p-0.5">
+              <div className="w-full h-full rounded-full bg-center bg-cover" 
+                   style={{backgroundImage: 'url("https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400&h=400&fit=crop&crop=face")'}} />
+            </div>
+            <div>
+              <h2 className="text-xs uppercase tracking-widest text-primary font-bold">Client Portal</h2>
+              <p className="text-sm font-medium">Connectum AI Therapy</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 bg-primary/15 px-5 py-2.5 rounded-2xl border border-primary/25 shadow-lg">
+            <span className="text-[13px] font-black text-primary tracking-tighter">{diamonds}</span>
+            <span className="material-symbols-outlined text-primary text-sm">diamond</span>
+          </div>
+        </div>
+      </header>
+
+      <main className="flex-1 px-6 py-4 flex flex-col gap-6 overflow-y-auto no-scrollbar pb-32">
+        {/* Premium Card */}
+        <div className="p-12 bg-gradient-to-br from-indigo-600/35 to-indigo-900/60 rounded-[4rem] border border-indigo-500/25 flex justify-between items-center relative overflow-hidden group active:scale-95 transition shadow-5xl">
+          <div className="absolute -bottom-12 -right-12 opacity-10 group-hover:scale-125 transition-transform duration-1000 rotate-12">
+            <span className="material-symbols-outlined text-[100px]">diamond</span>
+          </div>
+          <div className="relative z-10">
+            <h4 className="text-[12px] font-black uppercase text-indigo-300 tracking-[0.4em]">Client Premium</h4>
+            <p className="text-[14px] font-bold text-indigo-100/70 mt-3 uppercase tracking-tight leading-none">ИИ-терапия 24/7</p>
+          </div>
+          <div className="relative z-10 text-right">
+            <span className="text-4xl font-black text-white leading-none">1990₽</span>
+            <button className="block bg-indigo-500 hover:bg-indigo-400 text-[11px] font-black uppercase px-10 py-4.5 rounded-2xl mt-6 shadow-3xl active:scale-95 transition-all">
+              Купить
+            </button>
+          </div>
+        </div>
+
+        {/* Action Buttons - Split into 2 sections */}
+        <div className="grid gap-6">
+          {/* ИИ-Диагностика */}
+          <div className="glass-card p-6 rounded-2xl border-l-4 border-l-indigo-500">
+            <div className="flex items-center gap-4 mb-4">
+              <div className="size-14 rounded-2xl bg-indigo-500/15 flex items-center justify-center text-3xl">
+                🔍
+              </div>
+              <div>
+                <h4 className="text-xl font-black text-white uppercase tracking-tight">ИИ-Диагностика</h4>
+                <p className="text-[11px] font-bold text-indigo-300 uppercase tracking-widest">Deep Root Analysis</p>
+              </div>
+            </div>
+            <p className="text-white/70 text-sm mb-4 leading-relaxed">
+              Глубокий анализ корня проблемы через интегральный подход. Поиск скрытых паттернов и ограничивающих убеждений.
+            </p>
+            <button 
+              onClick={() => {
+                setScreen(SCREENS.chat);
+                handleSend("Мне нужна глубокая диагностика моего текущего состояния", true, 'chat', 'diagnostics');
+              }}
+              className="w-full py-4 bg-indigo-500 hover:bg-indigo-400 text-white font-bold rounded-xl transition-all active:scale-95 flex items-center justify-center gap-2"
+            >
+              <span className="material-symbols-outlined">search</span>
+              Начать диагностику
+            </button>
+          </div>
+
+          {/* ИИ-Психолог */}
+          <div className="glass-card p-6 rounded-2xl border-l-4 border-l-emerald-500">
+            <div className="flex items-center gap-4 mb-4">
+              <div className="size-14 rounded-2xl bg-emerald-500/15 flex items-center justify-center text-3xl">
+                ✨
+              </div>
+              <div>
+                <h4 className="text-xl font-black text-white uppercase tracking-tight">ИИ-Психолог</h4>
+                <p className="text-[11px] font-bold text-emerald-300 uppercase tracking-widest">24/7 Support</p>
+              </div>
+            </div>
+            <p className="text-white/70 text-sm mb-4 leading-relaxed">
+              Бережная психологическая поддержка в любое время. Адаптивные методы терапии под ваше текущее состояние.
+            </p>
+            <button 
+              onClick={() => {
+                setScreen(SCREENS.chat);
+                handleSend("Мне нужна срочная психологическая помощь", true, 'chat', 'therapy');
+              }}
+              className="w-full py-4 bg-emerald-500 hover:bg-emerald-400 text-white font-bold rounded-xl transition-all active:scale-95 flex items-center justify-center gap-2"
+            >
+              <span className="material-symbols-outlined">support_agent</span>
+              Получить поддержку
+            </button>
+          </div>
+        </div>
+
+        {/* Referral */}
+        <button className="w-full text-center text-[12px] font-black text-indigo-400 uppercase tracking-[0.5em] bg-indigo-500/5 p-9 rounded-[3.2rem] border border-indigo-500/15 shadow-xl mt-10 transition-all flex items-center justify-center gap-4 transform hover:scale-[1.02]">
+          Приведи друга = +3 <span className="material-symbols-outlined text-sm">diamond</span>
+        </button>
+      </main>
+
+      <BottomNavigation screen={SCREENS.client_hub} setScreen={setScreen} />
+    </div>
+  );
+};
+
+// 8. MASTERS GALLERY SCREEN
+const MastersGalleryScreen = ({ setScreen, isSubscribed, masters }) => {
+  return (
+    <div className="h-screen flex flex-col bg-[#020617] overflow-hidden">
+      <GlobalStyles />
+      <div className="mesh-bg" />
+      
+      <TopAppBar 
+        onBack={() => setScreen(SCREENS.terminal_dashboard)}
+        title="Витрина"
+        onSettings={() => {}}
+        settingsIcon="search"
+      />
+
+      <main className="flex-1 px-6 py-4 flex flex-col gap-8 overflow-y-auto no-scrollbar pb-32">
+        {/* Podium */}
+        <div className="flex flex-col gap-6 mb-10">
+          {/* 1st Place */}
+          <div className="glass-card p-5 rounded-xl border-t border-neon-gold/30 relative overflow-hidden">
+            <div className="absolute top-0 right-0 p-3 opacity-20">
+              <span className="material-symbols-outlined text-neon-gold text-6xl">military_tech</span>
+            </div>
+            <div className="flex items-center gap-5">
+              <div className="relative">
+                <div className="size-24 rounded-full bg-cover bg-center border-2 border-neon-gold shadow-[0_0_15px_rgba(255,168,5,0.5)]"
+                     style={{backgroundImage: 'url("https://api.dicebear.com/7.x/avataaars/svg?seed=DrJulian&backgroundColor=transparent")'}} />
+                <div className="absolute -bottom-2 -right-2 bg-neon-gold text-black text-[10px] font-black px-2 py-0.5 rounded-full shadow-lg">1ST</div>
+              </div>
+              <div className="flex-1">
+                <h2 className="text-2xl font-bold tracking-tighter text-white">Dr. Julian Vane</h2>
+                <p className="text-[10px] font-bold tracking-widest text-neon-gold uppercase mb-3">Master ID: CP-001</p>
+                <div className="flex gap-4">
+                  <div>
+                    <p className="text-[9px] text-white/50 uppercase tracking-widest mb-0.5">Transformations</p>
+                    <p className="text-xl font-bold leading-none">154</p>
+                  </div>
+                  <div className="w-px h-8 bg-white/10" />
+                  <div>
+                    <p className="text-[9px] text-white/50 uppercase tracking-widest mb-0.5">Mastery Level</p>
+                    <p className="text-xl font-bold leading-none text-neon-gold">9.9</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* 2nd and 3rd */}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="glass-card p-4 rounded-xl border-t border-silver/30 relative">
+              <div className="flex flex-col items-center text-center">
+                <div className="relative mb-3">
+                  <div className="size-16 rounded-full bg-cover bg-center border-2 border-silver shadow-[0_0_10px_rgba(192,192,192,0.3)]"
+                       style={{backgroundImage: 'url("https://api.dicebear.com/7.x/avataaars/svg?seed=DrElena&backgroundColor=transparent")'}} />
+                  <div className="absolute -bottom-1 -right-1 bg-silver text-black text-[9px] font-black px-1.5 py-0.5 rounded-full">2ND</div>
+                </div>
+                <h3 className="text-sm font-bold tracking-tighter line-clamp-1">Dr. Elena Thorne</h3>
+                <p className="text-[10px] text-silver font-bold tracking-tighter mb-3">9.8 Mastery</p>
+                <div className="w-full h-1 bg-white/10 rounded-full overflow-hidden">
+                  <div className="h-full bg-silver w-[98%]" />
+                </div>
+              </div>
+            </div>
+            <div className="glass-card p-4 rounded-xl border-t border-bronze/30 relative">
+              <div className="flex flex-col items-center text-center">
+                <div className="relative mb-3">
+                  <div className="size-16 rounded-full bg-cover bg-center border-2 border-bronze shadow-[0_0_10px_rgba(205,127,50,0.3)]"
+                       style={{backgroundImage: 'url("https://api.dicebear.com/7.x/avataaars/svg?seed=ProfMarcus&backgroundColor=transparent")'}} />
+                  <div className="absolute -bottom-1 -right-1 bg-bronze text-black text-[9px] font-black px-1.5 py-0.5 rounded-full">3RD</div>
+                </div>
+                <h3 className="text-sm font-bold tracking-tighter line-clamp-1">Prof. Marcus Reeve</h3>
+                <p className="text-[10px] text-bronze font-bold tracking-tighter mb-3">9.7 Mastery</p>
+                <div className="w-full h-1 bg-white/10 rounded-full overflow-hidden">
+                  <div className="h-full bg-bronze w-[97%]" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* List Header */}
+        <div className="flex items-center justify-between px-1 mb-4">
+          <h3 className="text-[10px] font-black tracking-widest-extra text-white/40 uppercase">Элитный рейтинг</h3>
+          <span className="text-[10px] font-bold text-neon-gold px-2 py-0.5 bg-neon-gold/10 rounded border border-neon-gold/20">
+            ВСЕГО: 1,402
+          </span>
+        </div>
+
+        {/* Scrollable List */}
+        <div className="flex flex-col gap-3">
+          {[4, 5, 6, 7].map(rank => (
+            <div key={rank} className="glass-card rounded-lg p-3 flex items-center gap-4 group hover:border-primary/30 transition-all">
+              <span className="text-white/20 font-black italic text-lg w-6">{rank.toString().padStart(2, '0')}</span>
+              <div className="size-12 rounded-lg bg-cover bg-center border border-white/10"
+                   style={{backgroundImage: `url("https://api.dicebear.com/7.x/avataaars/svg?seed=Master${rank}&backgroundColor=transparent")`}} />
+              <div className="flex-1">
+                <h4 className="text-sm font-bold tracking-tighter">Dr. Sarah Kostic</h4>
+                <p className="text-[9px] text-white/40 tracking-widest uppercase">ID: CP-9021</p>
+              </div>
+              <div className="flex flex-col items-end gap-1">
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] text-white/40 uppercase font-bold">Ур</span>
+                  <span className="text-xs font-bold text-white">9.6</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <div className="w-12 h-1 bg-white/10 rounded-full overflow-hidden">
+                    <div className="bg-primary h-full w-[80%]" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </main>
+
+      <BottomNavigation screen={SCREENS.masters_gallery} setScreen={setScreen} />
+    </div>
+  );
+};
+
+// 9. PROFILE SCREEN
+const ProfileScreen = ({ 
+  setScreen, 
+  diamonds, 
+  userProfile, 
+  setUserProfile, 
+  handlePhotoUpload,
+  fileInputRef
+}) => {
+  const [isEditing, setIsEditing] = useState(false);
+  const [editData, setEditData] = useState(userProfile);
+
+  const handleSave = () => {
+    setUserProfile(editData);
+    setIsEditing(false);
+    showToast("Профиль сохранен");
+  };
+
+  return (
+    <div className="h-screen flex flex-col bg-[#020617] overflow-hidden">
+      <GlobalStyles />
+      <div className="mesh-bg" />
+      
+      <TopAppBar 
+        onBack={() => setScreen(SCREENS.terminal_dashboard)}
+        title="Профиль"
+        onSettings={() => setScreen(SCREENS.settings)}
+        settingsIcon="bolt"
+      />
+
+      <main className="flex-1 px-6 py-4 flex flex-col gap-8 overflow-y-auto no-scrollbar pb-32">
+        {/* Profile Header */}
+        <div className="flex flex-col items-center pt-4">
+          <div className="relative mb-8">
+            <div className="absolute inset-0 rounded-full bg-primary blur-xl opacity-20 animate-pulse" />
+            <div className="relative p-1 rounded-full bg-gradient-to-tr from-primary via-primary/20 to-primary/80">
+              <div className="bg-center bg-no-repeat aspect-square bg-cover rounded-full h-48 w-48 border-4 border-[#020617] cursor-pointer"
+                   onClick={() => fileInputRef.current?.click()}
+                   style={{backgroundImage: editData.photoUrl 
+                     ? `url(${editData.photoUrl})` 
+                     : 'url("https://api.dicebear.com/7.x/avataaars/svg?seed=psychologist&backgroundColor=transparent")'}}>
+              </div>
+              <input 
+                ref={fileInputRef}
+                type="file" 
+                className="hidden" 
+                accept="image/*" 
+                onChange={handlePhotoUpload}
+              />
+            </div>
+            <div className="absolute -bottom-2 right-12 bg-primary text-background-dark text-[10px] font-bold px-3 py-1 rounded-full tracking-tighter uppercase shadow-[0_0_10px_rgba(0,238,255,0.6)]">
+              Platinum
+            </div>
+          </div>
+          <div className="flex flex-col items-center justify-center mb-4">
+            {isEditing ? (
+              <input 
+                type="text"
+                value={editData.name || ''}
+                onChange={(e) => setEditData({...editData, name: e.target.value})}
+                className="bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-white text-3xl font-bold text-center focus:ring-2 focus:ring-primary outline-none"
+                placeholder="Имя Фамилия"
+              />
+            ) : (
+              <p className="text-white text-3xl font-bold leading-tight tracking-[-0.02em] text-center mb-1">
+                {userProfile.name || 'Dr. Aris Thorne'}
+              </p>
+            )}
+            <div className="flex items-center gap-2 mb-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-primary shadow-[0_0_5px_#00eeff]" />
+              <p className="text-primary/80 text-sm font-medium tracking-widest uppercase">Clinical Psychology</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Profile Fields */}
+        <div className="w-full flex flex-col gap-3 mb-12">
+          {/* Experience */}
+          <div className="glass-card px-5 py-4 rounded-xl">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-3">
+                <div className="text-primary flex items-center justify-center rounded-lg bg-primary/10 shrink-0 size-10">
+                  <span className="material-symbols-outlined text-sm">work_history</span>
+                </div>
+                <span className="text-white/60 text-[10px] font-bold uppercase tracking-widest">Опыт работы</span>
+              </div>
+              {isEditing && (
+                <input 
+                  type="text"
+                  value={editData.experience || ''}
+                  onChange={(e) => setEditData({...editData, experience: e.target.value})}
+                  className="bg-white/5 border border-white/10 rounded px-2 py-1 text-white text-xs w-24 text-right"
+                  placeholder="12+ лет"
+                />
+              )}
+            </div>
+            {!isEditing && (
+              <p className="text-white text-base font-medium">{userProfile.experience || '12+ Years High-Performance'}</p>
+            )}
+          </div>
+
+          {/* Methods */}
+          <div className="glass-card px-5 py-4 rounded-xl">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-3">
+                <div className="text-primary flex items-center justify-center rounded-lg bg-primary/10 shrink-0 size-10">
+                  <span className="material-symbols-outlined text-sm">psychology</span>
+                </div>
+                <span className="text-white/60 text-[10px] font-bold uppercase tracking-widest">Методы</span>
+              </div>
+              {isEditing && (
+                <input 
+                  type="text"
+                  value={editData.methods || ''}
+                  onChange={(e) => setEditData({...editData, methods: e.target.value})}
+                  className="bg-white/5 border border-white/10 rounded px-2 py-1 text-white text-xs w-32 text-right"
+                  placeholder="CBT, MPT..."
+                />
+              )}
+            </div>
+            {!isEditing && (
+              <p className="text-white text-base font-medium">{userProfile.methods || 'CBT & Neuro-Linguistic'}</p>
+            )}
+          </div>
+
+          {/* Price */}
+          <div className="glass-card px-5 py-4 rounded-xl">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-3">
+                <div className="text-primary flex items-center justify-center rounded-lg bg-primary/10 shrink-0 size-10">
+                  <span className="material-symbols-outlined text-sm">payments</span>
+                </div>
+                <span className="text-white/60 text-[10px] font-bold uppercase tracking-widest">Стоимость</span>
+              </div>
+              {isEditing && (
+                <input 
+                  type="number"
+                  value={editData.price || ''}
+                  onChange={(e) => setEditData({...editData, price: e.target.value})}
+                  className="bg-white/5 border border-white/10 rounded px-2 py-1 text-white text-xs w-24 text-right"
+                  placeholder="0"
+                />
+              )}
+            </div>
+            {!isEditing && (
+              <div className="flex items-center justify-between">
+                <p className="text-white text-base font-medium">{userProfile.price ? `${userProfile.price}₽` : 'Premium Tier Sessions'}</p>
+                <p className="text-primary text-xs font-bold bg-primary/10 px-2 py-1 rounded">PLATINUM</p>
+              </div>
+            )}
+          </div>
+
+          {/* About */}
+          <div className="glass-card px-5 py-4 rounded-xl">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-3">
+                <div className="text-primary flex items-center justify-center rounded-lg bg-primary/10 shrink-0 size-10">
+                  <span className="material-symbols-outlined text-sm">description</span>
+                </div>
+                <span className="text-white/60 text-[10px] font-bold uppercase tracking-widest">О себе</span>
+              </div>
+              {isEditing && (
+                <button onClick={handleSave} className="bg-primary text-white text-xs font-bold px-3 py-1 rounded hover:bg-primary/80">
+                  Сохранить
+                </button>
+              )}
+            </div>
+            {isEditing ? (
+              <textarea 
+                value={editData.about || ''}
+                onChange={(e) => setEditData({...editData, about: e.target.value})}
+                className="w-full bg-white/5 border border-white/10 rounded px-3 py-2 text-white text-sm min-h-[80px] focus:ring-2 focus:ring-primary outline-none"
+                placeholder="Расскажите о себе, вашем опыте и подходе к терапии..."
+              />
+            ) : (
+              <p className="text-white/70 text-sm leading-relaxed">
+                {userProfile.about || 'Специализируюсь на интегральной терапии и работе с глубинными паттернами. Помогаю клиентам преодолевать ограничения и достигать осознанности.'}
+              </p>
+            )}
+          </div>
+
+          {/* Video Pitch */}
+          <div className="glass-card-hover glass-card px-5 py-4 rounded-xl justify-between cursor-pointer transition-all"
+               onClick={() => !isEditing && setScreen(SCREENS.radar)}>
+            <div className="flex items-center gap-4">
+              <div className="text-primary flex items-center justify-center rounded-lg bg-primary/10 shrink-0 size-11">
+                <span className="material-symbols-outlined">videocam</span>
+              </div>
+              <div className="flex flex-col justify-center">
+                <p className="text-white/60 text-[10px] font-bold uppercase tracking-widest">Видео-визитка</p>
+                <p className="text-white text-base font-medium">Профессиональное введение</p>
+              </div>
+            </div>
+            <div className="shrink-0">
+              <span className="material-symbols-outlined text-white/40">arrow_forward_ios</span>
+            </div>
+          </div>
+
+          {/* Edit Toggle */}
+          <button 
+            onClick={() => setIsEditing(!isEditing)}
+            className="w-full py-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-white font-bold transition-colors flex items-center justify-center gap-2"
+          >
+            <span className="material-symbols-outlined">{isEditing ? 'close' : 'edit'}</span>
+            {isEditing ? 'Отменить редактирование' : 'Редактировать профиль'}
+          </button>
+        </div>
+
+        {/* Quest Hub */}
+        <div className="w-full">
+          <div className="flex items-end justify-between mb-6">
+            <div>
+              <h3 className="text-2xl font-bold tracking-tight">Квесты</h3>
+              <p className="text-white/40 text-sm">Выполняйте задания для повышения уровня</p>
+            </div>
+            <div className="flex items-center gap-1.5 bg-white/5 border border-white/10 px-3 py-1.5 rounded-full">
+              <span className="material-symbols-outlined text-primary text-sm">diamond</span>
+              <span className="text-primary font-bold text-sm">{diamonds}</span>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 gap-4">
+            <div className="relative group">
+              <div className="absolute -inset-0.5 bg-gradient-to-r from-primary to-purple-600 rounded-xl opacity-20 blur group-hover:opacity-40 transition" />
+              <div className="relative glass-card p-5 rounded-xl flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <div className="size-12 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center">
+                    <span className="material-symbols-outlined text-primary">add_a_photo</span>
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-sm">Профиль</h4>
+                    <p className="text-xs text-white/50">Загрузите фото профиля</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 bg-primary/10 text-primary px-3 py-1.5 rounded-lg border border-primary/20">
+                  <span className="text-xs font-bold">+1</span>
+                  <span className="material-symbols-outlined text-sm">diamond</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="relative group">
+              <div className="absolute -inset-0.5 bg-gradient-to-r from-primary to-indigo-600 rounded-xl opacity-20 blur group-hover:opacity-40 transition" />
+              <div className="relative glass-card p-5 rounded-xl flex items-center justify-between border-primary/30">
+                <div className="flex items-center gap-4">
+                  <div className="size-12 rounded-lg bg-primary/20 border border-primary/40 flex items-center justify-center shadow-[0_0_10px_rgba(0,238,255,0.2)]">
+                    <span className="material-symbols-outlined text-primary">play_circle</span>
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-sm">Видео-визитка</h4>
+                    <p className="text-xs text-white/50">Загрузите 60 секунд</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 bg-primary/20 text-primary px-3 py-1.5 rounded-lg border border-primary/30">
+                  <span className="text-xs font-bold">+3</span>
+                  <span className="material-symbols-outlined text-sm">diamond</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="relative glass-card p-6 rounded-2xl border-primary/40 overflow-hidden">
+              <div className="absolute top-0 right-0 p-3 opacity-10">
+                <span className="material-symbols-outlined text-[100px] -rotate-12">groups</span>
+              </div>
+              <div className="relative z-10">
+                <div className="flex items-center gap-2 mb-4">
+                  <span className="material-symbols-outlined text-primary">stars</span>
+                  <h4 className="font-bold text-lg tracking-tight">Амбассадор</h4>
+                </div>
+                <p className="text-white/60 text-sm mb-6 leading-relaxed">
+                  Приглашайте коллег в систему. Получайте постоянные множители за каждого приглашенного.
+                </p>
+                <div className="flex flex-col gap-3">
+                  <div className="flex items-center bg-black/40 border border-white/10 rounded-lg overflow-hidden group/link">
+                    <div className="flex-1 px-4 py-3 text-xs font-mono text-white/40 truncate">
+                      connectum.pro/ref/aris_thorne_99
+                    </div>
+                    <button className="bg-primary text-background-dark px-4 py-3 flex items-center justify-center hover:bg-white transition-colors">
+                      <span className="material-symbols-outlined text-lg">content_copy</span>
+                    </button>
+                  </div>
+                  <div className="flex items-center justify-center gap-2 py-2 text-[10px] font-bold text-primary tracking-[0.2em] uppercase">
+                    <span className="w-8 h-px bg-primary/20" />
+                    Следующая награда: Elite Badge
+                    <span className="w-8 h-px bg-primary/20" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+
+      <BottomNavigation screen={SCREENS.profile} setScreen={setScreen} />
+    </div>
+  );
+};
+
+// 10. SETTINGS SCREEN
+const SettingsScreen = ({ setScreen, isSubscribed, setIsSubscribed }) => {
+  const [settings, setSettings] = useState({
+    theme: 'dark',
+    notifications: true,
+    autoSave: true
+  });
+
+  const handleLogout = () => {
+    localStorage.clear();
+    setScreen(SCREENS.loading);
+  };
+
+  return (
+    <div className="h-screen flex flex-col bg-[#020617] overflow-hidden">
+      <GlobalStyles />
+      <div className="mesh-bg" />
+      
+      <TopAppBar 
+        onBack={() => setScreen(SCREENS.profile)}
+        title="Настройки"
+      />
+
+      <main className="flex-1 px-6 py-4 flex flex-col gap-6 overflow-y-auto no-scrollbar pb-32">
+        {/* Subscription Status */}
+        <div className="glass-card p-6 rounded-2xl">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h3 className="text-lg font-bold">Статус подписки</h3>
+              <p className="text-white/60 text-sm">
+                {isSubscribed ? 'PRO Тариф активен' : 'Free Тариф'}
+              </p>
+            </div>
+            <span className={`px-3 py-1 rounded-full text-xs font-bold ${
+              isSubscribed ? 'bg-neon-gold text-black' : 'bg-white/10 text-white/60'
+            }`}>
+              {isSubscribed ? 'PRO' : 'FREE'}
+            </span>
+          </div>
+          {!isSubscribed && (
+            <button 
+              onClick={() => setScreen(SCREENS.pro_dashboard)}
+              className="w-full py-3 bg-neon-gold text-black font-bold rounded-xl hover:bg-yellow-400 transition-colors"
+            >
+              Активировать PRO
+            </button>
+          )}
+        </div>
+
+        {/* PRO Features */}
+        {isSubscribed && (
+          <div className="glass-card p-6 rounded-2xl">
+            <h3 className="text-lg font-bold mb-4">PRO Функции</h3>
+            <div className="space-y-3">
+              {[
+                'Бесконечные сессии',
+                'Расширенный аудит',
+                'PDF отчеты',
+                'Витрина мастеров',
+                'Приоритет выдачи'
+              ].map((feature, i) => (
+                <div key={i} className="flex items-center gap-3">
+                  <span className="material-symbols-outlined text-neon-gold text-sm">check_circle</span>
+                  <span className="text-white/80 text-sm">{feature}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Settings */}
+        <div className="glass-card p-6 rounded-2xl">
+          <h3 className="text-lg font-bold mb-4">Настройки</h3>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <span className="text-white/80">Тема</span>
+              <span className="text-white/40 text-sm">Тёмная (по умолчанию)</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-white/80">Уведомления</span>
+              <input 
+                type="checkbox" 
+                checked={settings.notifications}
+                onChange={(e) => setSettings({...settings, notifications: e.target.checked})}
+                className="h-5 w-5 rounded border-white/20 bg-transparent text-primary focus:ring-primary focus:outline-none appearance-none border-2 checked:border-primary transition-all cursor-pointer"
+              />
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-white/80">Автосохранение</span>
+              <input 
+                type="checkbox" 
+                checked={settings.autoSave}
+                onChange={(e) => setSettings({...settings, autoSave: e.target.checked})}
+                className="h-5 w-5 rounded border-white/20 bg-transparent text-primary focus:ring-primary focus:outline-none appearance-none border-2 checked:border-primary transition-all cursor-pointer"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Data Management */}
+        <div className="glass-card p-6 rounded-2xl">
+          <h3 className="text-lg font-bold mb-4">Управление данными</h3>
+          <div className="space-y-3">
+            <button className="w-full py-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-sm font-bold transition-colors">
+              Экспорт данных
+            </button>
+            <button className="w-full py-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-sm font-bold transition-colors">
+              Очистка кэша
+            </button>
+          </div>
+        </div>
+
+        {/* Logout */}
+        <button 
+          onClick={handleLogout}
+          className="w-full py-4 bg-red-500/20 hover:bg-red-500/30 border border-red-500/30 rounded-2xl text-red-400 font-bold transition-colors"
+        >
+          Выйти из аккаунта
+        </button>
+      </main>
+
+      <div className="home-indicator" />
+    </div>
+  );
+};
+
+// 11. PRO DASHBOARD SCREEN
+const ProDashboardScreen = ({ setScreen, history }) => {
+  const proStats = {
+    totalSessions: history.length,
+    avgScore: history.length > 0 
+      ? Math.round(history.reduce((sum, s) => sum + s.metrics.empathy, 0) / history.length)
+      : 0,
+    activeClients: 3
+  };
+
+  return (
+    <div className="h-screen flex flex-col bg-[#020617] overflow-hidden">
+      <GlobalStyles />
+      <div className="mesh-bg" />
+      
+      <TopAppBar 
+        onBack={() => setScreen(SCREENS.settings)}
+        title="PRO Dashboard"
+      />
+
+      <main className="flex-1 px-6 py-4 flex flex-col gap-6 overflow-y-auto no-scrollbar pb-32">
+        {/* Statistics */}
+        <div className="grid grid-cols-3 gap-4">
+          <div className="glass-card p-4 rounded-xl text-center">
+            <p className="text-3xl font-black text-white">{proStats.totalSessions}</p>
+            <p className="text-[10px] text-white/60 uppercase tracking-widest mt-1">Сессии</p>
+          </div>
+          <div className="glass-card p-4 rounded-xl text-center">
+            <p className="text-3xl font-black text-neon-gold">{proStats.avgScore}%</p>
+            <p className="text-[10px] text-white/60 uppercase tracking-widest mt-1">Средний балл</p>
+          </div>
+          <div className="glass-card p-4 rounded-xl text-center">
+            <p className="text-3xl font-black text-primary">{proStats.activeClients}</p>
+            <p className="text-[10px] text-white/60 uppercase tracking-widest mt-1">Клиенты</p>
+          </div>
+        </div>
+
+        {/* Quick Actions */}
+        <div className="glass-card p-6 rounded-2xl">
+          <h3 className="text-lg font-bold mb-4">Быстрые действия</h3>
+          <div className="space-y-3">
+            <button 
+              onClick={() => setScreen(SCREENS.pdf_report)}
+              className="w-full py-3 bg-primary hover:bg-primary/80 rounded-xl text-sm font-bold transition-colors flex items-center justify-center gap-2"
+            >
+              <span className="material-symbols-outlined">picture_as_pdf</span>
+              Генерация PDF отчета
+            </button>
+            <button 
+              onClick={() => setScreen(SCREENS.masters_gallery)}
+              className="w-full py-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-sm font-bold transition-colors flex items-center justify-center gap-2"
+            >
+              <span className="material-symbols-outlined">leaderboard</span>
+              Доступ к витрине
+            </button>
+            <button className="w-full py-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-sm font-bold transition-colors flex items-center justify-center gap-2">
+              <span className="material-symbols-outlined">support_agent</span>
+              Приоритетная поддержка
+            </button>
+          </div>
+        </div>
+
+        {/* History */}
+        <div className="glass-card p-6 rounded-2xl">
+          <h3 className="text-lg font-bold mb-4">История сессий</h3>
+          {history.length === 0 ? (
+            <p className="text-white/40 text-sm text-center py-4">Нет завершенных сессий</p>
+          ) : (
+            <div className="space-y-3">
+              {history.slice(-5).reverse().map((session, i) => (
+                <div key={i} className="flex items-center justify-between py-2 border-b border-white/5">
+                  <div>
+                    <p className="text-sm font-bold">{session.clientId}</p>
+                    <p className="text-[10px] text-white/40">{new Date(session.date).toLocaleDateString()}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm font-bold text-neon-gold">{session.metrics.empathy}%</p>
+                    <p className="text-[10px] text-white/40">Эмпатия</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </main>
+
+      <div className="home-indicator" />
+    </div>
+  );
+};
+
+// 12. PDF REPORT SCREEN
+const PdfReportScreen = ({ setScreen }) => {
+  return (
+    <div className="h-screen flex flex-col bg-[#020617] overflow-hidden">
+      <GlobalStyles />
+      <div className="mesh-bg" />
+      
+      <TopAppBar 
+        onBack={() => setScreen(SCREENS.pro_dashboard)}
+        title="PDF Аудит Отчет"
+      />
+
+      <main className="flex-1 px-6 py-4 flex flex-col gap-6 overflow-y-auto no-scrollbar pb-32">
+        {/* Preview */}
+        <div className="glass-card p-8 rounded-2xl aspect-[3/4] flex items-center justify-center">
+          <div className="text-center">
+            <span className="material-symbols-outlined text-6xl text-white/20 mb-4">description</span>
+            <p className="text-white/40 text-sm">PDF Предпросмотр</p>
+          </div>
+        </div>
+
+        {/* Details */}
+        <div className="glass-card p-6 rounded-2xl">
+          <h3 className="text-lg font-bold mb-4">Детали отчета</h3>
+          <div className="space-y-3">
+            <div className="flex justify-between">
+              <span className="text-white/60">ID Сессии</span>
+              <span className="text-white font-mono">CNCT-992-PX</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-white/60">Дата</span>
+              <span className="text-white">{new Date().toLocaleDateString()}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-white/60">Длительность</span>
+              <span className="text-white">29:57</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Recommendations */}
+        <div className="glass-card p-6 rounded-2xl">
+          <h3 className="text-lg font-bold mb-4">Рекомендации</h3>
+          <p className="text-white/70 text-sm leading-relaxed">
+            Клиент продемонстрировал исключительную эмоциональную резонансность. Рекомендуется увеличить структурную сложность для соответствия высоким баллам эмпатии.
+          </p>
+        </div>
+
+        {/* Actions */}
+        <div className="space-y-3">
+          <button className="w-full py-4 premium-shine rounded-2xl text-white font-bold flex items-center justify-center gap-2">
+            <span className="material-symbols-outlined">download</span>
+            Скачать PDF
+          </button>
+          <button className="w-full py-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl text-white font-bold flex items-center justify-center gap-2">
+            <span className="material-symbols-outlined">share</span>
+            Поделиться
+          </button>
+        </div>
+      </main>
+
+      <div className="home-indicator" />
+    </div>
+  );
+};
+
+// 13. WAITLIST SCREEN
+const WaitlistScreen = ({ setScreen }) => {
+  const [agreed, setAgreed] = useState(false);
+
+  const handleJoinWaitlist = () => {
+    if (!agreed) return;
+    // API call would go here
+    alert("Заявка отправлена админу");
+    setScreen(SCREENS.terminal_dashboard);
+  };
+
+  return (
+    <div className="h-screen flex flex-col bg-[#020617] overflow-hidden">
+      <GlobalStyles />
+      <div className="mesh-bg" />
+      
+      <TopAppBar 
+        onBack={() => setScreen(SCREENS.terminal_dashboard)}
+        title="Лист ожидания"
+      />
+
+      <main className="flex-1 px-6 py-4 flex flex-col items-center justify-center gap-6">
+        <div className="glass-card p-8 rounded-2xl text-center max-w-sm">
+          <div className="relative mb-8">
+            <div className="absolute inset-0 bg-neon-gold/20 blur-2xl rounded-full" />
+            <div className="relative flex items-center justify-center size-20 rounded-full border-2 border-neon-gold/30 bg-neon-gold/10 mx-auto">
+              <span className="material-symbols-outlined text-4xl text-neon-gold">hourglass_empty</span>
+            </div>
+          </div>
+          
+          <h1 className="text-white tracking-tighter text-2xl font-black leading-none mb-4 uppercase">
+            ЛИСТ ОЖИДАНИЯ<br/><span className="text-neon-gold">РЕГИСТРАЦИЯ</span>
+          </h1>
+          
+          <div className="w-full h-px bg-white/10 mb-6 relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-neon-gold/20 to-transparent animate-pulse" />
+          </div>
+          
+          <p className="text-white/70 text-sm font-normal leading-relaxed mb-8">
+            ОБНАРУЖЕН СБОЙ АВТОМАТИЧЕСКОЙ ТРАНЗАКЦИИ.<br/>
+            ЧТОБЫ ЗАБРОНИРОВАТЬ МЕСТО ЧЕРЕЗ <span className="text-white font-bold">РУЧНОЕ ВМЕШАТЕЛЬСТВО</span>, СОГЛАСИТЕСЬ С ПРОТОКОЛОМ НИЖЕ.
+          </p>
+          
+          <label className="flex items-start gap-4 cursor-pointer text-left mb-8">
+            <input 
+              type="checkbox" 
+              checked={agreed}
+              onChange={(e) => setAgreed(e.target.checked)}
+              className="mt-1 h-6 w-6 rounded border-white/20 bg-transparent text-neon-gold focus:ring-neon-gold focus:outline-none appearance-none border-2 checked:border-neon-gold transition-all cursor-pointer"
+            />
+            <span className="text-[11px] font-bold text-white/60 peer-checked:text-white uppercase tracking-wider leading-snug transition-colors">
+              Я СОГЛАСЕН НА <span className="text-neon-gold">20% КОМИССИЮ</span> ЗА РУЧНУЮ ОБРАБОТКУ
+            </span>
+          </label>
+          
+          <button 
+            onClick={handleJoinWaitlist}
+            className={`w-full py-4 rounded-lg font-black text-sm tracking-widest uppercase shadow-[0_0_20px_rgba(255,173,10,0.4)] transition-all active:scale-[0.98] ${
+              agreed 
+                ? 'bg-neon-gold text-background-dark hover:bg-yellow-400'
+                : 'bg-white/10 text-white/40 cursor-not-allowed'
+            }`}
+            disabled={!agreed}
+          >
+            ПОДТВЕРДИТЬ И УВЕДОМИТЬ АДМИНА
+          </button>
+        </div>
+
+        <div className="flex items-center gap-3 mt-8">
+          <div className="size-1.5 rounded-full bg-neon-gold animate-pulse" />
+          <p className="text-[10px] font-bold tracking-[0.25em] text-white/40 uppercase">
+            АДМИН_ID 7830322013 УВЕДОМЛЕН
+          </p>
+        </div>
+      </main>
+
+      <div className="home-indicator" />
+    </div>
+  );
+};
+
+// 14. MASTERY RADAR SCREEN
+const MasteryRadarScreen = ({ setScreen }) => {
+  const radarData = {
+    technique: 85,
+    empathy: 92,
+    structure: 74,
+    ethics: 68,
+    intuition: 81
+  };
+
+  return (
+    <div className="h-screen flex flex-col bg-[#020617] overflow-hidden">
+      <GlobalStyles />
+      <div className="mesh-bg" />
+      
+      <TopAppBar 
+        onBack={() => setScreen(SCREENS.profile)}
+        title="Радар Мастерства"
+        onSettings={() => {}}
+        settingsIcon="settings_input_antenna"
+      />
+
+      <main className="flex-1 px-6 py-4 flex flex-col gap-6 overflow-y-auto no-scrollbar pb-32">
+        {/* Radar SVG */}
+        <div className="relative flex flex-col items-center justify-center px-4 py-8">
+          <div className="relative w-full max-w-[340px] aspect-square flex items-center justify-center">
+            <svg className="w-full h-full drop-shadow-[0_0_20px_rgba(166,0,255,0.3)]" viewBox="0 0 100 100">
+              <polygon fill="none" points="50,5 95,35 78,90 22,90 5,35" stroke="rgba(166,0,255,0.1)" strokeWidth="0.5" />
+              <polygon fill="none" points="50,15 85,40 70,80 30,80 15,40" stroke="rgba(166,0,255,0.1)" strokeWidth="0.5" />
+              <polygon fill="none" points="50,25 75,45 65,70 35,70 25,45" stroke="rgba(166,0,255,0.1)" strokeWidth="0.5" />
+              <line stroke="rgba(166,0,255,0.2)" strokeWidth="0.5" x1="50" x2="50" y1="50" y2="5" />
+              <line stroke="rgba(166,0,255,0.2)" strokeWidth="0.5" x1="50" x2="95" y1="50" y2="35" />
+              <line stroke="rgba(166,0,255,0.2)" strokeWidth="0.5" x1="50" x2="78" y1="50" y2="90" />
+              <line stroke="rgba(166,0,255,0.2)" strokeWidth="0.5" x1="50" x2="22" y1="50" y2="90" />
+              <line stroke="rgba(166,0,255,0.2)" strokeWidth="0.5" x1="50" x2="5" y1="50" y2="35" />
+              <polygon fill="rgba(166,0,255,0.25)" points="50,15 88,38 72,82 32,75 12,42" stroke="#a600ff" strokeWidth="1.5" />
+              <circle className="neon-glow-primary" cx="50" cy="15" fill="#a600ff" r="2.5" />
+              <circle className="neon-glow-primary" cx="88" cy="38" fill="#a600ff" r="2.5" />
+              <circle className="neon-glow-primary" cx="72" cy="82" fill="#a600ff" r="2.5" />
+              <circle className="neon-glow-primary" cx="32" cy="75" fill="#a600ff" r="2.5" />
+              <circle className="neon-glow-primary" cx="12" cy="42" fill="#a600ff" r="2.5" />
+            </svg>
+            
+            {/* Tooltips */}
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-full mb-2 glass-card px-3 py-1 rounded-full border border-primary/40">
+              <span className="text-[10px] font-black tracking-widest text-primary">ТЕХ: {radarData.technique}</span>
+            </div>
+            <div className="absolute top-1/4 -right-2 glass-card px-3 py-1 rounded-full border border-primary/40">
+              <span className="text-[10px] font-black tracking-widest text-primary">ЭМП: {radarData.empathy}</span>
+            </div>
+            <div className="absolute bottom-4 right-4 glass-card px-3 py-1 rounded-full border border-primary/40">
+              <span className="text-[10px] font-black tracking-widest text-primary">СТР: {radarData.structure}</span>
+            </div>
+            <div className="absolute bottom-4 left-4 glass-card px-3 py-1 rounded-full border border-primary/40">
+              <span className="text-[10px] font-black tracking-widest text-primary">ЭТИ: {radarData.ethics}</span>
+            </div>
+            <div className="absolute top-1/3 -left-2 glass-card px-3 py-1 rounded-full border border-primary/40">
+              <span className="text-[10px] font-black tracking-widest text-primary">ИНТ: {radarData.intuition}</span>
+            </div>
+          </div>
+          
+          <div className="w-full flex justify-between px-6 mt-4 text-[9px] font-bold tracking-[0.25em] uppercase text-white/50">
+            <span>Калибровка ядра активна</span>
+            <span className="text-neon-green">Матрица синхронизирована</span>
+          </div>
+        </div>
+
+        {/* Skill Breakdown */}
+        <div>
+          <h3 className="text-white text-xs font-black leading-tight tracking-[0.3em] uppercase px-2 pb-4">
+            Диагностический разбор
+          </h3>
+          <div className="grid grid-cols-1 gap-3">
+            <div className="glass-card p-4 rounded-xl flex items-center justify-between border-l-4 border-l-neon-green">
+              <div className="flex items-center gap-4">
+                <div className="size-10 rounded-lg bg-neon-green/10 flex items-center justify-center">
+                  <span className="material-symbols-outlined text-neon-green">favorite</span>
+                </div>
+                <div>
+                  <h4 className="text-white text-sm font-bold tracking-tight uppercase">Резонанс эмпатии</h4>
+                  <p className="text-white/40 text-[10px] tracking-wider uppercase">Высокая стабильность репорта</p>
+                </div>
+              </div>
+              <div className="text-right">
+                <div className="flex items-center justify-end gap-1 mb-1">
+                  <div className="size-1.5 rounded-full bg-neon-green glow-green" />
+                  <span className="text-neon-green text-lg font-black leading-none">{radarData.empathy}</span>
+                </div>
+                <span className="text-[9px] text-neon-green/60 tracking-widest uppercase">Элитный уровень</span>
+              </div>
+            </div>
+
+            <div className="glass-card p-4 rounded-xl flex items-center justify-between border-l-4 border-l-primary">
+              <div className="flex items-center gap-4">
+                <div className="size-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                  <span className="material-symbols-outlined text-primary">psychology</span>
+                </div>
+                <div>
+                  <h4 className="text-white text-sm font-bold tracking-tight uppercase">Клиническая техника</h4>
+                  <p className="text-white/40 text-[10px] tracking-wider uppercase">Точность модальности</p>
+                </div>
+              </div>
+              <div className="text-right">
+                <div className="flex items-center justify-end gap-1 mb-1">
+                  <span className="text-white text-lg font-black leading-none">{radarData.technique}</span>
+                </div>
+                <span className="text-[9px] text-white/40 tracking-widest uppercase">Оптимально</span>
+              </div>
+            </div>
+
+            <div className="glass-card p-4 rounded-xl flex items-center justify-between border-l-4 border-l-primary/40">
+              <div className="flex items-center gap-4">
+                <div className="size-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                  <span className="material-symbols-outlined text-primary">visibility</span>
+                </div>
+                <div>
+                  <h4 className="text-white text-sm font-bold tracking-tight uppercase">Скорость инсайта</h4>
+                  <p className="text-white/40 text-[10px] tracking-wider uppercase">Скорость подсознания</p>
+                </div>
+              </div>
+              <div className="text-right">
+                <div className="flex items-center justify-end gap-1 mb-1">
+                  <span className="text-white text-lg font-black leading-none">{radarData.intuition}</span>
+                </div>
+                <span className="text-[9px] text-white/40 tracking-widest uppercase">Целевая мета</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+
+      {/* Bottom Navigation */}
+      <div className="fixed bottom-0 left-0 right-0 p-6 z-20 pointer-events-none">
+        <div className="max-w-md mx-auto flex flex-col gap-4 pointer-events-auto">
+          <div className="glass-card h-16 rounded-full flex items-center justify-around px-6 border-white/5">
+            <button className="text-primary"><span className="material-symbols-outlined !text-3xl">radar</span></button>
+            <button className="text-white/30"><span className="material-symbols-outlined !text-3xl">database</span></button>
+            <div className="size-12 rounded-full premium-shine flex items-center justify-center glow-primary -mt-10 border-4 border-background-dark">
+              <span className="material-symbols-outlined text-white">add</span>
+            </div>
+            <button className="text-white/30"><span className="material-symbols-outlined !text-3xl">analytics</span></button>
+            <button className="text-white/30"><span className="material-symbols-outlined !text-3xl">person_search</span></button>
+          </div>
+          <button className="premium-shine w-full py-4 rounded-xl text-[11px] font-black tracking-[0.4em] uppercase text-white shadow-2xl transition-all active:scale-[0.98] flex items-center justify-center gap-2">
+            <span className="material-symbols-outlined text-sm">auto_awesome</span>
+            Финализировать диагностический профиль
+          </button>
+        </div>
+      </div>
+
+      {/* Ambient Glow */}
+      <div className="fixed top-1/4 -right-20 size-64 bg-primary/20 blur-[100px] pointer-events-none" />
+      <div className="fixed bottom-1/4 -left-20 size-64 bg-neon-green/10 blur-[100px] pointer-events-none" />
+    </div>
+  );
+};
+
+// --- 5. MAIN APP COMPONENT ---
+
+export default function App() {
+  // State
+  const [screen, setScreen] = useState(SCREENS.loading);
+  const [previousScreen, setPreviousScreen] = useState(null);
+  
+  // User
+  const [userId, setUserId] = useState(null);
+  const [role, setRole] = useState(null);
+  const [isSubscribed, setIsSubscribed] = useState(false);
+  const [diamonds, setDiamonds] = useState(5);
+  
+  // Session
+  const [selectedClientId, setSelectedClientId] = useState('c1');
+  const [selectedModality, setSelectedModality] = useState('mpt');
+  const [difficulty, setDifficulty] = useState(2);
+  const [messages, setMessages] = useState([]);
+  const [inputText, setInputText] = useState('');
+  const [isTyping, setIsTyping] = useState(false);
+  const [sessionMetrics, setSessionMetrics] = useState(null);
+  
+  // Profile
+  const [userProfile, setUserProfile] = useState({ 
+    name: '', 
+    experience: 0, 
+    price: 0, 
+    about: '', 
+    methods: '', 
+    photoUrl: null, 
+    videoUrl: null 
+  });
+  
+  // Data
+  const [clientPool, setClientPool] = useState(CLIENT_DATABASE);
+  const [psychologists, setPsychologists] = useState([]);
+  const [masters, setMasters] = useState([]);
+  const [history, setHistory] = useState([]);
+  
+  // UI
+  const [notification, setNotification] = useState(null);
+  const fileInputRef = useRef(null);
+  const tg = window.Telegram?.WebApp;
+  const userIdMemo = useMemo(() => tg?.initDataUnsafe?.user?.id?.toString() || 'dev_platinum_master', [tg]);
+
+  // Telegram Init
+  useEffect(() => {
+    if (tg) { 
+      tg.ready(); 
+      tg.expand(); 
+      if (parseFloat(tg.version) >= 6.1) {
+        tg.setHeaderColor('#020617');
+        tg.setBackgroundColor('#020617');
+      }
+    }
+    
+    const initApp = async () => {
+      const isAgreed = localStorage.getItem('connectum_legal');
+      if (!isAgreed) {
+        setScreen(SCREENS.legal);
+      } else {
+        try {
+          const res = await fetch(`http://localhost:3001/api/sync?userId=${userIdMemo}`);
+          if (!res.ok) throw new Error("Sync Fail");
+          const data = await res.json();
+          
+          if(data.isSubscribed !== undefined) setIsSubscribed(data.isSubscribed);
+          if(data.diamonds !== undefined) setDiamonds(data.diamonds);
+          if(data.pool) setClientPool(data.pool);
+          if(data.profile) setUserProfile(prev => ({...prev, ...data.profile}));
+          if(data.history) setHistory(data.history);
+          
+          setScreen(SCREENS.terminal_dashboard);
+        } catch(e) { 
+          console.warn("Connectum Local Mode Active");
+          setScreen(SCREENS.terminal_dashboard); 
+        }
+      }
+    };
+    
+    const timer = setTimeout(initApp, 2000);
+    return () => clearTimeout(timer);
+  }, [tg, userIdMemo]);
+
+  // Notifications
+  const showToast = (text) => {
+    setNotification(text);
+    setTimeout(() => setNotification(null), 4000);
+  };
+
+  // Photo Upload
+  const handlePhotoUpload = (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setUserProfile(prev => ({...prev, photoUrl: reader.result}));
+        showToast("Фото профиля готово к сохранению");
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // Start Session
+  const startSession = async () => {
+    if(diamonds <= 0 && !isSubscribed) {
+      showToast("Недостаточно бриллиантов на балансе");
+      return;
+    }
+    if(!isSubscribed) setDiamonds(prev => prev - 1); 
+    setScreen(SCREENS.chat); 
+    setMessages([]); 
+    handleSend("Здравствуйте, я готов начать тренировку.", true);
+  };
+
+  // Chat Send
+  const handleSend = async (text = inputText, isInitial = false, action = 'chat', flow = null) => {
+    if (!text && !isInitial) return;
+    
+    if (!isInitial && action === 'chat') {
+      setMessages(p => [...p, { role: 'user', content: text }]);
+    }
+    
+    setInputText(''); 
+    setIsTyping(true);
+
+    try {
+      const res = await fetch('http://localhost:3001/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          userId: userIdMemo, 
+          message: text, 
+          modalityId: selectedModality, 
+          action: action || '', 
+          selectedClientId: selectedClientId || 'c1', 
+          role: role || 'psychologist', 
+          flow: flow || '', 
+          difficulty: Number(difficulty),
+          history: messages
+            .filter(m => m.role !== 'hint')
+            .map(m => ({ role: m.role, content: m.content }))
+            .slice(-12) 
+        })
+      });
+      
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Server Error");
+      
+      if(action === 'get_hint') {
+        setMessages(p => [...p, { role: 'hint', content: data.hint }]);
+      } else if(data.content) {
+        setMessages(p => [...p, { role: 'ai', content: data.content, voice: data.voice }]);
+        if(data.voice) {
+          const audio = new Audio(`data:audio/mp3;base64,${data.voice}`);
+          audio.play().catch(e => console.warn("Audio play blocked", e));
+        }
+      }
+    } catch(e) { 
+      showToast(e.message || "Сбой связи с ИИ"); 
+    } finally { 
+      setIsTyping(false); 
+    }
+  };
+
+  // Finish Session
+  const finishSession = async () => {
+    if(!confirm("Завершить тренировку и сформировать PDF-аудит?")) return;
+    
+    setIsTyping(true);
+    try {
+      const res = await fetch('http://localhost:3001/api/finish', { 
+        method: 'POST', 
+        headers: {'Content-Type': 'application/json'}, 
+        body: JSON.stringify({ 
+          userId: userIdMemo, 
+          history: messages.map(m => ({ role: m.role, content: m.content })), 
+          selectedClientId, 
+          modalityId: selectedModality 
+        }) 
+      });
+      
+      const data = await res.json();
+      
+      // Generate metrics
+      const metrics = {
+        technique: Math.floor(Math.random() * 30) + 70,
+        empathy: Math.floor(Math.random() * 20) + 80,
+        structure: Math.floor(Math.random() * 40) + 60,
+        ethics: Math.floor(Math.random() * 10) + 90,
+        insight: 'The subject demonstrated exceptional emotional resonance. Recommended trajectory involves increasing structural complexity to match high empathy scores.'
+      };
+      
+      setSessionMetrics(metrics);
+      
+      // Save to history
+      setHistory(prev => [...prev, {
+        date: new Date().toISOString(),
+        metrics,
+        clientId: selectedClientId,
+        modality: selectedModality
+      }]);
+      
+      showToast(`Аудит готов. Индекс точности: ${data.analytics?.method || 0}%`);
+      if(data.newPool) setClientPool(data.newPool);
+      setScreen(SCREENS.session_summary);
+    } catch (e) { 
+      setScreen(SCREENS.terminal_dashboard); 
+    } finally { 
+      setIsTyping(false); 
+    }
+  };
+
+  // Accept Legal
+  const acceptLegal = () => { 
+    localStorage.setItem('connectum_legal', 'true'); 
+    setScreen(SCREENS.terminal_dashboard); 
+  };
+
+  // Render Screens
+  if (screen === SCREENS.loading) return <LoadingScreen onLoaded={() => setScreen(SCREENS.legal)} />;
+  if (screen === SCREENS.legal) return <LegalScreen onAccept={acceptLegal} />;
+  if (screen === SCREENS.terminal_dashboard) return <TerminalDashboard setScreen={setScreen} diamonds={diamonds} isSubscribed={isSubscribed} />;
+  if (screen === SCREENS.setup) return (
+    <SetupScreen 
+      setScreen={setScreen}
+      diamonds={diamonds}
+      isSubscribed={isSubscribed}
+      selectedModality={selectedModality}
+      setSelectedModality={setSelectedModality}
+      selectedClientId={selectedClientId}
+      setSelectedClientId={setSelectedClientId}
+      difficulty={difficulty}
+      setDifficulty={setDifficulty}
+      clientPool={clientPool}
+      startSession={startSession}
+    />
+  );
+  if (screen === SCREENS.chat) return (
+    <ChatScreen 
+      setScreen={setScreen}
+      messages={messages}
+      setMessages={setMessages}
+      inputText={inputText}
+      setInputText={setInputText}
+      isTyping={isTyping}
+      setIsTyping={setIsTyping}
+      selectedModality={selectedModality}
+      selectedClientId={selectedClientId}
+      difficulty={difficulty}
+      finishSession={finishSession}
+    />
+  );
+  if (screen === SCREENS.session_summary) return (
+    <SessionSummaryScreen 
+      setScreen={setScreen}
+      sessionMetrics={sessionMetrics}
+      isSubscribed={isSubscribed}
+    />
+  );
+  if (screen === SCREENS.client_hub) return (
+    <ClientHubScreen 
+      setScreen={setScreen}
+      handleSend={handleSend}
+      diamonds={diamonds}
+      isSubscribed={isSubscribed}
+    />
+  );
+  if (screen === SCREENS.masters_gallery) return (
+    <MastersGalleryScreen 
+      setScreen={setScreen}
+      isSubscribed={isSubscribed}
+      masters={masters}
+    />
+  );
+  if (screen === SCREENS.profile) return (
+    <ProfileScreen 
+      setScreen={setScreen}
+      diamonds={diamonds}
+      userProfile={userProfile}
+      setUserProfile={setUserProfile}
+      handlePhotoUpload={handlePhotoUpload}
+      fileInputRef={fileInputRef}
+    />
+  );
+  if (screen === SCREENS.settings) return (
+    <SettingsScreen 
+      setScreen={setScreen}
+      isSubscribed={isSubscribed}
+      setIsSubscribed={setIsSubscribed}
+    />
+  );
+  if (screen === SCREENS.pro_dashboard) return (
+    <ProDashboardScreen 
+      setScreen={setScreen}
+      history={history}
+    />
+  );
+  if (screen === SCREENS.pdf_report) return <PdfReportScreen setScreen={setScreen} />;
+  if (screen === SCREENS.waitlist) return <WaitlistScreen setScreen={setScreen} />;
+  if (screen === SCREENS.radar) return <MasteryRadarScreen setScreen={setScreen} />;
+
+  // Default (shouldn't reach here)
+  return <LoadingScreen onLoaded={() => setScreen(SCREENS.legal)} />;
 }
